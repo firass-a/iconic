@@ -1,0 +1,173 @@
+logging:
+  # level: debug
+  level: error
+
+data:
+  done_value: logical
+  DOY_value: int
+  YRDOY_value: int
+  nfert_value: int
+  iferi_value: char
+  cleach_value: float
+  nstres_value: float
+  istage_value: int
+  swfac_value: float
+  cnox_value: float
+  sldp_value: float
+  eop_value: float
+  ep_value: float
+  eos_value: float
+  es_value: float
+  rtdep_value: float
+  runoff_value: float
+  swexf_value: float
+  swdf_value: float
+  h2oa_value: float
+  ah2oprofile_value: float
+  h2oprofile_value: float
+  rain_value: float
+  nfert: int
+  iferi: char
+  cleach: float
+  nstres: float
+  istage: int
+  swfac: float
+  cnox: float
+  sldp: float
+  eop: float
+  ep: float
+  eos: float
+  es: float
+  rtdep: float
+  runoff: float
+  swexf: float
+  swdf: float
+  h2oa: float
+  ah2oprofile: float
+  h2oprofile: float
+  rain: float
+  h2oa_array:
+    type: array
+    subtype: float
+    size: 2
+  anfer: float
+  total_anfer: int
+
+plugins:
+  trace: ~
+  pycall:
+    on_data:
+      YRDOY_value: |
+        YRDOY = YRDOY_value
+        # print('PDI->YRDOY val:', YRDOY)
+      DOY_value: |
+        DOY = DOY_value
+        # print('PDI->YRDOY val:', DOY)
+      nfert_value: |
+        nfert = nfert_value
+        # print('PDI->NFERT val:', nfert_value)
+      iferi_value: |
+        iferi = iferi_value
+        # print('PDI->IFERI val:', chr(iferi_value))
+      cleach_value: |
+        cleach = cleach_value
+        # print('PDI->CLeach val:', cleach_value)
+      nstress_value: |
+        nstress = nstress_value
+        # print('PDI->NSTRES val:', nstres_value)
+      istage_value: |
+        istage = istage_value
+        # print('PDI->ISTAGE val:', istage_value)
+      swfac_value: |
+        swfac = swfac_value
+        # print('PDI->SWFAC val:', swfac_value)
+      cnox_value: |
+        cnox = cnox_value
+        # print('PDI->CNOX val:', cnox_value)
+      sldp_value: |
+        sldp = sldp_value
+        # print('PDI->SLDP val:', sldp_value)
+      eop_value: |
+        eop = eop_value
+        # print('PDI->EOP val:', eop_value)
+      ep_value: |
+        ep = ep_value
+        # print('PDI->EP val:', ep_value)
+      eos_value: |
+        eos = eos_value
+        # print('PDI->EOS val:', eos_value)
+      es_value: |
+        es = es_value
+        # print('PDI->ES val:', es_value)
+      rtdep_value: |
+        rtdep = rtdep_value
+        # print('PDI->RTDEP val:', rtdep_value)
+      runoff_value: |
+        runoff = runoff_value
+        # print('PDI->RUNOFF val:', runoff_value)
+      swexf_value: |
+        swexf = swexf_value
+        # print('PDI->SWEXF val:', swexf_value)
+      swdf_value: |
+        swdf = swdf_value
+        # print('PDI->SWDF val:', swdf_value)
+      h2oa_value: |
+        h2oa = h2oa_value
+        # print('PDI->H2OA val:', h2oa_value)
+      ah2oprofile_value: |
+        ah2oprofile = ah2oprofile_value
+        # print('PDI->AH2OPROFILE val:', ah2oprofile_value)
+      h2oprofile_value: |
+        h2oprofile = h2oprofile_value
+        # print('PDI->H2OPROFILE val:', h2oprofile_value)
+      rain_value: |
+        rain = rain_value
+        # print('PDI->RAIN val:', rain_value)
+    on_event:
+      start_client:
+        exec: |
+          import zmq
+          import json
+          import logging
+          import pdb
+          from gym_dssat_pdi.envs.utils import serialize
+          import numpy as np
+          context = zmq.Context()
+          print('Starting env client')
+          client = context.socket(zmq.REQ)
+          client.setsockopt(zmq.LINGER, 0)
+          client.connect('tcp://localhost:5555')
+          done = False
+          nstress = None
+          cnox = None
+          DOY = None
+          YDROY = None
+      stop_client:
+        exec: |
+          done = True
+          state = {'nstress': nstress,
+                  'cnox': cnox,
+                  'DOY': DOY,
+                  'YRDOY': YRDOY,
+                  'done': done}
+          client.send(json.dumps(state, default=serialize.convert).encode('utf-8'))
+          client.close()
+          context.term()
+          print('Client closed')
+      interact:
+        with: {param_anfer: $anfer, sum_anfer: $total_anfer}
+        exec: |
+          try:
+            state = {'nstress': nstress,
+                    'cnox': cnox,
+                    'DOY': DOY,
+                    'YRDOY': YRDOY,
+                    'done': done}
+            client.send(json.dumps(state, default=serialize.convert).encode('utf-8'))
+            action = client.recv().decode('utf-8')
+            action = json.loads(action)
+            param_anfer[()] = action['anfer']
+            sum_anfer[()] += sum_anfer
+          except Exception as e:
+            logging.exception(e)
+            input()

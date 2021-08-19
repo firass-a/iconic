@@ -15,18 +15,19 @@ def fertilization_policy(YRDOY):
 
 
 if __name__ == '__main__':
-    env = gym.make('gym_dssat_pdi:GymDssatPdi-v0')
-    run_dssat_location = '/home/rgautron/dssat_pdi/run_dssat'
-    env._init_(run_dssat_location=run_dssat_location)
+    env_args = {
+        'run_dssat_location': '/home/rgautron/dssat_pdi/run_dssat'
+    }
+    env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
     done = False
     try:
-        while not done:
+        while not env.done:
             state = env.state
+            print(state)
             YRDOY = state['YRDOY']
             action = fertilization_policy(YRDOY)
             print(f'YRDOY : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
             res = env.step(action)
-            _, reward, done, info = res
-            # print(res)
+            new_state, reward, done, info = res
     finally:
         env.close()

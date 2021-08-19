@@ -1,0 +1,33 @@
+---
+action:
+  anfer:
+    type: float
+    low: 0
+    high: 200
+    info: nitrogen to fertilize kg/ha
+state:
+  YRDOY:
+    type: int
+    low: 0000000
+    high: 9999999
+    info: simulation date in YYYYDDD julian format 
+  DOY:
+    type: int
+    low: 0
+    high: 366
+    info: simulation day in julian DDD format
+  nstress:
+    type: float
+    low: 0
+    high: 1
+    info: nitrogen stress (0 maximal, 1 minimal)
+  rain:
+    type: float
+    low: 0
+    high: .inf
+    info: rainfalls in mm for the current day
+  istage:
+    type: discrete
+    low: 1
+    high: 10
+    info: DSSAT maize growing stage (in order 7, 8, 9, 1, 2, 3, 4, 5 ,6)

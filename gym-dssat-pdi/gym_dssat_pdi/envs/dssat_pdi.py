@@ -1,27 +1,32 @@
 import gym
+import gym.spaces as spaces
 from subprocess import Popen
 import zmq
 import json
-from gym_dssat_pdi.envs.utils import serialize
+from gym_dssat_pdi.envs.utils import serialize, write_template
 import logging
+import pdb
 
 
 class DssatPdi(gym.Env):
-    def __init__(self):
-        pass
+    # def __init__(self):
+    #     pass
 
-    def _init_(self, run_dssat_location, experiment_number=1, file_X_prefix='UFGA8201', fileX_extension='.MZX'):
-        # self.action_space = spaces.Discrete(2)
+    def __init__(self, run_dssat_location, experiment_number=1, file_X_prefix='UFGA8201', fileX_extension='.MZX'):
+        self.action_space = spaces.Dict({'anfer': spaces.Box(low=0, high=200, shape=())})
         # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
         self.experiment_number = experiment_number
         self.file_X = f'{file_X_prefix}{fileX_extension}'
         self.run_dssat_location = run_dssat_location
         self.state = None
+        self.done = False
+        self.port = None
         self.context = None
         self.server = None
         self.client_process = None
         self.poller = None
         self.launch_server()
+        self.write_pdi_yaml()
         self.launch_client()
         self._get_state()
 
@@ -34,15 +39,33 @@ class DssatPdi(gym.Env):
     def launch_server(self):
         print('Starting env server')
         self.context = zmq.Context()
-        self.server = self.context.socket(zmq.REP)
+        self.server = self.context.socket(zmq.PAIR)
         self.server.setsockopt(zmq.LINGER, 0)
-        self.server.bind('tcp://*:5555')
+        # self.server.bind('tcp://*:5555')
+        self.port = self.server.bind_to_random_port('tcp://*', min_port=1024, max_port=65535, max_tries=100)
+
+    def write_pdi_yaml(self):
+        value_dic = {'port': self.port}
+        print(f'server: {self.port}')
+        write_template.write_template(value_dic=value_dic,
+                                      template_path='./templates/dssat-pdi.jinja2',
+                                      saving_path='./dssat-pdi.yml')
 
     def _get_state(self):
-        state = self.server.recv().decode('utf-8')
-        state = json.loads(state)
+        message = self.server.recv().decode('utf-8')
+        message = json.loads(message)
+        state = message['state']
         self.state = state
+        self.done = message['done']
         return state
+
+    def _get_reward(self):
+        state = self.state
+        return 10
+
+    def _get_info(self):
+        state = self.state
+        return {}
 
     def step(self, action):
         """
@@ -56,25 +79,18 @@ class DssatPdi(gym.Env):
         assert isinstance(action, dict)
         try:
             while True:
-                done = self.state['done']
-                if done:
+                if self.done:
                     self.close()
-                    return None, None, done, None
+                    return None, None, self.done, None
                 action = json.dumps(action, default=serialize.convert).encode('utf-8')
                 self.server.send(action)
                 state = self._get_state()
-                reward = self.get_reward()
-                return state, reward, done, {}
+                reward = self._get_reward()
+                done = self.done
+                info = self._get_info()
+                return state, reward, done, info
         except Exception as e:
             logging.exception(e)
-
-    def get_reward(self):
-        state = self.state
-        return 10
-
-    def get_info(self):
-        state = self.state
-        return {}
 
     def reset(self):
         pass

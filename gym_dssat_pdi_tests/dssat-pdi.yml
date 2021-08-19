@@ -134,23 +134,21 @@ plugins:
           import numpy as np
           context = zmq.Context()
           print('Starting env client')
-          client = context.socket(zmq.REQ)
+          client = context.socket(zmq.PAIR)
           client.setsockopt(zmq.LINGER, 0)
-          client.connect('tcp://localhost:5555')
+          client.connect('tcp://localhost:9952')
           done = False
           nstress = None
           cnox = None
           DOY = None
           YDROY = None
+          istage = None
+          rain = None
       stop_client:
         exec: |
           done = True
-          state = {'nstress': nstress,
-                  'cnox': cnox,
-                  'DOY': DOY,
-                  'YRDOY': YRDOY,
-                  'done': done}
-          client.send(json.dumps(state, default=serialize.convert).encode('utf-8'))
+          message = {'done': done, 'state': {}}
+          client.send(json.dumps(message, default=serialize.convert).encode('utf-8'))
           client.close()
           context.term()
           print('Client closed')
@@ -158,12 +156,14 @@ plugins:
         with: {param_anfer: $anfer, sum_anfer: $total_anfer}
         exec: |
           try:
-            state = {'nstress': nstress,
-                    'cnox': cnox,
-                    'DOY': DOY,
+            state = {'DOY': DOY,
                     'YRDOY': YRDOY,
-                    'done': done}
-            client.send(json.dumps(state, default=serialize.convert).encode('utf-8'))
+                    'nstress': nstress,
+                    'cnox': cnox,
+                    'istage': istage,
+                    'rain': rain}
+            message = {'done':done, 'state':state}
+            client.send(json.dumps(message, default=serialize.convert).encode('utf-8'))
             action = client.recv().decode('utf-8')
             action = json.loads(action)
             param_anfer[()] = action['anfer']

@@ -39,7 +39,7 @@ def interact_with_env(env, verbose=True):
         res = env.step(action)
         new_state, reward, done, info = res
         interactions.append(res)
-    return res
+    return interactions
 
 
 def multiprocess_trial(env_args, cwd, rep):

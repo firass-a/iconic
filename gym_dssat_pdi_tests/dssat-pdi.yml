@@ -136,7 +136,7 @@ plugins:
           print('Starting env client')
           client = context.socket(zmq.PAIR)
           client.setsockopt(zmq.LINGER, 0)
-          client.connect('tcp://localhost:9952')
+          client.connect('tcp://localhost:7694')
           done = False
           nstress = None
           cnox = None

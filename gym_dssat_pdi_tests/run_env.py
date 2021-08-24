@@ -4,7 +4,7 @@ import multiprocessing
 import faulthandler
 
 faulthandler.enable()
-from gym_dssat_pdi.envs.utils import DssatPdiHandler
+from gym_dssat_pdi.envs.utils.utils import DssatPdiHandler
 import os
 import gc
 
@@ -14,7 +14,9 @@ from copy import deepcopy
 import time
 from pympler.tracker import SummaryTracker
 
+
 def fertilization_policy(YRDOY):
+    return {'anfer': 1}
     fertilization_dic = {
         1982097: 27,
         1982102: 35,
@@ -31,11 +33,11 @@ def interact_with_env(env, verbose=True):
     interactions = []
     while not env.done:
         state = env.state
-        YRDOY = state['YRDOY']
+        YRDOY = state['yrdoy']
         action = fertilization_policy(YRDOY)
         if verbose:
             print(state)
-            print(f'YRDOY : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
+            print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
         res = env.step(action)
         new_state, reward, done, info = res
         interactions.append(res)
@@ -84,24 +86,30 @@ if __name__ == '__main__':
         'log_saving_path': './logs/dssat-pdi.log',
     }
     done = False
-    try_interact = not True
-    try_multiproc = True
+    try_interact = True
+    try_multiproc = not True
     if try_interact:
         try:
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            interact_with_env(env)
-            time.sleep(30)
             env.reset()
-            interact_with_env(env)
+            env.save_log = True
+            interaction = interact_with_env(env)
+            env.render(type='ts',
+                       feature_name_1='nstres',
+                       feature_name_2='grnwt')
+            env.render(type='reward',
+                       cumsum=True)
+            env.render(type='reward',
+                       cumsum=False)
         except Exception as e:
             logging.exception(e)
         finally:
             env.close()
     if try_multiproc:
-        with DssatPdiHandler.DssatPdiHandler():  # avoid zombies in code crashes
+        with DssatPdiHandler():  # avoid zombies in code crashes
             try:
                 tracker = SummaryTracker()
-                raw_results = multiprocess_trial(env_args, cwd, rep=1000)
+                raw_results = multiprocess_trial(env_args, cwd, rep=10)
                 # print(raw_results)
             except Exception as e:
                 logging.exception(e)

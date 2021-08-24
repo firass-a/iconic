@@ -3,21 +3,24 @@ import gym.spaces as spaces
 from subprocess import Popen
 import zmq
 import json
-from gym_dssat_pdi.envs.utils import serialize, write_template, get_time_stamp
+from gym_dssat_pdi.envs.utils import utils
+from gym_dssat_pdi.envs.rendering import rendering
+from gym_dssat_pdi.envs.rewards import rewards
+
 import tempfile
 import random
 import shutil
 import logging
 import os
-import datetime
-import signal
 import gc
-import psutil
+import pdb
+import time
+
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location, experiment_number=1, file_X_prefix='UFGA8201', fileX_extension='.MZX',
-                 log_saving_path=None, yml_template_path='./templates/dssat-pdi.jinja2',
+    def __init__(self, run_dssat_location, mode='fertilization', experiment_number=1, file_X_prefix='UFGA8201',
+                 fileX_extension='.MZX', log_saving_path=None, yml_template_path='./templates/dssat-pdi.jinja2',
                  auxiliary_files_names=None, files_prefix='./'):
         self.action_space = spaces.Dict({'anfer': spaces.Box(low=0, high=200, shape=())})
         # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
@@ -31,8 +34,11 @@ class DssatPdi(gym.Env):
         self.log_saving_path = log_saving_path
         self.yml_template_path = yml_template_path
         self.cwd = os.getcwd()
-        self.state = None
+        self.mode = mode
+        self.reward_func = rewards.fertilization_reward if mode == 'fertilization' else rewards.fertilization_reward
+        self.history = {'state': [], 'action': [], 'reward': []}
         self.done = False
+        self.t = 0
         self.port = None
         self.context = None
         self.server = None
@@ -41,10 +47,10 @@ class DssatPdi(gym.Env):
         self.tmp_folder = None
         self._make_tmp_folder()
         self._get_sockets_()
-        self._get_state()
+        self.state = self._get_state()
 
     def _launch_client(self):
-        print(f'Starting env client: port {self.port}')
+        # print(f'Starting env client: port {self.port}')
         pdi_command = f'pdirun {self.run_dssat_location} C {self.file_X}' \
                       f' {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
@@ -55,38 +61,40 @@ class DssatPdi(gym.Env):
         with open(file_path, 'a+') as f_:
             if self.log_saving_path is not None:
                 f_.write('\n********************************\n')
-                f_.write(get_time_stamp.get_time_stamp())
+                f_.write(utils.get_time_stamp())
                 f_.write('\n********************************\n')
             process = Popen(pdi_command, stdout=f_, shell=False, universal_newlines=True,
-                                        cwd=self.tmp_folder)
+                            cwd=self.tmp_folder)
             self.client_process_pid = process.pid
 
     def _launch_server(self):
         self.context = zmq.Context()
         self.server = self.context.socket(zmq.PAIR)
-        # self.server.setsockopt(zmq.LINGER, 0)
-        # self.server.bind('tcp://*:5555')
-        self.port = self.server.bind_to_random_port('tcp://*', max_tries=10000) #min_port=1024, max_port=65535)
-        if self.port is None:
-            print('Server failed to find a free port')
+        self.server.setsockopt(zmq.LINGER, 0)
+        self.port = self.server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
     def _write_pdi_yaml(self):
         value_dic = {'port': self.port}
-        write_template.write_template(value_dic=value_dic,
-                                      template_path=self.yml_template_path,
-                                      saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
+        utils.write_template(value_dic=value_dic,
+                             template_path=self.yml_template_path,
+                             saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
 
     def _get_state(self):
         message = self.server.recv().decode('utf-8')
         message = json.loads(message)
         state = message['state']
-        self.state = state
+        if state:
+            state = utils._post_treat_state(state)
         self.done = message['done']
+        if self.done:
+            self._close_server()
         return state
 
-    def _get_reward(self):
-        state = self.state
-        return 10
+    def _get_reward(self, next_state):
+        previous_state = self.state
+        history = self.history
+        reward = self.reward_func(previous_state, next_state, history)
+        return reward
 
     def _get_info(self):
         state = self.state
@@ -109,6 +117,21 @@ class DssatPdi(gym.Env):
         for name in names:
             shutil.copyfile(f'{self.files_prefix}{name}', f'{self.tmp_folder}/{name}')
 
+    def _close_client(self):
+        try:
+            utils.recursively_kill_process(self.client_process_pid)
+        except Exception as e:
+            logging.exception(e)
+        gc.collect()
+
+    def _close_server(self):
+        try:
+            self.server.close()
+            self.context.term()
+        except Exception as e:
+            # pass
+            logging.exception(e)
+
     def step(self, action):
         """
         :param action: actions values to be performed
@@ -121,57 +144,46 @@ class DssatPdi(gym.Env):
         assert isinstance(action, dict)
         try:
             while True:
-                if self.done:
-                    self.close()
-                    return None, None, self.done, None
-                action = json.dumps(action, default=serialize.convert).encode('utf-8')
-                self.server.send(action)
+                action_js = json.dumps(action, default=utils.convert).encode('utf-8')
+                self.server.send(action_js)
                 state = self._get_state()
-                reward = self._get_reward()
-                done = self.done
-                info = self._get_info()
-                return state, reward, done, info
+                if state:
+                    self.history['state'].append(state)
+                    self.history['action'].append(action)
+                    reward = self._get_reward(state)
+                    self.history['reward'].append(reward)
+                    self.state = state
+                    self.reward = reward
+                    done = self.done
+                    info = self._get_info()
+                    self.t += 1
+                    return state, reward, done, info
+                else:
+                    return None, None, self.done, None
+
+
         except Exception as e:
             logging.exception(e)
 
     def reset(self):
         self.done = False
+        self.t = 0
         self._close_client()
         self._launch_client()
+        self.history = {'state': [], 'action': [], 'reward': []}
         self._get_state()
 
-    def render(self):
-        pass
+    def render(self, type, *args, **kwargs):
+        if 'type' == 'ts':
+            rendering.render_temporal_series(history=self.history, *args, **kwargs)
+        else:
+            rendering.render_reward(history=self.history,  *args, **kwargs)
 
     def close(self):
         self._close_server()
         self._close_client()
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
         gc.collect()
-
-    def _close_client(self):
-        try:
-            self.recursively_kill_process(self.client_process_pid)
-        except Exception as e:
-            logging.exception(e)
-        gc.collect()
-
-    def _close_server(self):
-        try:
-            self.server.close()
-            self.context.term()
-
-        except Exception as e:
-            # pass
-            logging.exception(e)
-
-    @staticmethod
-    def recursively_kill_process(parent_pid):
-        parent = psutil.Process(parent_pid)
-        children = parent.children(recursive=True)
-        for child in children:
-            child.kill()
-        parent.kill()
 
     # def seed(self, seed=None):
     #     self.np_random, seed = seeding.np_random(seed)

@@ -1,6 +1,6 @@
 logging:
-  level: debug
-{#  level: error#}
+{#  level: debug#}
+  level: error
 
 data:
   YRDOY: int
@@ -20,6 +20,10 @@ data:
   CumSumFert: float
   XLAI: float
   TRNU: float
+  RAIN: float
+  TMIN: float
+  TMAX: float
+  SRAD: float
 
 plugins:
   trace: ~
@@ -57,6 +61,14 @@ plugins:
         xlai = XLAI
       TRNU: |
         trnu = TRNU
+      RAIN: |
+        rain = RAIN
+      TMIN: |
+        tmin = TMIN
+      TMAX: |
+        tmax = TMAX
+      SRAD: |
+        srad = SRAD
     on_event:
       start_client:
         exec: |
@@ -101,7 +113,12 @@ plugins:
           'cnox': cnox,
           'cumsumfert': cumsumfert,
           'xlai': xlai,
-          'trnu': trnu}
+          'trnu': trnu,
+          'rain': rain,
+          'tmin': tmin,
+          'tmax': tmax,
+          'srad': srad,
+          }
           message = {'done':done, 'state':state}
           message_js = json.dumps(message, cls=NumpyEncoder)
           client.send(message_js.encode('utf-8'))

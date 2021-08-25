@@ -37,8 +37,9 @@ def interact_with_env(env, verbose=True):
         YRDOY = state['yrdoy']
         action = fertilization_policy(YRDOY)
         if verbose:
-            pprint(state)
-            print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
+            if action["anfer"]>0:
+                pprint(state)
+                print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
         res = env.step(action)
         new_state, reward, done, info = res
         interactions.append(res)
@@ -62,7 +63,6 @@ def _multiprocess_trial_func(args):
         env.save_log = False
         for _ in range(10):
             interactions = interact_with_env(env, verbose=False)
-            print(interactions)
             all_interactions.append(interactions)
             env.reset()
         if env.save_log in env_args:

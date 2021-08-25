@@ -1,0 +1,110 @@
+logging:
+  level: debug
+{#  level: error#}
+
+data:
+  YRDOY: int
+  NSTRES: float
+  ISTAGE: int
+  ANFER: float
+  GRNWT: float
+  TOPWT: float
+  PLTPOP: float
+  SWFAC: float
+  PCNGRN: float
+  TLeachD: float
+  TNOXD: float
+  WTNUP: float
+  CLeach: float
+  CNOX: float
+  CumSumFert: float
+  XLAI: float
+  TRNU: float
+
+plugins:
+  trace: ~
+  pycall:
+    on_data:
+      YRDOY: |
+        yrdoy = YRDOY
+      NSTRES: |
+        nstres = NSTRES
+      ISTAGE: |
+        istage = ISTAGE
+      GRNWT: |
+        grnwt = GRNWT
+      TOPWT: |
+        topwt = TOPWT
+      PLTPOP: |
+        pltpop = PLTPOP
+      SWFAC: |
+        swfac = SWFAC
+      PCNGRN: |
+        pcngrn = PCNGRN
+      TLeachD: |
+        tleachd = TLeachD
+      TNOXD: |
+        tnoxd = TNOXD
+      WTNUP: |
+        wtnup = WTNUP
+      CLeach: |
+        cleach = CLeach
+      CNOX: |
+        cnox = CNOX
+      CumSumFert: |
+        cumsumfert = CumSumFert
+      XLAI: |
+        xlai = XLAI
+      TRNU: |
+        trnu = TRNU
+    on_event:
+      start_client:
+        exec: |
+          import zmq
+          import json
+          import logging
+          import numpy as np
+          class NumpyEncoder(json.JSONEncoder):
+            def default(self, obj):
+              if isinstance(obj, np.ndarray):
+                return obj.tolist()
+              return json.JSONEncoder.default(self, obj)
+          context = zmq.Context()
+          print('Starting client')
+          client = context.socket(zmq.PAIR)
+          client.setsockopt(zmq.LINGER, 0)
+          client.connect('tcp://localhost:{{'{0:d}'.format(port)}}')
+          done = False
+      stop_client:
+        exec: |
+          done = True
+          message = {'done': done, 'state': {}}
+          client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
+          client.close()
+          context.term()
+          print('Client closed')
+      interact:
+        with: {anfer: $ANFER}
+        exec: |
+          state = {'yrdoy': yrdoy,
+          'nstres': nstres,
+          'istage': istage,
+          'grnwt': grnwt,
+          'topwt': topwt,
+          'pltpop': pltpop,
+          'swfac': swfac,
+          'pcngrn': pcngrn,
+          'tleachd': tleachd,
+          'tnoxd': tnoxd,
+          'wtnup': wtnup,
+          'cleach': cleach,
+          'cnox': cnox,
+          'cumsumfert': cumsumfert,
+          'xlai': xlai,
+          'trnu': trnu}
+          message = {'done':done, 'state':state}
+          message_js = json.dumps(message, cls=NumpyEncoder)
+          client.send(message_js.encode('utf-8'))
+          action = client.recv().decode('utf-8')
+          action = json.loads(action)
+          anfer[()] = action['anfer']

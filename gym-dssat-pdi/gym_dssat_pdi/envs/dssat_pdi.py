@@ -20,23 +20,29 @@ import time
 class DssatPdi(gym.Env):
 
     def __init__(self, run_dssat_location, mode='fertilization', experiment_number=1, file_X_prefix='UFGA8201',
-                 fileX_extension='.MZX', log_saving_path=None, yml_template_path='./templates/dssat-pdi.jinja2',
-                 auxiliary_files_names=None, files_prefix='./'):
+                 fileX_extension='.MZX', log_saving_path=None, yml_template_path='./templates/dssat_pdi.jinja2',
+                 auxiliary_files_names=None, files_prefix='./', rseed1=None):
         self.action_space = spaces.Dict({'anfer': spaces.Box(low=0, high=200, shape=())})
         # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
         self.experiment_number = experiment_number
-        self.file_X = f'{file_X_prefix}{fileX_extension}'
+        self.file_X_name = f'{file_X_prefix}{fileX_extension}'
+        # self.file_X_bytes = pkgutil.get_data(__name__, f'configs/{self.file_X_name}')
+        # self.dssat_pdi_yaml_template_string = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
+        # self.env_config_string = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
         if auxiliary_files_names:
             self.auxiliary_files_names = auxiliary_files_names
         else:
             self.auxiliary_files_names = []
         self.run_dssat_location = run_dssat_location
         self.log_saving_path = log_saving_path
-        self.yml_template_path = yml_template_path
         self.cwd = os.getcwd()
         self.mode = mode
         self.reward_func = rewards.fertilization_reward if mode == 'fertilization' else rewards.fertilization_reward
         self.history = {'state': [], 'action': [], 'reward': []}
+        if rseed1 is None:
+            self.rseed1 = 2001  # random.randint(1, 999999)
+        else:
+            self.rseed1 = rseed1
         self.done = False
         self.t = 0
         self.port = None
@@ -51,8 +57,7 @@ class DssatPdi(gym.Env):
 
     def _launch_client(self):
         # print(f'Starting env client: port {self.port}')
-        pdi_command = f'pdirun {self.run_dssat_location} C {self.file_X}' \
-                      f' {self.experiment_number}'
+        pdi_command = f'pdirun {self.run_dssat_location} C {self.file_X_name} {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path
@@ -74,10 +79,13 @@ class DssatPdi(gym.Env):
         self.port = self.server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
     def _write_pdi_yaml(self):
-        value_dic = {'port': self.port}
-        utils.write_template(value_dic=value_dic,
-                             template_path=self.yml_template_path,
-                             saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
+        value_dic = {'port': self.port, 'rseed1': self.rseed1, 'iferi': 'L', 'mewth': 'W'}
+        # utils.write_template1(value_dic=value_dic,
+        #                       template_string=self.dssat_pdi_yaml_template_string,
+        #                       saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
+        utils.write_template2(value_dic=value_dic,
+                              template_path='./configs/dssat_pdi.jinja2',
+                              saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
 
     def _get_state(self):
         message = self.server.recv().decode('utf-8')
@@ -110,12 +118,16 @@ class DssatPdi(gym.Env):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
         tempfile._Random = random.Random
         self.tmp_folder = tempfile.mkdtemp()
-        if self.auxiliary_files_names is not None:
-            self._copy_auxiliary_files([self.file_X, *self.auxiliary_files_names])
+        # with open(f'{self.tmp_folder}/{self.file_X_name}', 'wb') as f_:
+        #     f_.write(self.file_X_bytes)
+        shutil.copyfile(f'./configs/{self.file_X_name}', f'{self.tmp_folder}/{self.file_X_name}')
+        if self.auxiliary_files_names:
+            self._copy_auxiliary_files(self.auxiliary_files_names)
 
     def _copy_auxiliary_files(self, names):
-        for name in names:
-            shutil.copyfile(f'{self.files_prefix}{name}', f'{self.tmp_folder}/{name}')
+        if names:
+            for name in names:
+                shutil.copyfile(f'{self.files_prefix}{name}', f'{self.tmp_folder}/{name}')
 
     def _close_client(self):
         try:
@@ -144,7 +156,7 @@ class DssatPdi(gym.Env):
         assert isinstance(action, dict)
         try:
             while True:
-                action_js = json.dumps(action, default=utils.convert).encode('utf-8')
+                action_js = json.dumps(action, cls=utils.NumpyEncoder).encode('utf-8')
                 self.server.send(action_js)
                 state = self._get_state()
                 if state:
@@ -177,7 +189,7 @@ class DssatPdi(gym.Env):
         if 'type' == 'ts':
             rendering.render_temporal_series(history=self.history, *args, **kwargs)
         else:
-            rendering.render_reward(history=self.history,  *args, **kwargs)
+            rendering.render_reward(history=self.history, *args, **kwargs)
 
     def close(self):
         self._close_server()

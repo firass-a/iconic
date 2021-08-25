@@ -4,6 +4,11 @@ import datetime
 import psutil
 from numpy import array
 import jinja2
+# from jinja2 import Environment, BaseLoader
+import yaml
+import pdb
+import json
+import numpy as np
 
 class DssatPdiHandler:
     """
@@ -18,12 +23,19 @@ class DssatPdiHandler:
         except KeyboardInterrupt:
             pass
 
-def write_template(value_dic, template_path, saving_path):
+def write_template1(value_dic, template_string, saving_path):
+    template = jinja2.Environment(loader=jinja2.BaseLoader).from_string(template_string)
+    output = template.render(**value_dic)
+    with open(saving_path, mode='w') as f_:
+        f_.write(output)
+
+def write_template2(value_dic, template_path, saving_path):
     with open(template_path) as f_:
         template = jinja2.Template(f_.read(), trim_blocks=True, lstrip_blocks=True)
     output = template.render(**value_dic)
     with open(saving_path, mode='w') as f_:
         f_.write(output)
+
 
 def convert(x):
     if hasattr(x, "tolist"):  # numpy arrays have this
@@ -36,6 +48,12 @@ def deconvert(x):
         if key == "$array":  # If the tag is correct,
             return array(value)  # cast back to array
     return x
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 def get_time_stamp():
     now = datetime.datetime.now()
@@ -62,6 +80,11 @@ def _post_treat_state(state):
     state['wtnup'] *= 10
     state['trnu'] *= 10 * state['pltpop']
     return state
+
+def _parse_config(path_to_load):
+    with open(path_to_load, 'r') as ymlfile:
+        config = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    return config
 
 if __name__ == '__main__':
     pass

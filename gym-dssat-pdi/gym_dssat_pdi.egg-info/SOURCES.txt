@@ -1,6 +1,0 @@
-setup.py
-gym_dssat_pdi.egg-info/PKG-INFO
-gym_dssat_pdi.egg-info/SOURCES.txt
-gym_dssat_pdi.egg-info/dependency_links.txt
-gym_dssat_pdi.egg-info/requires.txt
-gym_dssat_pdi.egg-info/top_level.txt

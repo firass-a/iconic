@@ -1,0 +1,160 @@
+---
+action:
+  anfer:
+    type: float
+    low: 0
+    high: 200
+    info: nitrogen to fertilize for curent day kg/ha
+
+################################################################
+################################################################
+state:
+  cleach:
+    type: float
+    low: 0
+    high: .inf
+    info: cumulative nitrate leaching (kg/ha)
+  cnox:
+    type: float
+    low: 0
+    high: .inf
+    info: cumulative nitrogen denitrification (kg/ha)
+  cumsumfert:
+    type: float
+    low: 0
+    high: .inf
+    info: cumulative nitrogen fertilizer applications (kg/ha)
+  dtt:
+    type: float
+    low: 0
+    high: 100
+    info: growing degree day for current day (C/d)
+  grnwt:
+    type: float
+    low: 0
+    high: .inf
+    info: grain weight (kg/ha)  # dry matter?
+  istage:
+    type: discrete
+    low: 1
+    high: 10
+    info: DSSAT maize growing stage (index in order 7, 8, 9, 1, 2, 3, 4, 5 ,6)
+#1 = End of Juvenil Phase
+#2 = Floral Initiation
+#3 = 75% of Silking
+#4 = Beginning of Grain Filling
+#5 = End of Grrain Filling
+#6 = Maturity
+#7 = Sowing
+#8 = Germinate
+#9 = Emergence
+  nstres:
+    type: float
+    low: 0
+    high: 1
+    info: index of plant nitrogen stress (unitless)
+  pcngrn:
+    type: float
+    low: 0
+    high: 1
+    info: massic fraction of nitrogen in grains (unitless)
+  pltpop:
+    type: float
+    low: 0
+    high: .inf
+    info: plant population density (plant/m2)
+  rain:
+    type: float
+    low: 0
+    high: .inf
+    info: rainfalls for the current day (mm/d)
+  srad:
+    type: float
+    low: 0
+    high: .inf
+    info: solar radiations during the current day (MJ/m2/d)
+  swfac:
+    type: float
+    low: 0
+    high: 1
+    info: index of plant water stress (unitless)
+  tleachd:
+    type: float
+    low: 0
+    high: .inf
+    info: daily nitrate leaching (kg/ha)
+  tmax:
+    type: float
+    low: 0
+    high: 100
+    info: maximum temparature for current day (C)
+  tmin:
+    type: float
+    low: 0
+    high: 100
+    info: minimum temparature for current day (C)
+  tnoxd:
+    type: float
+    low: 0
+    high: .inf
+    info: daily nitrogen denitrification (kg/ha)
+  trnu:
+    type: float
+    low: 0
+    high: .inf
+    info: daily nitrogen plant population uptake (kg/ha)
+  wtnup:
+    type: float
+    low: 0
+    high: .inf
+    info: cumulative plant population  nitrogen uptake (kg/ha)
+  xlai:
+    type: float
+    low: 0
+    high: .inf
+    info: plant population leaf area index (m2_leaf/m2_soil)
+  ydor:
+    type: int
+    low: 0000000
+    high: 9999999
+    info: simulation date (YYYYDDD)
+
+################################################################
+################################################################
+config:
+  all:
+    - yrdoy
+    - nstres
+    - istage
+    - grnwt
+    - topwt
+    - pltpop
+    - swfac
+    - pcngrn
+    - tleachd
+    - tnoxd
+    - wtnup
+    - cleach
+    - cnox
+    - cumsumfert
+    - xlai
+    - trnu
+    - rain
+    - tmin
+    - tmax
+    - srad
+    - dtt
+  fertilize:
+    - yrdoy
+    - nstres
+    - istage
+    - grnwt
+    - topwt
+    - pltpop
+    - swfac
+    - xlai
+    - rain
+    - tmin
+    - tmax
+    - srad
+    - dtt

@@ -14,9 +14,10 @@ from copy import deepcopy
 import time
 from pympler.tracker import SummaryTracker
 
+from pprint import pprint
 
 def fertilization_policy(YRDOY):
-    return {'anfer': 1}
+    # return {'anfer': 1}
     fertilization_dic = {
         1982097: 27,
         1982102: 35,
@@ -36,7 +37,7 @@ def interact_with_env(env, verbose=True):
         YRDOY = state['yrdoy']
         action = fertilization_policy(YRDOY)
         if verbose:
-            print(state)
+            pprint(state)
             print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
         res = env.step(action)
         new_state, reward, done, info = res
@@ -61,6 +62,7 @@ def _multiprocess_trial_func(args):
         env.save_log = False
         for _ in range(10):
             interactions = interact_with_env(env, verbose=False)
+            print(interactions)
             all_interactions.append(interactions)
             env.reset()
         if env.save_log in env_args:
@@ -91,7 +93,11 @@ if __name__ == '__main__':
     if try_interact:
         try:
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            env.reset()
+            # env.reset()
+            # state_variables = list(env.state.keys())
+            # with open('./state_variables.txt', 'w') as f_:
+            #     for state_variables in state_variables:
+            #         f_.write(f'{state_variables}\n')
             env.save_log = True
             interaction = interact_with_env(env)
             env.render(type='ts',

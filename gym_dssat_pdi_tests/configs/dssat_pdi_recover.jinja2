@@ -1,7 +1,7 @@
+---
 logging:
   # level: debug
   level: error
-
 data:
   YRDOY: int
   NSTRES: float
@@ -20,11 +20,9 @@ data:
   CumSumFert: float
   XLAI: float
   TRNU: float
-
 plugins:
-
   pycall:
-
+  trace: ~
     on_data:
       YRDOY: |
         yrdoy = YRDOY
@@ -58,24 +56,24 @@ plugins:
         xlai = XLAI
       TRNU: |
         trnu = TRNU
-
     on_event:
-
       start_client:
         exec: |
-          import zmq
-          import json
-          import logging
-          import pdb
-          from gym_dssat_pdi.envs.utils.utils import convert
-          import numpy as np
-          context = zmq.Context()
-          print('Starting env client')
-          client = context.socket(zmq.PAIR)
-          client.setsockopt(zmq.LINGER, 0)
-          client.connect('tcp://localhost:{{'{0:d}'.format(port)}}')
-          done = False
-
+          try:
+            import zmq
+            import json
+            import logging
+            import pdb
+            from gym_dssat_pdi.envs.utils.utils import convert
+            import numpy as np
+            context = zmq.Context()
+            print('Starting env client')
+            client = context.socket(zmq.PAIR)
+            client.setsockopt(zmq.LINGER, 0)
+            client.connect('tcp://localhost:{{'{0:d}'.format(port)}}')
+            done = False
+          except Exception as e:
+            logging.exception(e)
       stop_client:
         exec: |
           done = True
@@ -84,7 +82,6 @@ plugins:
           client.close()
           context.term()
           print('Client closed')
-
       interact:
         with: {anfer: $ANFER}
         exec: |

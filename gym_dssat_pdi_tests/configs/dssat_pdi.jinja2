@@ -82,18 +82,18 @@ plugins:
                 return obj.tolist()
               return json.JSONEncoder.default(self, obj)
           context = zmq.Context()
-          print('Starting client')
-          client = context.socket(zmq.PAIR)
+          client = context.socket(zmq.REQ)
           client.setsockopt(zmq.LINGER, 0)
           client.connect('tcp://localhost:{{'{0:d}'.format(port)}}')
           done = False
+          print('Client started')
       stop_client:
         exec: |
           done = True
           message = {'done': done, 'state': {}}
           client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
           client.close()
-          context.term()
+          context.destroy()
           print('Client closed')
       interact:
         with: {anfer: $ANFER}

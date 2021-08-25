@@ -37,9 +37,8 @@ def interact_with_env(env, verbose=True):
         YRDOY = state['yrdoy']
         action = fertilization_policy(YRDOY)
         if verbose:
-            if action["anfer"]>0:
-                pprint(state)
-                print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
+            pprint(state)
+            print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
         res = env.step(action)
         new_state, reward, done, info = res
         interactions.append(res)
@@ -67,6 +66,7 @@ def _multiprocess_trial_func(args):
             env.reset()
         if env.save_log in env_args:
             time.sleep(1)
+        print(interactions)
         return interactions
     except Exception as e:
         logging.exception(e)
@@ -92,14 +92,15 @@ if __name__ == '__main__':
     try_multiproc = not True
     if try_interact:
         try:
+            interactions = []
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            # env.reset()
             # state_variables = list(env.state.keys())
             # with open('./state_variables.txt', 'w') as f_:
             #     for state_variables in state_variables:
             #         f_.write(f'{state_variables}\n')
             env.save_log = True
-            interaction = interact_with_env(env)
+            interaction = interact_with_env(env, verbose=False)
+            interactions.append(interaction)
             env.render(type='ts',
                        feature_name_1='nstres',
                        feature_name_2='grnwt')
@@ -107,6 +108,9 @@ if __name__ == '__main__':
                        cumsum=True)
             env.render(type='reward',
                        cumsum=False)
+            env.reset()
+            interaction = interact_with_env(env, verbose=False)
+            interactions.append(interaction)
         except Exception as e:
             logging.exception(e)
         finally:
@@ -115,7 +119,7 @@ if __name__ == '__main__':
         with DssatPdiHandler():  # avoid zombies in code crashes
             try:
                 tracker = SummaryTracker()
-                raw_results = multiprocess_trial(env_args, cwd, rep=10)
+                raw_results = multiprocess_trial(env_args, cwd, rep=100)
                 # print(raw_results)
             except Exception as e:
                 logging.exception(e)

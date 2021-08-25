@@ -68,14 +68,15 @@ class DssatPdi(gym.Env):
                 f_.write('\n********************************\n')
                 f_.write(utils.get_time_stamp())
                 f_.write('\n********************************\n')
-            process = Popen(pdi_command, stdout=f_, shell=False, universal_newlines=True,
-                            cwd=self.tmp_folder)
+            process = Popen(pdi_command, stdout=f_, shell=False, universal_newlines=True, cwd=self.tmp_folder)
             self.client_process_pid = process.pid
 
     def _launch_server(self):
         self.context = zmq.Context()
-        self.server = self.context.socket(zmq.PAIR)
+        # self.server = self.context.socket(zmq.PAIR)
+        self.server = self.context.socket(zmq.REP)
         self.server.setsockopt(zmq.LINGER, 0)
+        self.server.setsockopt(zmq.IMMEDIATE, 1)
         self.port = self.server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
     def _write_pdi_yaml(self):
@@ -94,8 +95,6 @@ class DssatPdi(gym.Env):
         if state:
             state = utils._post_treat_state(state)
         self.done = message['done']
-        if self.done:
-            self._close_server()
         return state
 
     def _get_reward(self, next_state):
@@ -130,16 +129,14 @@ class DssatPdi(gym.Env):
                 shutil.copyfile(f'{self.files_prefix}{name}', f'{self.tmp_folder}/{name}')
 
     def _close_client(self):
-        try:
+        if not self.done:
             utils.recursively_kill_process(self.client_process_pid)
-        except Exception as e:
-            logging.exception(e)
         gc.collect()
 
     def _close_server(self):
         try:
             self.server.close()
-            self.context.term()
+            self.context.destroy()
         except Exception as e:
             # pass
             logging.exception(e)
@@ -159,34 +156,36 @@ class DssatPdi(gym.Env):
                 action_js = json.dumps(action, cls=utils.NumpyEncoder).encode('utf-8')
                 self.server.send(action_js)
                 state = self._get_state()
-                if state:
-                    self.history['state'].append(state)
-                    self.history['action'].append(action)
-                    reward = self._get_reward(state)
-                    self.history['reward'].append(reward)
-                    self.state = state
-                    self.reward = reward
-                    done = self.done
-                    info = self._get_info()
-                    self.t += 1
-                    return state, reward, done, info
-                else:
+                if self.done:
+                    self._close_client()
                     return None, None, self.done, None
+                self.history['state'].append(state)
+                self.history['action'].append(action)
+                reward = self._get_reward(state)
+                self.history['reward'].append(reward)
+                self.state = state
+                self.reward = reward
+                done = self.done
+                info = self._get_info()
+                self.t += 1
+                return state, reward, done, info
 
 
         except Exception as e:
             logging.exception(e)
 
     def reset(self):
+        if not self.done:
+            self._close_client()
+        self._launch_client()
         self.done = False
         self.t = 0
-        self._close_client()
-        self._launch_client()
         self.history = {'state': [], 'action': [], 'reward': []}
-        self._get_state()
+        self.server.send(b'')  # to respect REQ/REP scheme
+        self.state = self._get_state()
 
     def render(self, type, *args, **kwargs):
-        if 'type' == 'ts':
+        if type == 'ts':
             rendering.render_temporal_series(history=self.history, *args, **kwargs)
         else:
             rendering.render_reward(history=self.history, *args, **kwargs)

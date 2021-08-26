@@ -24,6 +24,7 @@ data:
   TMIN: float
   TMAX: float
   SRAD: float
+  DTT: float
 
 plugins:
   trace: ~
@@ -69,6 +70,8 @@ plugins:
         tmax = TMAX
       SRAD: |
         srad = SRAD
+      DTT: |
+        dtt = DTT
     on_event:
       start_client:
         exec: |
@@ -118,6 +121,7 @@ plugins:
           'tmin': tmin,
           'tmax': tmax,
           'srad': srad,
+          'dtt': DTT
           }
           message = {'done':done, 'state':state}
           message_js = json.dumps(message, cls=NumpyEncoder)

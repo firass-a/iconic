@@ -86,6 +86,7 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': '/home/rgautron/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
+        'env_setting': 'fertilize'
     }
     done = False
     try_interact = True
@@ -101,6 +102,8 @@ if __name__ == '__main__':
             env.save_log = True
             interaction = interact_with_env(env, verbose=False)
             interactions.append(interaction)
+            if env.save_log in env_args:
+                time.sleep(1)
             env.render(type='ts',
                        feature_name_1='nstres',
                        feature_name_2='grnwt')
@@ -109,8 +112,13 @@ if __name__ == '__main__':
             env.render(type='reward',
                        cumsum=False)
             env.reset()
+            env.get_env_info()
+            pdb.set_trace()
             interaction = interact_with_env(env, verbose=False)
+            if env.save_log in env_args:
+                time.sleep(1)
             interactions.append(interaction)
+            # print(interactions)
         except Exception as e:
             logging.exception(e)
         finally:

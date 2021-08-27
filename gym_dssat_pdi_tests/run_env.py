@@ -113,8 +113,8 @@ if __name__ == '__main__':
         'experiment_number': 3,
     }
     done = False
-    try_interact = not True
-    try_multiproc = True
+    try_interact = True
+    try_multiproc = not True
     if try_interact:
         with DssatPdiHandler():
             try:

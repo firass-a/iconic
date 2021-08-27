@@ -3,6 +3,8 @@ logging:
   level: error
 
 data:
+### random seed
+  RSEED1: int
 ### action
   ANFER: float
   AMIR: float
@@ -90,7 +92,7 @@ plugins:
           context = zmq.Context()
           client = context.socket(zmq.REQ)
           client.setsockopt(zmq.LINGER, 0)
-          client.connect('tcp://localhost:{{'{0:d}'.format(port)}}')
+          client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
           done = False
           print('Client started')
       stop_client:
@@ -101,6 +103,10 @@ plugins:
           client.close()
           context.destroy()
           print('Client closed')
+      set_rseed:
+        with: {rseed1: $RSEED1}
+        exec:
+          rseed1[()] = {{ '{0:d}'.format(rseed1) }}
       interact:
         exec: |
           state = {'yrdoy': yrdoy,

@@ -4,7 +4,7 @@ import multiprocessing
 import faulthandler
 
 faulthandler.enable()
-from gym_dssat_pdi.envs.utils.utils import DssatPdiHandler
+from gym_dssat_pdi.envs.utils import utils
 import os
 import gc
 
@@ -55,11 +55,12 @@ def default_policy(YRDOY):
 def interact_with_env(env, verbose=True):
     interactions = []
     while not env.done:
-        state = env.observation
-        YRDOY = state['yrdoy']
+        observation = env.observation
+        observation_list = env.observation_dict_to_array(observation)
+        YRDOY = observation['yrdoy']
         action = default_policy(YRDOY)
         if verbose:
-            pprint(state)
+            pprint(observation)
             print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
         res = env.step(action)
         new_state, reward, done, info = res
@@ -119,7 +120,7 @@ if __name__ == '__main__':
     try_interact = True
     try_multiproc = not True
     if try_interact:
-        with DssatPdiHandler():
+        with utils.DssatPdiHandler():
             try:
                 interactions = []
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
@@ -151,7 +152,7 @@ if __name__ == '__main__':
             finally:
                 env.close()
     if try_multiproc:
-        with DssatPdiHandler():  # avoid zombies in code crashes
+        with utils.DssatPdiHandler():  # avoid zombies in code crashes
             try:
                 tracker = SummaryTracker()
                 raw_results = multiprocess_trial(env_args, cwd, rep=100)

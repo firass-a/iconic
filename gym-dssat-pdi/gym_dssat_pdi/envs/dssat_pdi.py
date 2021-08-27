@@ -90,7 +90,7 @@ class DssatPdi(gym.Env):
         setting = self.mode
         if setting not in setting_dict:
             raise ValueError(f'Authorized values for the "mode" parameter  to be in {[*setting_dict]}')
-        self.observation_variables = setting_dict[setting]['state']
+        self.observation_variables = sorted(setting_dict[setting]['state'])
         self.action_variables = setting_dict[setting]['action']
 
     def _make_gym_state_space(self):
@@ -287,6 +287,10 @@ class DssatPdi(gym.Env):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
         gc.collect()
 
+    def set_seed(self, seed=None):
+        self.random_generator, self.seed = seeding.np_random(seed)
+        return self.seed
+
     def render(self, type, *args, **kwargs):
         authorized_types = ['ts', 'reward']
         if type not in authorized_types:
@@ -301,6 +305,10 @@ class DssatPdi(gym.Env):
                            action_variables=self.action_variables,
                            state_variables=self.observation_variables)
 
-    def set_seed(self, seed=None):
-        self.random_generator, self.seed = seeding.np_random(seed)
-        return self.seed
+
+    def observation_dict_to_array(self, dict):
+        if dict:
+            values = [dict[ordered_key] for ordered_key in self.observation_variables]
+            return np.concatenate(values, axis=None)
+        else:
+            return []

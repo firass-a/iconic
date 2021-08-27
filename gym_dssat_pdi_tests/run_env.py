@@ -55,7 +55,7 @@ def default_policy(YRDOY):
 def interact_with_env(env, verbose=True):
     interactions = []
     while not env.done:
-        state = env.state
+        state = env.observation
         YRDOY = state['yrdoy']
         action = default_policy(YRDOY)
         if verbose:

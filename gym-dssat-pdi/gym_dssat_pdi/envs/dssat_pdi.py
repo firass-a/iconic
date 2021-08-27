@@ -51,7 +51,6 @@ class DssatPdi(gym.Env):
         self._make_gym_state_space()
         self.action_space = None
         self._make_gym_action_space()
-        pdb.set_trace()
         if auxiliary_files_names:
             self.auxiliary_files_names = auxiliary_files_names
         else:
@@ -60,7 +59,7 @@ class DssatPdi(gym.Env):
         self.log_saving_path = log_saving_path
         self.cwd = os.getcwd()
         self.reward_func = rewards.get_reward_function(mode)
-        self.history = {'state': [], 'action': [], 'reward': []}
+        self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
         self.random_generator = None
         self.seed = None
@@ -82,7 +81,7 @@ class DssatPdi(gym.Env):
         self._make_fileX_template()
         self._write_fileX_template()
         self._get_sockets_()
-        self.state, self._state = self._get_state()
+        self.observation, self._state = self._get_state()
 
     def _load_config(self):
         config = yaml.load(self.env_yaml_config, Loader=yaml.FullLoader)
@@ -193,13 +192,13 @@ class DssatPdi(gym.Env):
         message = self.server.recv().decode('utf-8')
         message = json.loads(message)
         self.done = message['done']
-        state = message['state']
         _state = message['state']
-        if state:
-            _state = utils._post_treat_state(state)
-            state = utils._filter_state(full_state=_state,
+        observation = message['state']
+        if _state:
+            _state = utils._post_treat_state(_state)
+            observation = utils._filter_state(full_state=_state,
                                         state_variables=self.observation_variables)
-        return state, _state
+        return observation, _state
 
     def _get_reward(self, _next_state):
         _previous_state = self._state
@@ -208,7 +207,6 @@ class DssatPdi(gym.Env):
         return reward
 
     def _get_info(self):
-        state = self.state
         return {}
 
     def _get_sockets_(self):
@@ -247,24 +245,24 @@ class DssatPdi(gym.Env):
             while True:
                 action_js = json.dumps(action_dict, cls=utils.NumpyEncoder).encode('utf-8')
                 self.server.send(action_js)
-                state, _state = self._get_state()
+                observation, _state = self._get_state()
                 if self.done:
                     self._close_client()
                     return None, None, self.done, None
-                self.history['state'].append(state)
+                self.history['observation'].append(observation)
                 self.history['action'].append(action_dict)
                 self._history['state'].append(_state)
                 self._history['action'].append(action_dict)
                 reward = self._get_reward(_state)
                 self.history['reward'].append(reward)
                 self._history['reward'].append(reward)
-                self.state = state
+                self.observation = observation
                 self._state = _state
                 self.reward = reward
                 done = self.done
                 info = self._get_info()
                 self.t += 1
-                return state, reward, done, info
+                return observation, reward, done, info
         except Exception as e:
             logging.exception(e)
 
@@ -277,11 +275,11 @@ class DssatPdi(gym.Env):
         self._launch_client()
         self.done = False
         self.t = 0
-        self.history = {'state': [], 'action': [], 'reward': []}
+        self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
         self.server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
-        self.state, self.state_ = self._get_state()
-        return np.array(self.state, dtype=np.float32)
+        self.observation, self.state_ = self._get_state()
+        return self.observation
 
     def close(self):
         self._close_server()

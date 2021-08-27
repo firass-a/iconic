@@ -21,7 +21,7 @@ def make_render_folder(folder_path):
 def render_temporal_series(history, feature_name_1, feature_name_2=None, layout_dict=None, saving_path=None,
                            folder_path='./render', *args, **kwargs):
     make_render_folder(folder_path)
-    trajectory = history['state']
+    trajectory = history['observation']
     trajectory = transpose_dicts(trajectory)
     y1 = trajectory[feature_name_1]
     x = [int(str(DOY)[-3:]) for DOY in trajectory['yrdoy']]
@@ -42,7 +42,7 @@ def render_temporal_series(history, feature_name_1, feature_name_2=None, layout_
 
 def render_reward(history, saving_path=None, folder_path='./render', cumsum=True, *args, **kwargs):
     make_render_folder(folder_path)
-    trajectory = history['state']
+    trajectory = history['observation']
     trajectory = transpose_dicts(trajectory)
     reward = history['reward']
     x = [int(str(DOY)[-3:]) for DOY in trajectory['yrdoy']]

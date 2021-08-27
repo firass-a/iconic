@@ -11,6 +11,14 @@ import json
 import numpy as np
 from pprint import pprint
 
+__copyright__ = 'Copyright CGIAR, Inria and CIRAD'
+__credits__ = [
+    'Romain Gautron',
+    'Emilio Padrón González',
+]
+__license__ = 'BSD 3-Clause'
+__author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
+
 class DssatPdiHandler:
     """
     from https://stackoverflow.com/questions/320232/ensuring-subprocesses-are-dead-on-exiting-python-program

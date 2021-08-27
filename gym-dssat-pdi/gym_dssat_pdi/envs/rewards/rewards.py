@@ -1,5 +1,13 @@
 import pdb
 
+__copyright__ = 'Copyright CGIAR, Inria and CIRAD'
+__credits__ = [
+    'Romain Gautron',
+    'Emilio Padrón González',
+]
+__license__ = 'BSD 3-Clause'
+__author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
+
 def fertilization_reward(previous_state, next_state, history):
     reward = None
     last_action = history['action'][-1]['anfer']

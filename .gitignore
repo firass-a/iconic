@@ -18,3 +18,4 @@ share/python-wheels/
 *.egg
 MANIFEST
 .pdf
+.log

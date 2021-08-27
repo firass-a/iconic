@@ -1,25 +1,32 @@
 import gym
 import gym.spaces as spaces
+from gym_dssat_pdi.envs.utils import utils
+from gym_dssat_pdi.envs.rendering import rendering
+from gym_dssat_pdi.envs.rewards import rewards
+import numpy as np
 from gym.utils import seeding
 from subprocess import Popen
 import zmq
 import json
 import yaml
-
-from gym_dssat_pdi.envs.utils import utils
-from gym_dssat_pdi.envs.rendering import rendering
-from gym_dssat_pdi.envs.rewards import rewards
-
 import tempfile
 import shutil
 import logging
 import os
 import gc
-import time
+import pkgutil
 
+import time
 import pdb
 
-import pkgutil
+__copyright__ = 'Copyright CGIAR, Inria and CIRAD'
+__credits__ = [
+    'Romain Gautron',
+    'Emilio Padrón González',
+]
+__license__ = 'BSD 3-Clause'
+__author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
+
 
 class DssatPdi(gym.Env):
 
@@ -32,7 +39,7 @@ class DssatPdi(gym.Env):
         self.fileX_name = f'{fileX_prefix}{fileX_extension}'
         self.mode = mode
         self.action_variables = None
-        self.state_variables = None
+        self.observation_variables = None
         self.fileX_template = pkgutil.get_data(__name__, f'configs/{fileX_prefix}.jinja2').decode('utf-8')
         self.fileX = None
         self.pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
@@ -40,6 +47,11 @@ class DssatPdi(gym.Env):
         self.env_yaml_config = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
         self.config = None
         self._load_config()
+        self.observation_space = None
+        self._make_gym_state_space()
+        self.action_space = None
+        self._make_gym_action_space()
+        pdb.set_trace()
         if auxiliary_files_names:
             self.auxiliary_files_names = auxiliary_files_names
         else:
@@ -79,8 +91,64 @@ class DssatPdi(gym.Env):
         setting = self.mode
         if setting not in setting_dict:
             raise ValueError(f'Authorized values for the "mode" parameter  to be in {[*setting_dict]}')
-        self.state_variables = setting_dict[setting]['state']
+        self.observation_variables = setting_dict[setting]['state']
         self.action_variables = setting_dict[setting]['action']
+
+    def _make_gym_state_space(self):
+        observation_space = {}
+        state_data = self.config['state']
+        for observation_variable in self.observation_variables:
+            state_variable_dic = state_data[observation_variable]
+            if 'type' not in [*state_variable_dic]:
+                raise ValueError(f'"type" must be specified for state variable "{observation_variable}"')
+            type_ = state_variable_dic['type']
+            if type_ == 'float' or type_ == 'int':
+                if ('high' not in [*state_variable_dic]) or ('low' not in [*state_variable_dic]):
+                    raise ValueError(f'"high" and "low" must be specified for state variable "{observation_variable}"')
+                low = state_variable_dic['low']
+                high = state_variable_dic['high']
+            if type_ == 'float':
+                space = spaces.Box(low=low, high=high, shape=())
+            elif type_ == 'discrete':
+                if 'size' not in [*state_variable_dic]:
+                    raise ValueError(f'"size" must be specified for state variable "{observation_variable}"')
+                size = state_variable_dic['size']
+                space = spaces.Discrete(size)
+            elif type_ == 'int':
+                size = high - low + 1
+                space = spaces.Discrete(size)
+            else:
+                raise ValueError(f'State variable "{observation_variable}" not in {[*state_data]}')
+            observation_space[observation_variable] = space
+        self.observation_space = spaces.Dict(observation_space)
+
+    def _make_gym_action_space(self):
+        action_space = {}
+        action_data = self.config['action']
+        for action_variable in self.action_variables:
+            action_variable_dic = action_data[action_variable]
+            if 'type' not in [*action_variable_dic]:
+                raise ValueError(f'"type" must be specified for action variable "{action_variable}"')
+            type_ = action_variable_dic['type']
+            if type_ == 'float' or type_ == 'int':
+                if ('high' not in [*action_variable_dic]) or ('low' not in [*action_variable_dic]):
+                    raise ValueError(f'"high" and "low" must be specified for action variable "{action_variable_dic}"')
+                low = action_variable_dic['low']
+                high = action_variable_dic['high']
+            if type_ == 'float':
+                space = spaces.Box(low=low, high=high, shape=())
+            elif type_ == 'discrete':
+                if 'size' not in [*action_variable_dic]:
+                    raise ValueError(f'"size" must be specified for action variable "{action_variable_dic}"')
+                size = action_variable_dic['size']
+                space = spaces.Discrete(size)
+            elif type_ == 'int':
+                size = high - low + 1
+                space = spaces.Discrete(size)
+            else:
+                raise ValueError(f'Action variable "{action_variable}" not in {[*action_data]}')
+            action_space[action_variable] = space
+        self.action_space = spaces.Dict(action_space)
 
     def _make_fileX_template(self):
         fileX_template_values = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig}
@@ -121,7 +189,6 @@ class DssatPdi(gym.Env):
                                                          template_string=self.pdi_yaml_template)
         utils.save_file(saving_path=f'{self.tmp_folder}/dssat-pdi.yml', content=self.pdi_yaml)
 
-
     def _get_state(self):
         message = self.server.recv().decode('utf-8')
         message = json.loads(message)
@@ -131,7 +198,7 @@ class DssatPdi(gym.Env):
         if state:
             _state = utils._post_treat_state(state)
             state = utils._filter_state(full_state=_state,
-                                        state_variables=self.state_variables)
+                                        state_variables=self.observation_variables)
         return state, _state
 
     def _get_reward(self, _next_state):
@@ -214,6 +281,7 @@ class DssatPdi(gym.Env):
         self._history = {'state': [], 'action': [], 'reward': []}
         self.server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
         self.state, self.state_ = self._get_state()
+        return np.array(self.state, dtype=np.float32)
 
     def close(self):
         self._close_server()
@@ -233,7 +301,7 @@ class DssatPdi(gym.Env):
     def get_env_info(self):
         utils.get_env_info(config=self.config,
                            action_variables=self.action_variables,
-                           state_variables=self.state_variables)
+                           state_variables=self.observation_variables)
 
     def set_seed(self, seed=None):
         self.random_generator, self.seed = seeding.np_random(seed)

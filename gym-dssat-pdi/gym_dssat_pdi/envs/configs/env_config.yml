@@ -40,9 +40,8 @@ state:
     info: grain weight (kg/ha)  # dry matter?
   istage:
     type: discrete
-    low: 1
-    high: 10
     info: DSSAT maize growing stage (index in order 7, 8, 9, 1, 2, 3, 4, 5 ,6)
+    size: 9
 #1 = End of Juvenil Phase
 #2 = Floral Initiation
 #3 = 75% of Silking
@@ -118,12 +117,11 @@ state:
     high: .inf
     info: plant population leaf area index (m2_leaf/m2_soil)
   yrdoy:
-    type: int
-    low: 0000000
-    high: 9999999
+    type: discrete
     info: simulation date (YYYYDDD)
+    size: 366
   topwt:
-    type: int
+    type: float
     low: 0
     high: .inf
     info: above the ground population biomass (kg/ha)

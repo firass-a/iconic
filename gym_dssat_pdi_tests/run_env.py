@@ -111,7 +111,7 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': '/home/rgautron/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
-        'mode': 'fertilization',
+        'mode': 'all',
         'experiment_number': 3,
         'seed': 123456,
     }

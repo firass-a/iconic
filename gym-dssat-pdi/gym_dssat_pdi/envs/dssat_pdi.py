@@ -14,20 +14,18 @@ import shutil
 import logging
 import os
 import gc
-import pdb
 import time
 
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location, mode='fertilization', experiment_number=1, file_X_prefix='UFGA8201',
-                 fileX_extension='.MZX', log_saving_path=None, env_setting='all', auxiliary_files_names=None,
-                 files_prefix='./', random_weather=True):
+    def __init__(self, run_dssat_location, experiment_number=1, file_X_prefix='UFGA8201', fileX_extension='.MZX',
+                 log_saving_path=None, mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True):
         self.action_space = spaces.Dict({'anfer': spaces.Box(low=0, high=200, shape=())})
         # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
         self.experiment_number = experiment_number
         self.file_X_name = f'{file_X_prefix}{fileX_extension}'
-        self.env_setting = env_setting
+        self.mode = mode
         self.config = None
         self.action_variables = None
         self.state_variables = None
@@ -42,8 +40,7 @@ class DssatPdi(gym.Env):
         self.run_dssat_location = run_dssat_location
         self.log_saving_path = log_saving_path
         self.cwd = os.getcwd()
-        self.mode = mode
-        self.reward_func = rewards.fertilization_reward if mode == 'fertilization' else rewards.fertilization_reward
+        self.reward_func = rewards.get_reward_function(mode)
         self.history = {'state': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
         self.rseed1 = None
@@ -67,7 +64,7 @@ class DssatPdi(gym.Env):
             config = yaml.load(f_, Loader=yaml.FullLoader)
             self.config = config
             setting_dict = self.config['setting']
-            setting = self.env_setting
+            setting = self.mode
             if setting not in setting_dict:
                 raise ValueError(f'Authorized values for the parameter "env_setting" to be in {[*setting_dict]}')
             self.state_variables = setting_dict[setting]['state']

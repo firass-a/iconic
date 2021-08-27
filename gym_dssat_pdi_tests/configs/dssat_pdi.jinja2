@@ -3,10 +3,13 @@ logging:
   level: error
 
 data:
+### action
+  ANFER: float
+  AMIR: float
+### state
   YRDOY: int
   NSTRES: float
   ISTAGE: int
-  ANFER: float
   GRNWT: float
   TOPWT: float
   PLTPOP: float
@@ -99,7 +102,6 @@ plugins:
           context.destroy()
           print('Client closed')
       interact:
-        with: {anfer: $ANFER}
         exec: |
           state = {'yrdoy': yrdoy,
           'nstres': nstres,
@@ -128,4 +130,11 @@ plugins:
           client.send(message_js.encode('utf-8'))
           action = client.recv().decode('utf-8')
           action = json.loads(action)
+      fertilize:
+        with: {anfer: $ANFER}
+        exec:
           anfer[()] = action['anfer']
+      irrigate:
+        with: {amir: $AMIR}
+        exec:
+          amir[()] = action['amir']

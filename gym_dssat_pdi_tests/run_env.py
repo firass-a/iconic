@@ -16,18 +16,40 @@ from pympler.tracker import SummaryTracker
 
 from pprint import pprint
 
+
 def fertilization_policy(YRDOY):
-    # return {'anfer': 1}
     fertilization_dic = {
         1982097: 27,
         1982102: 35,
         1982137: 54,
     }
-    if YRDOY not in fertilization_dic:
-        anfer = 0
-    else:
+    irrigation_dic = {
+        1982063: 13,
+        1982077: 10,
+        1982094: 10,
+        1982107: 13,
+        1982111: 18,
+        1982122: 25,
+        1982126: 25,
+        1982129: 13,
+        1982132: 15,
+        1982134: 19,
+        1982137: 20,
+        1982141: 20,
+        1982148: 15,
+        1982158: 19,
+        1982161: 4,
+        1982162: 25,
+    }
+    if YRDOY in fertilization_dic:
         anfer = fertilization_dic[YRDOY]
-    return {'anfer': anfer}
+    else:
+        anfer = 0
+    if YRDOY in irrigation_dic:
+        amir = irrigation_dic[YRDOY]
+    else:
+        amir = 0
+    return {'anfer': anfer, 'amir': amir}
 
 
 def interact_with_env(env, verbose=True):
@@ -53,6 +75,7 @@ def multiprocess_trial(env_args, cwd, rep):
     with multiprocessing.Pool() as pool:
         raw_result = list(pool.imap_unordered(_multiprocess_trial_func, arguments))
     return raw_result
+
 
 def _multiprocess_trial_func(args):
     try:
@@ -86,7 +109,8 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': '/home/rgautron/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
-        'env_setting': 'fertilize'
+        'mode': 'fertilization',
+        'experiment_number': 3,
     }
     done = False
     try_interact = True
@@ -112,8 +136,7 @@ if __name__ == '__main__':
             env.render(type='reward',
                        cumsum=False)
             env.reset()
-            env.get_env_info()
-            pdb.set_trace()
+            # env.get_env_info()
             interaction = interact_with_env(env, verbose=False)
             if env.save_log in env_args:
                 time.sleep(1)

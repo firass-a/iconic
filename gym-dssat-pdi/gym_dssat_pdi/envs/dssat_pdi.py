@@ -4,6 +4,7 @@ from subprocess import Popen
 import zmq
 import json
 import yaml
+
 from gym_dssat_pdi.envs.utils import utils
 from gym_dssat_pdi.envs.rendering import rendering
 from gym_dssat_pdi.envs.rewards import rewards
@@ -16,15 +17,17 @@ import os
 import gc
 import time
 
+import pdb
+
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location, experiment_number=1, file_X_prefix='UFGA8201', fileX_extension='.MZX',
+    def __init__(self, run_dssat_location, experiment_number=1, fileX_prefix='UFGA8201', fileX_extension='.MZX',
                  log_saving_path=None, mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True):
         self.action_space = spaces.Dict({'anfer': spaces.Box(low=0, high=200, shape=())})
         # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
         self.experiment_number = experiment_number
-        self.file_X_name = f'{file_X_prefix}{fileX_extension}'
+        self.fileX_name = f'{fileX_prefix}{fileX_extension}'
         self.mode = mode
         self.config = None
         self.action_variables = None
@@ -43,10 +46,11 @@ class DssatPdi(gym.Env):
         self.reward_func = rewards.get_reward_function(mode)
         self.history = {'state': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
-        self.rseed1 = None
+        self.rseed1 = 2150
         self.random_weather = random_weather
-        self.mewth_int = None
-        self._set_mewth_int()
+        self.wther = 'W' if random_weather else 'M'
+        self.ferti = 'L' if mode in ['all', 'irrigation'] else 'R'
+        self.irrig = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.done = False
         self.t = 0
         self.port = None
@@ -56,6 +60,9 @@ class DssatPdi(gym.Env):
         self.files_prefix = files_prefix
         self.tmp_folder = None
         self._make_tmp_folder()
+        self.fileX_template = None
+        self._make_fileX_template()
+        self._write_fileX_template()
         self._get_sockets_()
         self.state, self._state = self._get_state()
 
@@ -70,9 +77,17 @@ class DssatPdi(gym.Env):
             self.state_variables = setting_dict[setting]['state']
             self.action_variables = setting_dict[setting]['action']
 
+    def _make_fileX_template(self):
+        fileX_template = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig}
+        self.fileX_template = utils.fill_template(value_dic=fileX_template,
+                                                  template_path='./configs/UFGA8201.jinja2')
+
+    def _write_fileX_template(self):
+        utils.save_file(saving_path=f'{self.tmp_folder}/{self.fileX_name}', content=self.fileX_template)
+
     def _launch_client(self):
         # print(f'Starting env client: port {self.port}')
-        pdi_command = f'pdirun {self.run_dssat_location} C {self.file_X_name} {self.experiment_number}'
+        pdi_command = f'pdirun {self.run_dssat_location} C {self.fileX_name} {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path
@@ -97,15 +112,13 @@ class DssatPdi(gym.Env):
     def _write_pdi_yaml(self):
         value_dic = {'port': self.port,
                      'rseed1': self.rseed1,
-                     'iferi': 'L',
-                     'mewth_int': self.mewth_int,
-                    }
+                     }
         # utils.write_template1(value_dic=value_dic,
         #                       template_string=self.dssat_pdi_yaml_template_string,
         #                       saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
-        utils.write_template2(value_dic=value_dic,
-                              template_path='./configs/dssat_pdi.jinja2',
-                              saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
+        utils.write_template_from_file(value_dic=value_dic,
+                                       template_path='./configs/dssat_pdi.jinja2',
+                                       saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
 
     def _get_state(self):
         message = self.server.recv().decode('utf-8')
@@ -141,7 +154,7 @@ class DssatPdi(gym.Env):
         self.tmp_folder = tempfile.mkdtemp()
         # with open(f'{self.tmp_folder}/{self.file_X_name}', 'wb') as f_:
         #     f_.write(self.file_X_bytes)
-        shutil.copyfile(f'./configs/{self.file_X_name}', f'{self.tmp_folder}/{self.file_X_name}')
+        # shutil.copyfile(f'./configs/{self.file_X_name}', f'{self.tmp_folder}/{self.file_X_name}')
         if self.auxiliary_files_names:
             self._copy_auxiliary_files(self.auxiliary_files_names)
 

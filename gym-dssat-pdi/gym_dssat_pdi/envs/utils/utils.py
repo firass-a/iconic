@@ -27,21 +27,24 @@ class DssatPdiHandler:
         except:
             os.killpg(0, signal.SIGKILL)
 
-
-def write_template1(value_dic, template_string, saving_path):
-    template = jinja2.Environment(loader=jinja2.BaseLoader).from_string(template_string)
-    output = template.render(**value_dic)
-    with open(saving_path, mode='w') as f_:
-        f_.write(output)
-
-
-def write_template2(value_dic, template_path, saving_path):
-    with open(template_path) as f_:
+def fill_template(value_dic, template_path):
+    with open(template_path, mode='r') as f_:
         template = jinja2.Template(f_.read(), trim_blocks=True, lstrip_blocks=True)
-    output = template.render(**value_dic)
-    with open(saving_path, mode='w') as f_:
-        f_.write(output)
+    filled_template = template.render(**value_dic)
+    return filled_template
 
+def write_template_from_string(value_dic, template_string, saving_path):
+    template = jinja2.Environment(loader=jinja2.BaseLoader).from_string(template_string)
+    filled_template = template.render(**value_dic)
+    save_file(saving_path, filled_template)
+
+def write_template_from_file(value_dic, template_path, saving_path):
+    filled_template = fill_template(value_dic, template_path)
+    save_file(saving_path, filled_template)
+
+def save_file(saving_path, content):
+    with open(saving_path, mode='w') as f_:
+        f_.write(content)
 
 def convert(x):
     if hasattr(x, "tolist"):  # numpy arrays have this

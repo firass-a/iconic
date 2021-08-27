@@ -28,6 +28,11 @@ state:
     low: 0
     high: .inf
     info: cumulative nitrogen fertilizer applications (kg/ha)
+  dap:
+    type: int
+    low: 0
+    high: 366
+    info: days after simulation started
   dtt:
     type: float
     low: 0
@@ -125,6 +130,28 @@ state:
     low: 0
     high: .inf
     info: above the ground population biomass (kg/ha)
+  ll:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
+# OTHER ARRAY DELCARATIONS EXAMPLES
+#  lld1:
+#    type: array
+#    subtype: int
+#    low: 0
+#    high: 1
+#    size: 9
+#    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
+#  lld2:
+#    type: array
+#    subtype: discrete
+#    subsize: 4
+#    size: 9
+#    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
+
 ################################################################
 ################################################################
 setting:
@@ -154,6 +181,8 @@ setting:
       - tmax
       - srad
       - dtt
+      - dap
+      - ll
   fertilization:
     action:
       - anfer
@@ -171,6 +200,7 @@ setting:
       - tmax
       - srad
       - dtt
+      - dap
   irrigation:
     action:
       - amir
@@ -188,3 +218,5 @@ setting:
       - tmax
       - srad
       - dtt
+      - dap
+      - ll

@@ -2,6 +2,9 @@ logging:
 {#  level: debug#}
   level: error
 
+metadata:
+  NLAYR: int
+
 data:
 ### random seed
   RSEED1: int
@@ -30,6 +33,11 @@ data:
   TMAX: float
   SRAD: float
   DTT: float
+  DAP: int
+  LL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
 
 plugins:
   trace: ~
@@ -77,6 +85,10 @@ plugins:
         srad = SRAD
       DTT: |
         dtt = DTT
+      DAP: |
+        dap = DAP
+      LL: |
+        ll = LL
     on_event:
       start_client:
         exec: |
@@ -129,7 +141,9 @@ plugins:
           'tmin': tmin,
           'tmax': tmax,
           'srad': srad,
-          'dtt': DTT
+          'dtt': DTT,
+          'dap': DAP,
+          'll': LL,
           }
           message = {'done':done, 'state':state}
           message_js = json.dumps(message, cls=NumpyEncoder)

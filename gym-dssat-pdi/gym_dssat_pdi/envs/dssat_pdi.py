@@ -116,6 +116,42 @@ class DssatPdi(gym.Env):
             elif type_ == 'int':
                 size = high - low + 1
                 space = spaces.Discrete(size)
+            elif type_ == 'array':
+                if 'subtype' not in [*state_variable_dic]:
+                    raise ValueError(f'"subtype" must be specified for state variable "{observation_variable}"')
+                subtype = state_variable_dic['subtype']
+                if 'size' not in [*state_variable_dic]:
+                    raise ValueError(f'"size" must be specified for state variable "{observation_variable}"')
+                size = state_variable_dic['size']
+                if subtype == 'float':
+                    if ('high' not in [*state_variable_dic]) or ('low' not in [*state_variable_dic]):
+                        raise ValueError(
+                            f'"high" and "low" must be specified for state variable "{observation_variable}"')
+                    low = state_variable_dic['low']
+                    high = state_variable_dic['high']
+                    space = spaces.Box(low=low, high=high, shape=(size, ))
+                elif subtype == 'discrete':
+                    atomic_spaces = []
+                    if 'subsize' not in [*state_variable_dic]:
+                        raise ValueError(f'"subsize" must be specified for state variable "{observation_variable}"')
+                    sub_size = state_variable_dic['subsize']
+                    for element in range(size):
+                        atomic_spaces.append(spaces.Discrete(sub_size))
+                    space = spaces.Tuple(atomic_spaces)
+                elif subtype == 'int':
+                    if ('high' not in [*state_variable_dic]) or ('low' not in [*state_variable_dic]):
+                        raise ValueError(
+                            f'"high" and "low" must be specified for state variable "{observation_variable}"')
+                    low = state_variable_dic['low']
+                    high = state_variable_dic['high']
+                    atomic_spaces = []
+                    sub_size = high - low + 1
+                    for element in range(size):
+                        atomic_spaces.append(spaces.Discrete(sub_size))
+                    space = spaces.Tuple(atomic_spaces)
+                else:
+                    raise ValueError(f'State variable {observation_variable} subtype {subtype} not in'
+                                     f' {["float", "int", "discrete"]}')
             else:
                 raise ValueError(f'State variable "{observation_variable}" not in {[*state_data]}')
             observation_space[observation_variable] = space

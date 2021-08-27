@@ -146,7 +146,7 @@ if __name__ == '__main__':
                 if env.save_log in env_args:
                     time.sleep(1)
                 interactions.append(interaction)
-                # print(interactions)
+                print(interactions)
             except Exception as e:
                 logging.exception(e)
             finally:

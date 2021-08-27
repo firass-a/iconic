@@ -19,6 +19,7 @@ import time
 
 import pdb
 
+import pkgutil
 
 class DssatPdi(gym.Env):
 
@@ -29,13 +30,15 @@ class DssatPdi(gym.Env):
         self.experiment_number = experiment_number
         self.fileX_name = f'{fileX_prefix}{fileX_extension}'
         self.mode = mode
-        self.config = None
         self.action_variables = None
         self.state_variables = None
+        self.fileX_template = pkgutil.get_data(__name__, f'configs/{fileX_prefix}.jinja2').decode('utf-8')
+        self.fileX = None
+        self.pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
+        self.pdi_yaml = None
+        self.env_yaml_config = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
+        self.config = None
         self._load_config()
-        # self.file_X_bytes = pkgutil.get_data(__name__, f'configs/{self.file_X_name}')
-        # self.dssat_pdi_yaml_template_string = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
-        # self.env_config_string = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
         if auxiliary_files_names:
             self.auxiliary_files_names = auxiliary_files_names
         else:
@@ -46,7 +49,7 @@ class DssatPdi(gym.Env):
         self.reward_func = rewards.get_reward_function(mode)
         self.history = {'state': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
-        self.rseed1 = 2150
+        self.rseed1 = random.randint(1, 99999)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'irrigation'] else 'R'
@@ -60,30 +63,28 @@ class DssatPdi(gym.Env):
         self.files_prefix = files_prefix
         self.tmp_folder = None
         self._make_tmp_folder()
-        self.fileX_template = None
         self._make_fileX_template()
         self._write_fileX_template()
         self._get_sockets_()
         self.state, self._state = self._get_state()
 
     def _load_config(self):
-        with open('./configs/env_config.yml', 'r') as f_:
-            config = yaml.load(f_, Loader=yaml.FullLoader)
-            self.config = config
-            setting_dict = self.config['setting']
-            setting = self.mode
-            if setting not in setting_dict:
-                raise ValueError(f'Authorized values for the "mode" parameter  to be in {[*setting_dict]}')
-            self.state_variables = setting_dict[setting]['state']
-            self.action_variables = setting_dict[setting]['action']
+        config = yaml.load(self.env_yaml_config, Loader=yaml.FullLoader)
+        self.config = config
+        setting_dict = self.config['setting']
+        setting = self.mode
+        if setting not in setting_dict:
+            raise ValueError(f'Authorized values for the "mode" parameter  to be in {[*setting_dict]}')
+        self.state_variables = setting_dict[setting]['state']
+        self.action_variables = setting_dict[setting]['action']
 
     def _make_fileX_template(self):
-        fileX_template = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig}
-        self.fileX_template = utils.fill_template(value_dic=fileX_template,
-                                                  template_path='./configs/UFGA8201.jinja2')
+        fileX_template_values = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig}
+        self.fileX = utils._fill_template_from_string(value_dic=fileX_template_values,
+                                                      template_string=self.fileX_template)
 
     def _write_fileX_template(self):
-        utils.save_file(saving_path=f'{self.tmp_folder}/{self.fileX_name}', content=self.fileX_template)
+        utils.save_file(saving_path=f'{self.tmp_folder}/{self.fileX_name}', content=self.fileX)
 
     def _launch_client(self):
         # print(f'Starting env client: port {self.port}')
@@ -103,7 +104,6 @@ class DssatPdi(gym.Env):
 
     def _launch_server(self):
         self.context = zmq.Context()
-        # self.server = self.context.socket(zmq.PAIR)
         self.server = self.context.socket(zmq.REP)
         self.server.setsockopt(zmq.LINGER, 0)
         self.server.setsockopt(zmq.IMMEDIATE, 1)
@@ -113,12 +113,10 @@ class DssatPdi(gym.Env):
         value_dic = {'port': self.port,
                      'rseed1': self.rseed1,
                      }
-        # utils.write_template1(value_dic=value_dic,
-        #                       template_string=self.dssat_pdi_yaml_template_string,
-        #                       saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
-        utils.write_template_from_file(value_dic=value_dic,
-                                       template_path='./configs/dssat_pdi.jinja2',
-                                       saving_path=f'{self.tmp_folder}/dssat-pdi.yml')
+        self.pdi_yaml = utils._fill_template_from_string(value_dic=value_dic,
+                                                         template_string=self.pdi_yaml_template)
+        utils.save_file(saving_path=f'{self.tmp_folder}/dssat-pdi.yml', content=self.pdi_yaml)
+
 
     def _get_state(self):
         message = self.server.recv().decode('utf-8')
@@ -148,13 +146,9 @@ class DssatPdi(gym.Env):
         self._launch_client()
 
     def _make_tmp_folder(self):
-        # if self.tmp_folder is not None:
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
         tempfile._Random = random.Random
         self.tmp_folder = tempfile.mkdtemp()
-        # with open(f'{self.tmp_folder}/{self.file_X_name}', 'wb') as f_:
-        #     f_.write(self.file_X_bytes)
-        # shutil.copyfile(f'./configs/{self.file_X_name}', f'{self.tmp_folder}/{self.file_X_name}')
         if self.auxiliary_files_names:
             self._copy_auxiliary_files(self.auxiliary_files_names)
 
@@ -175,22 +169,7 @@ class DssatPdi(gym.Env):
         except Exception as e:
             logging.exception(e)
 
-    def _set_mewth_int(self):
-        if self.random_weather:
-            self.mewth_int = 87  # 'W'
-            self.rseed1 = random.randint(1, 99999)
-        else:
-            self.mewth_int = 75  # 'M'
-
     def step(self, action_dict):
-        """
-        :param action_dict: actions values to be performed
-        :type dict
-        :return: (state, reward, done, info)
-        :rtype: (dict, float, bool, dict)
-        """
-        # err_msg = "%r (%s) invalid" % (action, type(action))
-        # assert self.action_space.contains(action), err_msg
         assert isinstance(action_dict, dict)
         for available_action in self.action_variables:
             assert available_action in action_dict

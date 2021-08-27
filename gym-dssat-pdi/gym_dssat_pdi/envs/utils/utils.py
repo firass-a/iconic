@@ -27,38 +27,28 @@ class DssatPdiHandler:
         except:
             os.killpg(0, signal.SIGKILL)
 
-def fill_template(value_dic, template_path):
+def _fill_template_from_file(value_dic, template_path):
     with open(template_path, mode='r') as f_:
         template = jinja2.Template(f_.read(), trim_blocks=True, lstrip_blocks=True)
     filled_template = template.render(**value_dic)
     return filled_template
 
-def write_template_from_string(value_dic, template_string, saving_path):
+def _fill_template_from_string(value_dic, template_string):
     template = jinja2.Environment(loader=jinja2.BaseLoader).from_string(template_string)
     filled_template = template.render(**value_dic)
+    return filled_template
+
+def _write_template_from_string(value_dic, template_string, saving_path):
+    filled_template = _fill_template_from_string(value_dic, template_string)
     save_file(saving_path, filled_template)
 
-def write_template_from_file(value_dic, template_path, saving_path):
-    filled_template = fill_template(value_dic, template_path)
+def _write_template_from_file(value_dic, template_path, saving_path):
+    filled_template = _fill_template_from_file(value_dic, template_path)
     save_file(saving_path, filled_template)
 
 def save_file(saving_path, content):
     with open(saving_path, mode='w') as f_:
         f_.write(content)
-
-def convert(x):
-    if hasattr(x, "tolist"):  # numpy arrays have this
-        x = x.tolist()
-    return x
-
-
-def deconvert(x):
-    if len(x) == 1:  # Might be a tagged object...
-        key, value = next(iter(x.items()))  # Grab the tag and value
-        if key == "$array":  # If the tag is correct,
-            return array(value)  # cast back to array
-    return x
-
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):

@@ -4,8 +4,12 @@ action:
     type: float
     low: 0
     high: 200
-    info: nitrogen to fertilize for curent day kg/ha
-
+    info: nitrogen to fertilize for current day kg/ha
+  amir:
+    type: float
+    low: 0
+    high: 50
+    info: water to irrigate for current day kg/ha
 ################################################################
 ################################################################
 state:
@@ -113,48 +117,76 @@ state:
     low: 0
     high: .inf
     info: plant population leaf area index (m2_leaf/m2_soil)
-  ydor:
+  yrdoy:
     type: int
     low: 0000000
     high: 9999999
     info: simulation date (YYYYDDD)
-
+  topwt:
+    type: int
+    low: 0
+    high: .inf
+    info: above the ground population biomass (kg/ha)
 ################################################################
 ################################################################
-config:
+setting:
   all:
-    - yrdoy
-    - nstres
-    - istage
-    - grnwt
-    - topwt
-    - pltpop
-    - swfac
-    - pcngrn
-    - tleachd
-    - tnoxd
-    - wtnup
-    - cleach
-    - cnox
-    - cumsumfert
-    - xlai
-    - trnu
-    - rain
-    - tmin
-    - tmax
-    - srad
-    - dtt
-  fertilize:
-    - yrdoy
-    - nstres
-    - istage
-    - grnwt
-    - topwt
-    - pltpop
-    - swfac
-    - xlai
-    - rain
-    - tmin
-    - tmax
-    - srad
-    - dtt
+    action:
+      - anfer
+      - amir
+    state:
+      - yrdoy
+      - nstres
+      - istage
+      - grnwt
+      - topwt
+      - pltpop
+      - swfac
+      - pcngrn
+      - tleachd
+      - tnoxd
+      - wtnup
+      - cleach
+      - cnox
+      - cumsumfert
+      - xlai
+      - trnu
+      - rain
+      - tmin
+      - tmax
+      - srad
+      - dtt
+  fertilization:
+    action:
+      - anfer
+    state:
+      - yrdoy
+      - nstres
+      - istage
+      - grnwt
+      - topwt
+      - pltpop
+      - swfac
+      - xlai
+      - rain
+      - tmin
+      - tmax
+      - srad
+      - dtt
+  irrigation:
+    action:
+      - amir
+    state:
+      - yrdoy
+      - nstres
+      - istage
+      - grnwt
+      - topwt
+      - pltpop
+      - swfac
+      - xlai
+      - rain
+      - tmin
+      - tmax
+      - srad
+      - dtt

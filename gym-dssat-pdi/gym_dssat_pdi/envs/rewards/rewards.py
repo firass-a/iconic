@@ -15,7 +15,7 @@ def get_reward_function(mode):
     reward_func_dic = {'all': fertilization_reward, 'fertilization': fertilization_reward,
                        'irrigation': fertilization_reward}
     if mode not in reward_func_dic:
-        raise ValueError('"mode" parameter should be in [*reward_func_dic]!')
+        raise ValueError(f'"mode" parameter has to be in {[*reward_func_dic]}!')
     return reward_func_dic[mode]
 
 if __name__ == '__main__':

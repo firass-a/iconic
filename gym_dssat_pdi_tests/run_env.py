@@ -17,7 +17,7 @@ from pympler.tracker import SummaryTracker
 from pprint import pprint
 
 
-def fertilization_policy(YRDOY):
+def default_policy(YRDOY):
     fertilization_dic = {
         1982097: 27,
         1982102: 35,
@@ -57,7 +57,7 @@ def interact_with_env(env, verbose=True):
     while not env.done:
         state = env.state
         YRDOY = state['yrdoy']
-        action = fertilization_policy(YRDOY)
+        action = default_policy(YRDOY)
         if verbose:
             pprint(state)
             print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
@@ -113,39 +113,40 @@ if __name__ == '__main__':
         'experiment_number': 3,
     }
     done = False
-    try_interact = True
-    try_multiproc = not True
+    try_interact = not True
+    try_multiproc = True
     if try_interact:
-        try:
-            interactions = []
-            env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            # state_variables = list(env.state.keys())
-            # with open('./state_variables.txt', 'w') as f_:
-            #     for state_variables in state_variables:
-            #         f_.write(f'{state_variables}\n')
-            env.save_log = True
-            interaction = interact_with_env(env, verbose=False)
-            interactions.append(interaction)
-            if env.save_log in env_args:
-                time.sleep(1)
-            env.render(type='ts',
-                       feature_name_1='nstres',
-                       feature_name_2='grnwt')
-            env.render(type='reward',
-                       cumsum=True)
-            env.render(type='reward',
-                       cumsum=False)
-            env.reset()
-            # env.get_env_info()
-            interaction = interact_with_env(env, verbose=False)
-            if env.save_log in env_args:
-                time.sleep(1)
-            interactions.append(interaction)
-            # print(interactions)
-        except Exception as e:
-            logging.exception(e)
-        finally:
-            env.close()
+        with DssatPdiHandler():
+            try:
+                interactions = []
+                env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                # state_variables = list(env.state.keys())
+                # with open('./state_variables.txt', 'w') as f_:
+                #     for state_variables in state_variables:
+                #         f_.write(f'{state_variables}\n')
+                env.save_log = True
+                interaction = interact_with_env(env, verbose=False)
+                interactions.append(interaction)
+                if env.save_log in env_args:
+                    time.sleep(1)
+                env.render(type='ts',
+                           feature_name_1='nstres',
+                           feature_name_2='grnwt')
+                env.render(type='reward',
+                           cumsum=True)
+                env.render(type='reward',
+                           cumsum=False)
+                env.reset()
+                # env.get_env_info()
+                interaction = interact_with_env(env, verbose=False)
+                if env.save_log in env_args:
+                    time.sleep(1)
+                interactions.append(interaction)
+                # print(interactions)
+            except Exception as e:
+                logging.exception(e)
+            finally:
+                env.close()
     if try_multiproc:
         with DssatPdiHandler():  # avoid zombies in code crashes
             try:

@@ -66,7 +66,7 @@ class DssatPdi(gym.Env):
             setting_dict = self.config['setting']
             setting = self.mode
             if setting not in setting_dict:
-                raise ValueError(f'Authorized values for the parameter "env_setting" to be in {[*setting_dict]}')
+                raise ValueError(f'Authorized values for the "mode" parameter  to be in {[*setting_dict]}')
             self.state_variables = setting_dict[setting]['state']
             self.action_variables = setting_dict[setting]['action']
 
@@ -216,6 +216,7 @@ class DssatPdi(gym.Env):
         self.done = False
         self.t = 0
         self.history = {'state': [], 'action': [], 'reward': []}
+        self._history = {'state': [], 'action': [], 'reward': []}
         self.server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
         self.state, self.state_ = self._get_state()
 
@@ -226,6 +227,9 @@ class DssatPdi(gym.Env):
         gc.collect()
 
     def render(self, type, *args, **kwargs):
+        authorized_types = ['ts', 'reward']
+        if type not in authorized_types:
+            raise ValueError(f'"type" parameter has to be in {[*authorized_types]}!')
         if type == 'ts':
             rendering.render_temporal_series(history=self.history, *args, **kwargs)
         else:

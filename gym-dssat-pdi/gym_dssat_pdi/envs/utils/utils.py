@@ -24,6 +24,8 @@ class DssatPdiHandler:
             os.killpg(0, signal.SIGTERM)
         except KeyboardInterrupt:
             pass
+        except:
+            os.killpg(0, signal.SIGKILL)
 
 
 def write_template1(value_dic, template_string, saving_path):

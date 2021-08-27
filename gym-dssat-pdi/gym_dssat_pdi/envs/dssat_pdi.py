@@ -1,5 +1,6 @@
 import gym
 import gym.spaces as spaces
+from gym.utils import seeding
 from subprocess import Popen
 import zmq
 import json
@@ -10,7 +11,6 @@ from gym_dssat_pdi.envs.rendering import rendering
 from gym_dssat_pdi.envs.rewards import rewards
 
 import tempfile
-import random
 import shutil
 import logging
 import os
@@ -24,7 +24,8 @@ import pkgutil
 class DssatPdi(gym.Env):
 
     def __init__(self, run_dssat_location, experiment_number=1, fileX_prefix='UFGA8201', fileX_extension='.MZX',
-                 log_saving_path=None, mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True):
+                 log_saving_path=None, mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True,
+                 seed=None):
         self.action_space = spaces.Dict({'anfer': spaces.Box(low=0, high=200, shape=())})
         # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
         self.experiment_number = experiment_number
@@ -49,7 +50,10 @@ class DssatPdi(gym.Env):
         self.reward_func = rewards.get_reward_function(mode)
         self.history = {'state': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
-        self.rseed1 = random.randint(1, 99999)
+        self.random_generator = None
+        self.seed = None
+        self.set_seed(seed=seed)
+        self.rseed1 = self.random_generator.randint(1, 99999)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'irrigation'] else 'R'
@@ -147,7 +151,6 @@ class DssatPdi(gym.Env):
 
     def _make_tmp_folder(self):
         shutil.rmtree(self.tmp_folder, ignore_errors=True)
-        tempfile._Random = random.Random
         self.tmp_folder = tempfile.mkdtemp()
         if self.auxiliary_files_names:
             self._copy_auxiliary_files(self.auxiliary_files_names)
@@ -200,7 +203,7 @@ class DssatPdi(gym.Env):
 
     def reset(self):
         if self.random_weather:
-            self.rseed1 = random.randint(1, 99999)
+            self.rseed1 = self.random_generator.randint(1, 99999)
         if not self.done:
             self._close_client()
         self._write_pdi_yaml()
@@ -232,6 +235,6 @@ class DssatPdi(gym.Env):
                            action_variables=self.action_variables,
                            state_variables=self.state_variables)
 
-    # def seed(self, seed=None):
-    #     self.np_random, seed = seeding.np_random(seed)
-    #     return [seed]
+    def set_seed(self, seed=None):
+        self.random_generator, self.seed = seeding.np_random(seed)
+        return self.seed

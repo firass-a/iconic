@@ -64,6 +64,8 @@ def interact_with_env(env, verbose=True):
         res = env.step(action)
         new_state, reward, done, info = res
         interactions.append(res)
+    if env.save_log:
+        time.sleep(1)
     return interactions
 
 
@@ -111,10 +113,11 @@ if __name__ == '__main__':
         'log_saving_path': './logs/dssat-pdi.log',
         'mode': 'fertilization',
         'experiment_number': 3,
+        'seed': 123456,
     }
     done = False
-    try_interact = not True
-    try_multiproc = True
+    try_interact = True
+    try_multiproc = not True
     if try_interact:
         with DssatPdiHandler():
             try:

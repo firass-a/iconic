@@ -92,11 +92,12 @@ def _post_treat_state(state):
     state['pcngrn'] /= 100
     state['wtnup'] *= 10
     state['trnu'] *= 10 * state['pltpop']
+    state['ds_max'] = max(state['ds'])
     return state
 
 
-def _filter_state(full_state, state_variables):
-    truncated_state = {key: full_state[key] for key in state_variables}
+def _filter_state(full_state, observation_variables):
+    truncated_state = {key: full_state[key] for key in observation_variables}
     return truncated_state
 
 
@@ -121,6 +122,14 @@ def get_env_info(config, action_variables, state_variables):
         pprint({state:config_states[state]})
         input('press "return" to continue')
     print('\nno more information to display\n')
+    print('\n******************')
+    print('Context variables:')
+    print('******************\n')
+    for state in state_variables:
+        pprint({state:config_states[state]})
+        input('press "return" to continue')
+    print('\nno more information to display\n')
+
 
 if __name__ == '__main__':
     pass

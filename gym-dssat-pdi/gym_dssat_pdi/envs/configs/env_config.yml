@@ -1,4 +1,19 @@
 ---
+###################################################################################################
+# DATA TYPES:
+# * float: 1D floating point in [$low, $high]
+# * int: integer in [[$low, $high]]
+# * discrete: set of discrete values which can take $size values
+# * array:
+#   $size: number of atomic elements
+#   $subtype == float: atomic values of type float in [$low, $high]
+#   $subtype == int: atomic values of type int in [[$low, $high]]
+#   $subtype == discrete: atomic values of type discrete which can take $subsize different values
+###################################################################################################
+
+##################
+# RAW ACTION SPACE
+##################
 action:
   anfer:
     type: float
@@ -10,8 +25,9 @@ action:
     low: 0
     high: 50
     info: water to irrigate for current day kg/ha
-################################################################
-################################################################
+#################
+# RAW STATE SPACE
+#################
 state:
   cleach:
     type: float
@@ -47,15 +63,15 @@ state:
     type: discrete
     info: DSSAT maize growing stage (index in order 7, 8, 9, 1, 2, 3, 4, 5 ,6)
     size: 9
-#1 = End of Juvenil Phase
-#2 = Floral Initiation
-#3 = 75% of Silking
-#4 = Beginning of Grain Filling
-#5 = End of Grrain Filling
-#6 = Maturity
-#7 = Sowing
-#8 = Germinate
-#9 = Emergence
+  #1 = End of Juvenil Phase
+  #2 = Floral Initiation
+  #3 = 75% of Silking
+  #4 = Beginning of Grain Filling
+  #5 = End of Grrain Filling
+  #6 = Maturity
+  #7 = Sowing
+  #8 = Germinate
+  #9 = Emergence
   nstres:
     type: float
     low: 0
@@ -130,30 +146,87 @@ state:
     low: 0
     high: .inf
     info: above the ground population biomass (kg/ha)
+  es:
+    type: float
+    low: 0
+    high: .inf
+    info: actual soil evaporation rate (mm/d)
+  runoff:
+    type: float
+    low: 0
+    high: .inf
+    info: calculated runoff (mm/d)
+  wtdep:
+    type: float
+    low: 0
+    high: .inf
+    info: depth to water table (cm)
+  ds_max:  # ! defined in state transformation from $ds
+    type: float
+    low: 0
+    high: 1000
+    info: total soil depth (cm)
   ll:
     type: array
     subtype: float
     low: 0
     high: 1
     size: 9
-    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
-# OTHER ARRAY DELCARATIONS EXAMPLES
-#  lld1:
+    info: volumetric soil water content in soil layers at lower limit (cm3 [water] / cm3 [soil])
+  dul:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at drained upper limit (cm3 [water] / cm3 [soil])
+  sat:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at saturation (cm3 [water] / cm3 [soil])
+  sw:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers (cm3 [water] / cm3 [soil])
+  sw_avail:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content available for evaporation, plant extraction, or movement in soil layers (cm3 [water] / cm3 [soil])
+  ds:
+    type: array
+    subtype: float
+    low: 0
+    high: .inf
+    size: 9
+    info: cumulative depth for soil layers (cm)
+
+# OTHER ARRAY DELCARATION EXAMPLES
+#  array_example1:
 #    type: array
 #    subtype: int
 #    low: 0
 #    high: 1
 #    size: 9
 #    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
-#  lld2:
+#  array_example2:
 #    type: array
 #    subtype: discrete
 #    subsize: 4
 #    size: 9
 #    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
 
-################################################################
-################################################################
+#######################################################
+# ACTION AND STATE SPACES RESTRICTIONS FOR ENV SETTINGS
+#######################################################
 setting:
   all:
     action:
@@ -182,7 +255,16 @@ setting:
       - srad
       - dtt
       - dap
+      - sw
+      - sw_avail
+      - es
+      - runoff
+      - wtdep
+    context:
+      - sat
+      - dul
       - ll
+      - ds_max
   fertilization:
     action:
       - anfer
@@ -201,6 +283,11 @@ setting:
       - srad
       - dtt
       - dap
+    context:
+      - sat
+      - dul
+      - ll
+      - ds_max
   irrigation:
     action:
       - amir
@@ -219,4 +306,13 @@ setting:
       - srad
       - dtt
       - dap
+      - sw
+      - sw_avail
+      - es
+      - runoff
+      - wtdep
+    context:
+      - sat
+      - dul
       - ll
+      - ds_max

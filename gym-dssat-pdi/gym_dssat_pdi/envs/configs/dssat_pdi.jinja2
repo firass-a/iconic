@@ -34,11 +34,33 @@ data:
   SRAD: float
   DTT: float
   DAP: int
+  ES: float
+  RUNOFF: float
+  WTDEP: float
   LL:
     type: array
     subtype: float
     size: '$NLAYR'
-
+  DUL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SW_AVAIL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SW:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  DS:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SAT:
+    type: array
+    subtype: float
+    size: '$NLAYR'
 plugins:
   trace: ~
   pycall:
@@ -89,6 +111,22 @@ plugins:
         dap = DAP
       LL: |
         ll = LL
+      DUL: |
+        dul = DUL
+      SW: |
+        sw = SW
+      SW_AVAIL: |
+        sw_avail = SW_AVAIL
+      DS: |
+        ds = DS
+      ES: |
+        es = ES
+      RUNOFF: |
+        runoff = RUNOFF
+      WTDEP: |
+        wtdep = WTDEP
+      SAT: |
+        sat = SAT
     on_event:
       start_client:
         exec: |
@@ -141,9 +179,17 @@ plugins:
           'tmin': tmin,
           'tmax': tmax,
           'srad': srad,
-          'dtt': DTT,
-          'dap': DAP,
-          'll': LL,
+          'dtt': dtt,
+          'dap': dap,
+          'll': ll,
+          'dul': dul,
+          'sw': sw,
+          'sw_avail': sw_avail,
+          'ds': ds,
+          'es': es,
+          'runoff': runoff,
+          'wtdep': wtdep,
+          'sat': sat,
           }
           message = {'done':done, 'state':state}
           message_js = json.dumps(message, cls=NumpyEncoder)

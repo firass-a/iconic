@@ -33,13 +33,12 @@ class DssatPdi(gym.Env):
     def __init__(self, run_dssat_location, experiment_number=1, fileX_prefix='UFGA8201', fileX_extension='.MZX',
                  log_saving_path=None, mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True,
                  seed=None):
-        self.action_space = spaces.Dict({'anfer': spaces.Box(low=0, high=200, shape=())})
-        # self.observation_space = spaces.Box(-high, high, dtype=np.float32)
         self.experiment_number = experiment_number
         self.fileX_name = f'{fileX_prefix}{fileX_extension}'
         self.mode = mode
         self.action_variables = None
         self.observation_variables = None
+        self.context_variables = None
         self.fileX_template = pkgutil.get_data(__name__, f'configs/{fileX_prefix}.jinja2').decode('utf-8')
         self.fileX = None
         self.pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
@@ -48,9 +47,10 @@ class DssatPdi(gym.Env):
         self.config = None
         self._load_config()
         self.observation_space = None
-        self._make_gym_state_space()
+        self.context_space = None
         self.action_space = None
-        self._make_gym_action_space()
+        for key in ['observation', 'context', 'action']:
+            self._make_gym_spaces(key=key)
         if auxiliary_files_names:
             self.auxiliary_files_names = auxiliary_files_names
         else:
@@ -71,17 +71,17 @@ class DssatPdi(gym.Env):
         self.irrig = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.done = False
         self.t = 0
-        self.port = None
-        self.context = None
-        self.server = None
-        self.client_process_pid = None
+        self._port = None
+        self._zmq_context = None
+        self._server = None
+        self._client_process_pid = None
         self.files_prefix = files_prefix
-        self.tmp_folder = None
+        self._tmp_folder = None
         self._make_tmp_folder()
         self._make_fileX_template()
         self._write_fileX_template()
         self._get_sockets_()
-        self.observation, self._state = self._get_state()
+        self.observation, self._state, self.done, self.context = self._get_state()
 
     def _load_config(self):
         config = yaml.load(self.env_yaml_config, Loader=yaml.FullLoader)
@@ -92,98 +92,90 @@ class DssatPdi(gym.Env):
             raise ValueError(f'Authorized values for the "mode" parameter  to be in {[*setting_dict]}')
         self.observation_variables = sorted(setting_dict[setting]['state'])
         self.action_variables = setting_dict[setting]['action']
+        self.context_variables = setting_dict[setting]['context']
 
-    def _make_gym_state_space(self):
-        observation_space = {}
-        state_data = self.config['state']
-        for observation_variable in self.observation_variables:
-            state_variable_dic = state_data[observation_variable]
-            if 'type' not in [*state_variable_dic]:
-                raise ValueError(f'"type" must be specified for state variable "{observation_variable}"')
-            type_ = state_variable_dic['type']
+    def _make_gym_spaces(self, key):
+        key_spaces = {}
+        if key == 'observation':
+            key_variables = self.observation_variables
+        elif key == 'context':
+            key_variables = self.context_variables
+        elif key == 'action':
+            key_variables = self.action_variables
+        else:
+            raise ValueError('"key" parameter must be in ["observation", "action", "context"]')
+        if not key_variables:
+            return {}
+        if key in ['observation', 'context']:
+            key_config = 'state'
+        else:
+            key_config = 'action'
+        key_data = self.config[key_config]
+        for key_variable in key_variables:
+            key_variable_dic = key_data[key_variable]
+            if 'type' not in [*key_variable_dic]:
+                raise ValueError(f'"type" must be specified for {key} variable "{key_variable}"')
+            type_ = key_variable_dic['type']
             if type_ == 'float' or type_ == 'int':
-                if ('high' not in [*state_variable_dic]) or ('low' not in [*state_variable_dic]):
-                    raise ValueError(f'"high" and "low" must be specified for state variable "{observation_variable}"')
-                low = state_variable_dic['low']
-                high = state_variable_dic['high']
+                if ('high' not in [*key_variable_dic]) or ('low' not in [*key_variable_dic]):
+                    raise ValueError(f'"high" and "low" must be specified for {key} variable "{key_variable}"')
+                low = key_variable_dic['low']
+                high = key_variable_dic['high']
             if type_ == 'float':
                 space = spaces.Box(low=low, high=high, shape=())
             elif type_ == 'discrete':
-                if 'size' not in [*state_variable_dic]:
-                    raise ValueError(f'"size" must be specified for state variable "{observation_variable}"')
-                size = state_variable_dic['size']
+                if 'size' not in [*key_variable_dic]:
+                    raise ValueError(f'"size" must be specified for {key} variable "{key_variable}"')
+                size = key_variable_dic['size']
                 space = spaces.Discrete(size)
             elif type_ == 'int':
                 size = high - low + 1
                 space = spaces.Discrete(size)
             elif type_ == 'array':
-                if 'subtype' not in [*state_variable_dic]:
-                    raise ValueError(f'"subtype" must be specified for state variable "{observation_variable}"')
-                subtype = state_variable_dic['subtype']
-                if 'size' not in [*state_variable_dic]:
-                    raise ValueError(f'"size" must be specified for state variable "{observation_variable}"')
-                size = state_variable_dic['size']
+                if 'subtype' not in [*key_variable_dic]:
+                    raise ValueError(f'"subtype" must be specified for {key} variable "{key_variable}"')
+                subtype = key_variable_dic['subtype']
+                if 'size' not in [*key_variable_dic]:
+                    raise ValueError(f'"size" must be specified for {key} variable "{key_variable}"')
+                size = key_variable_dic['size']
                 if subtype == 'float':
-                    if ('high' not in [*state_variable_dic]) or ('low' not in [*state_variable_dic]):
+                    if ('high' not in [*key_variable_dic]) or ('low' not in [*key_variable_dic]):
                         raise ValueError(
-                            f'"high" and "low" must be specified for state variable "{observation_variable}"')
-                    low = state_variable_dic['low']
-                    high = state_variable_dic['high']
+                            f'"high" and "low" must be specified for {key} variable "{key_variable}"')
+                    low = key_variable_dic['low']
+                    high = key_variable_dic['high']
                     space = spaces.Box(low=low, high=high, shape=(size, ))
                 elif subtype == 'discrete':
                     atomic_spaces = []
-                    if 'subsize' not in [*state_variable_dic]:
-                        raise ValueError(f'"subsize" must be specified for state variable "{observation_variable}"')
-                    sub_size = state_variable_dic['subsize']
+                    if 'subsize' not in [*key_variable_dic]:
+                        raise ValueError(f'"subsize" must be specified for {key} variable "{key_variable}"')
+                    sub_size = key_variable_dic['subsize']
                     for element in range(size):
                         atomic_spaces.append(spaces.Discrete(sub_size))
                     space = spaces.Tuple(atomic_spaces)
                 elif subtype == 'int':
-                    if ('high' not in [*state_variable_dic]) or ('low' not in [*state_variable_dic]):
+                    if ('high' not in [*key_variable_dic]) or ('low' not in [*key_variable_dic]):
                         raise ValueError(
-                            f'"high" and "low" must be specified for state variable "{observation_variable}"')
-                    low = state_variable_dic['low']
-                    high = state_variable_dic['high']
+                            f'"high" and "low" must be specified for {key} variable "{key_variable}"')
+                    low = key_variable_dic['low']
+                    high = key_variable_dic['high']
                     atomic_spaces = []
                     sub_size = high - low + 1
                     for element in range(size):
                         atomic_spaces.append(spaces.Discrete(sub_size))
                     space = spaces.Tuple(atomic_spaces)
                 else:
-                    raise ValueError(f'State variable {observation_variable} subtype {subtype} not in'
+                    raise ValueError(f'{key} variable {key_variable} subtype {subtype} not in'
                                      f' {["float", "int", "discrete"]}')
             else:
-                raise ValueError(f'State variable "{observation_variable}" not in {[*state_data]}')
-            observation_space[observation_variable] = space
-        self.observation_space = spaces.Dict(observation_space)
-
-    def _make_gym_action_space(self):
-        action_space = {}
-        action_data = self.config['action']
-        for action_variable in self.action_variables:
-            action_variable_dic = action_data[action_variable]
-            if 'type' not in [*action_variable_dic]:
-                raise ValueError(f'"type" must be specified for action variable "{action_variable}"')
-            type_ = action_variable_dic['type']
-            if type_ == 'float' or type_ == 'int':
-                if ('high' not in [*action_variable_dic]) or ('low' not in [*action_variable_dic]):
-                    raise ValueError(f'"high" and "low" must be specified for action variable "{action_variable_dic}"')
-                low = action_variable_dic['low']
-                high = action_variable_dic['high']
-            if type_ == 'float':
-                space = spaces.Box(low=low, high=high, shape=())
-            elif type_ == 'discrete':
-                if 'size' not in [*action_variable_dic]:
-                    raise ValueError(f'"size" must be specified for action variable "{action_variable_dic}"')
-                size = action_variable_dic['size']
-                space = spaces.Discrete(size)
-            elif type_ == 'int':
-                size = high - low + 1
-                space = spaces.Discrete(size)
-            else:
-                raise ValueError(f'Action variable "{action_variable}" not in {[*action_data]}')
-            action_space[action_variable] = space
-        self.action_space = spaces.Dict(action_space)
+                raise ValueError(f'{key} variable "{key_variable}" not in {[*key_data]}')
+            key_spaces[key_variable] = space
+        if key == 'observation':
+            self.observation_space = spaces.Dict(key_spaces)
+        elif key == 'context':
+            self.context_space = spaces.Dict(key_spaces)
+        else:
+            self.action_space = spaces.Dict(key_spaces)
 
     def _make_fileX_template(self):
         fileX_template_values = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig}
@@ -191,7 +183,7 @@ class DssatPdi(gym.Env):
                                                       template_string=self.fileX_template)
 
     def _write_fileX_template(self):
-        utils.save_file(saving_path=f'{self.tmp_folder}/{self.fileX_name}', content=self.fileX)
+        utils.save_file(saving_path=f'{self._tmp_folder}/{self.fileX_name}', content=self.fileX)
 
     def _launch_client(self):
         # print(f'Starting env client: port {self.port}')
@@ -206,35 +198,39 @@ class DssatPdi(gym.Env):
                 f_.write('\n********************************\n')
                 f_.write(utils.get_time_stamp())
                 f_.write('\n********************************\n')
-            process = Popen(pdi_command, stdout=f_, shell=False, universal_newlines=True, cwd=self.tmp_folder)
-            self.client_process_pid = process.pid
+            process = Popen(pdi_command, stdout=f_, shell=False, universal_newlines=True, cwd=self._tmp_folder)
+            self._client_process_pid = process.pid
 
     def _launch_server(self):
-        self.context = zmq.Context()
-        self.server = self.context.socket(zmq.REP)
-        self.server.setsockopt(zmq.LINGER, 0)
-        self.server.setsockopt(zmq.IMMEDIATE, 1)
-        self.port = self.server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
+        self._zmq_context = zmq.Context()
+        self._server = self._zmq_context.socket(zmq.REP)
+        self._server.setsockopt(zmq.LINGER, 0)
+        self._server.setsockopt(zmq.IMMEDIATE, 1)
+        self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
     def _write_pdi_yaml(self):
-        value_dic = {'port': self.port,
+        value_dic = {'port': self._port,
                      'rseed1': self.rseed1,
                      }
         self.pdi_yaml = utils._fill_template_from_string(value_dic=value_dic,
                                                          template_string=self.pdi_yaml_template)
-        utils.save_file(saving_path=f'{self.tmp_folder}/dssat-pdi.yml', content=self.pdi_yaml)
+        utils.save_file(saving_path=f'{self._tmp_folder}/dssat-pdi.yml', content=self.pdi_yaml)
 
     def _get_state(self):
-        message = self.server.recv().decode('utf-8')
+        message = self._server.recv().decode('utf-8')
         message = json.loads(message)
-        self.done = message['done']
+        done = message['done']
         _state = message['state']
-        observation = message['state']
         if _state:
             _state = utils._post_treat_state(_state)
             observation = utils._filter_state(full_state=_state,
-                                        state_variables=self.observation_variables)
-        return observation, _state
+                                              observation_variables=self.observation_variables)
+            context = utils._filter_state(full_state=_state,
+                                              observation_variables=self.observation_variables)
+        else:
+            observation = {}
+            context = {}
+        return observation, _state, done, context
 
     def _get_reward(self, _next_state):
         _previous_state = self._state
@@ -242,34 +238,31 @@ class DssatPdi(gym.Env):
         reward = self.reward_func(_previous_state, _next_state, _history)
         return reward
 
-    def _get_info(self):
-        return {}
-
     def _get_sockets_(self):
         self._launch_server()
         self._write_pdi_yaml()
         self._launch_client()
 
     def _make_tmp_folder(self):
-        shutil.rmtree(self.tmp_folder, ignore_errors=True)
-        self.tmp_folder = tempfile.mkdtemp()
+        shutil.rmtree(self._tmp_folder, ignore_errors=True)
+        self._tmp_folder = tempfile.mkdtemp()
         if self.auxiliary_files_names:
             self._copy_auxiliary_files(self.auxiliary_files_names)
 
     def _copy_auxiliary_files(self, names):
         if names:
             for name in names:
-                shutil.copyfile(f'{self.files_prefix}{name}', f'{self.tmp_folder}/{name}')
+                shutil.copyfile(f'{self.files_prefix}{name}', f'{self._tmp_folder}/{name}')
 
     def _close_client(self):
         if not self.done:
-            utils.recursively_kill_process(self.client_process_pid)
+            utils.recursively_kill_process(self._client_process_pid)
         gc.collect()
 
     def _close_server(self):
         try:
-            self.server.close()
-            self.context.destroy()
+            self._server.close()
+            self._zmq_context.destroy()
         except Exception as e:
             logging.exception(e)
 
@@ -280,9 +273,10 @@ class DssatPdi(gym.Env):
         try:
             while True:
                 action_js = json.dumps(action_dict, cls=utils.NumpyEncoder).encode('utf-8')
-                self.server.send(action_js)
-                observation, _state = self._get_state()
-                if self.done:
+                self._server.send(action_js)
+                observation, _state, done, context = self._get_state()  # context == ensemble of static features
+                self.done = done
+                if done:
                     self._close_client()
                     return None, None, self.done, None
                 self.history['observation'].append(observation)
@@ -295,10 +289,8 @@ class DssatPdi(gym.Env):
                 self.observation = observation
                 self._state = _state
                 self.reward = reward
-                done = self.done
-                info = self._get_info()
                 self.t += 1
-                return observation, reward, done, info
+                return observation, reward, done, context
         except Exception as e:
             logging.exception(e)
 
@@ -313,14 +305,14 @@ class DssatPdi(gym.Env):
         self.t = 0
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
-        self.server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
-        self.observation, self.state_ = self._get_state()
+        self._server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
+        self.observation, self.state_, self.done, self.context = self._get_state()
         return self.observation
 
     def close(self):
         self._close_server()
         self._close_client()
-        shutil.rmtree(self.tmp_folder, ignore_errors=True)
+        shutil.rmtree(self._tmp_folder, ignore_errors=True)
         gc.collect()
 
     def set_seed(self, seed=None):

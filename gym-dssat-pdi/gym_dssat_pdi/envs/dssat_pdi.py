@@ -15,7 +15,7 @@ import logging
 import os
 import gc
 import pkgutil
-
+from pprint import pprint
 import time
 import pdb
 
@@ -294,6 +294,12 @@ class DssatPdi(gym.Env):
         except Exception as e:
             logging.exception(e)
 
+    def _reset_attributes(self):
+        self.done = False
+        self.t = 0
+        self.history = {'observation': [], 'action': [], 'reward': []}
+        self._history = {'state': [], 'action': [], 'reward': []}
+
     def reset(self, seed=None):
         self.set_seed(seed)
         if self.random_weather:
@@ -301,11 +307,8 @@ class DssatPdi(gym.Env):
         if not self.done:
             self._close_client()
         self._write_pdi_yaml()
+        self._reset_attributes()
         self._launch_client()
-        self.done = False
-        self.t = 0
-        self.history = {'observation': [], 'action': [], 'reward': []}
-        self._history = {'state': [], 'action': [], 'reward': []}
         self._server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
         self.observation, self.state_, self.done, self.context = self._get_state()
         return self.observation
@@ -318,10 +321,7 @@ class DssatPdi(gym.Env):
         if self.random_weather:
             self.rseed1 = self.random_generator.randint(1, 99999)
         self._get_sockets_()
-        self.done = False
-        self.t = 0
-        self.history = {'observation': [], 'action': [], 'reward': []}
-        self._history = {'state': [], 'action': [], 'reward': []}
+        self._reset_attributes()
         self.observation, self.state_, self.done, self.context = self._get_state()
         return self.observation
 
@@ -335,6 +335,32 @@ class DssatPdi(gym.Env):
         self.random_generator, self.seed = seeding.np_random(seed)
         return self.seed
 
+    def get_env_info(self):
+        config_actions = self.config['action']
+        config_states = self.config['state']
+        print('\n******************')
+        print('Available actions:')
+        print('******************\n')
+        for action in self.action_variables:
+            pprint({action: config_actions[action]})
+            input('press "return" to continue')
+        print('\n*********************')
+        print('Observation variables:')
+        print('*********************\n')
+        for state in self.observation_variables:
+            pprint({state: config_states[state]})
+            input('press "return" to continue')
+        print('\n******************')
+        print('Context variables:')
+        print('******************\n')
+        if self.context_variables:
+            for state in self.context_variables:
+                pprint({state: config_states[state]})
+                input('press "return" to continue')
+        else:
+            print('no context information to display')
+        print('\nno more information to display -> leaving\n')
+
     def render(self, type, *args, **kwargs):
         authorized_types = ['ts', 'reward']
         if type not in authorized_types:
@@ -343,11 +369,6 @@ class DssatPdi(gym.Env):
             rendering.render_temporal_series(history=self.history, *args, **kwargs)
         else:
             rendering.render_reward(history=self.history, *args, **kwargs)
-
-    def get_env_info(self):
-        utils.get_env_info(config=self.config,
-                           action_variables=self.action_variables,
-                           state_variables=self.observation_variables)
 
 
     def observation_dict_to_array(self, dict):

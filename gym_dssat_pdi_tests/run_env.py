@@ -142,6 +142,7 @@ if __name__ == '__main__':
                            cumsum=False)
                 env.reset_hard()
                 # env.get_env_info()
+                env.reset()
                 interaction = interact_with_env(env, verbose=False)
                 print(interaction)
                 if env.save_log in env_args:

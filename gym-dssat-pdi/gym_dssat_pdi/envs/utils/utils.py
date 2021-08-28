@@ -21,7 +21,7 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdiHandler:
     """
-    from https://stackoverflow.com/questions/320232/ensuring-subprocesses-are-dead-on-exiting-python-program
+    inspired from https://stackoverflow.com/questions/320232/ensuring-subprocesses-are-dead-on-exiting-python-program
     """
 
     def __enter__(self):
@@ -105,30 +105,6 @@ def _parse_config(path_to_load):
     with open(path_to_load, 'r') as ymlfile:
         config = yaml.load(ymlfile, Loader=yaml.FullLoader)
     return config
-
-def get_env_info(config, action_variables, state_variables):
-    config_actions = config['action']
-    config_states = config['state']
-    print('\n******************')
-    print('Available actions:')
-    print('******************\n')
-    for action in action_variables:
-        pprint({action: config_actions[action]})
-        input('press "return" to continue')
-    print('\n******************')
-    print('State variables:')
-    print('******************\n')
-    for state in state_variables:
-        pprint({state:config_states[state]})
-        input('press "return" to continue')
-    print('\nno more information to display\n')
-    print('\n******************')
-    print('Context variables:')
-    print('******************\n')
-    for state in state_variables:
-        pprint({state:config_states[state]})
-        input('press "return" to continue')
-    print('\nno more information to display\n')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,163 @@
+
+********************************
+2021/08/28 08:08:38.563389
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  85 134 17408  8621   397     0   493   114   159    19   8653   87
+
+********************************
+2021/08/28 08:08:40.160374
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  81 130 16064  8501   686     0   536   151   157    19   8647   87
+
+********************************
+2021/08/28 08:08:41.787158
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  87 136 16800  7928   442     0   534   111   148    27   8653   87
+
+********************************
+2021/08/28 08:08:43.385659
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  87 135 16356  8262   469     0   516   138   159    29   8651   87
+
+********************************
+2021/08/28 08:08:45.465896
+********************************
+Environment loaded for PDI version 1.3.1
+[08:08:45][PyCall] *** error: while calling python, caught exception: KeyboardInterrupt: 
+
+At:
+  zmq/backend/cython/checkrc.pxd(13): zmq.backend.cython.checkrc._check_rc
+  <string>(37): <module>
+
+[08:08:45][PyCall] *** error: while calling python, caught exception: ZMQError: Operation cannot be accomplished in current state
+
+At:
+  zmq/backend/cython/checkrc.pxd(28): zmq.backend.cython.checkrc._check_rc
+  /usr/lib/python3/dist-packages/zmq/sugar/socket.py(491): send
+  <string>(36): <module>
+
+[08:08:45][PyCall] *** error: while calling python, caught exception: ZMQError: Operation cannot be accomplished in current state
+
+At:
+  zmq/backend/cython/checkrc.pxd(28): zmq.backend.cython.checkrc._check_rc
+  /usr/lib/python3/dist-packages/zmq/sugar/socket.py(491): send
+  <string>(36): <module>
+
+[08:08:45][PyCall] *** error: while calling python, caught exception: ZMQError: Operation cannot be accomplished in current state
+
+At:
+  zmq/backend/cython/checkrc.pxd(28): zmq.backend.cython.checkrc._check_rc
+  /usr/lib/python3/dist-packages/zmq/sugar/socket.py(491): send
+  <string>(36): <module>
+
+[08:08:45][PyCall] *** error: while calling python, caught exception: ZMQError: Operation cannot be accomplished in current state
+
+At:
+  zmq/backend/cython/checkrc.pxd(28): zmq.backend.cython.checkrc._check_rc
+  /usr/lib/python3/dist-packages/zmq/sugar/socket.py(491): send
+  <string>(36): <module>
+

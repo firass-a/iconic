@@ -1,0 +1,196 @@
+
+********************************
+2021/08/28 08:08:39.330173
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  81 132 15741  8337   647     0   547   152   157    16   8650   87
+
+********************************
+2021/08/28 08:08:40.796158
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  83 132 16714  8497   363     0   492   112   161    24   8653   87
+
+********************************
+2021/08/28 08:08:42.234797
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  83 132 16152  8165   540     0   507   136   160    22   8649   87
+
+********************************
+2021/08/28 08:08:43.730836
+********************************
+Environment loaded for PDI version 1.3.1
+Client started
+Client closed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
+           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
+  1 MZ   3  81 130 15350  7907   651     0   510   147   152    16   8652   87
+
+********************************
+2021/08/28 08:08:45.705346
+********************************
+Environment loaded for PDI version 1.3.1
+[08:08:45][PDI] *** error: Error while triggering event `start_client': KeyboardInterrupt: 
+
+At:
+  /usr/lib/python3.9/enum.py(953): __and__
+  /usr/lib/python3.9/re.py(305): _compile
+  /usr/lib/python3.9/re.py(191): match
+  /usr/lib/python3.9/pickle.py(197): <listcomp>
+  /usr/lib/python3.9/pickle.py(197): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  /usr/lib/python3/dist-packages/numpy/compat/py3k.py(30): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap>(1066): _handle_fromlist
+  /usr/lib/python3/dist-packages/numpy/compat/__init__.py(12): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap>(972): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  /usr/lib/python3/dist-packages/numpy/core/overrides.py(9): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap>(1066): _handle_fromlist
+  /usr/lib/python3/dist-packages/numpy/core/multiarray.py(12): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap>(1066): _handle_fromlist
+  /usr/lib/python3/dist-packages/numpy/core/__init__.py(51): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap>(1066): _handle_fromlist
+  /usr/lib/python3/dist-packages/numpy/__init__.py(140): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+  /home/rgautron/.local/lib/python3/dist-packages/pdi/__init__.py(27): <module>
+  <frozen importlib._bootstrap>(228): _call_with_frames_removed
+  <frozen importlib._bootstrap_external>(855): exec_module
+  <frozen importlib._bootstrap>(695): _load_unlocked
+  <frozen importlib._bootstrap>(986): _find_and_load_unlocked
+  <frozen importlib._bootstrap>(1007): _find_and_load
+

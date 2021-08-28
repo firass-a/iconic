@@ -100,6 +100,38 @@ def _multiprocess_trial_func(args):
         env.close()
         gc.collect()
 
+def multiprocess_trial_hard_reset(env, cwd, rep):
+    env.close()
+    arguments = []
+    for i in range(rep):
+        arguments.append((env, f'{cwd}/logs/dssat-pdi-{i}.log'))
+    with multiprocessing.Pool() as pool:
+        raw_result = list(pool.imap_unordered(_multiprocess_trial_func_hard_reset, arguments))
+    return raw_result
+
+
+def _multiprocess_trial_func_hard_reset(args):
+    try:
+        env, log_saving_path = args
+        all_interactions = []
+        env.reset_hard()
+        print(f'rseed1: {env._rseed1}')
+        print(f'tmp_folder: {env._tmp_folder}')
+        env.save_log = True
+        env.log_saving_path = log_saving_path
+        for _ in range(10):
+            interactions = interact_with_env(env, verbose=False)
+            all_interactions.append(interactions)
+            env.reset()
+        if env.save_log in env_args:
+            time.sleep(1)
+        # print(interactions)
+        return interactions
+    except Exception as e:
+        logging.exception(e)
+    finally:
+        env.close()
+        gc.collect()
 
 if __name__ == '__main__':
     dir = './logs'
@@ -117,8 +149,8 @@ if __name__ == '__main__':
         'seed': 123456,
     }
     done = False
-    try_interact = True
-    try_multiproc = not True
+    try_interact = not True
+    try_multiproc = True
     if try_interact:
         with utils.DssatPdiHandler():
             try:
@@ -157,7 +189,9 @@ if __name__ == '__main__':
         with utils.DssatPdiHandler():  # avoid zombies in code crashes
             try:
                 tracker = SummaryTracker()
-                raw_results = multiprocess_trial(env_args, cwd, rep=100)
+                # raw_results = multiprocess_trial(env_args, cwd, rep=100)
+                env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                raw_results = multiprocess_trial_hard_reset(env, cwd, rep=30)
                 # print(raw_results)
             except Exception as e:
                 logging.exception(e)

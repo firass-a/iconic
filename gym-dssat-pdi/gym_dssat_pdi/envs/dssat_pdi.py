@@ -39,12 +39,12 @@ class DssatPdi(gym.Env):
         self.action_variables = None
         self.observation_variables = None
         self.context_variables = None
-        self.fileX_template = pkgutil.get_data(__name__, f'configs/{fileX_prefix}.jinja2').decode('utf-8')
-        self.fileX = None
-        self.pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
-        self.pdi_yaml = None
-        self.env_yaml_config = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
-        self.config = None
+        self._fileX_template = pkgutil.get_data(__name__, f'configs/{fileX_prefix}.jinja2').decode('utf-8')
+        self._fileX = None
+        self._pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
+        self._pdi_yaml = None
+        self._env_yaml_config = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
+        self._config = None
         self._load_config()
         self.observation_space = None
         self.context_space = None
@@ -55,16 +55,16 @@ class DssatPdi(gym.Env):
             self.auxiliary_files_names = auxiliary_files_names
         else:
             self.auxiliary_files_names = []
-        self.run_dssat_location = run_dssat_location
+        self._run_dssat_location = run_dssat_location
         self.log_saving_path = log_saving_path
-        self.cwd = os.getcwd()
-        self.reward_func = rewards.get_reward_function(mode)
+        self._cwd = os.getcwd()
+        self._reward_func = rewards.get_reward_function(mode)
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
-        self.random_generator = None
+        self._random_generator = None
         self.seed = None
         self.set_seed(seed=seed)
-        self.rseed1 = self.random_generator.randint(1, 99999)
+        self._rseed1 = self._random_generator.randint(1, 99999)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'irrigation'] else 'R'
@@ -75,7 +75,7 @@ class DssatPdi(gym.Env):
         self._zmq_context = None
         self._server = None
         self._client_process_pid = None
-        self.files_prefix = files_prefix
+        self._files_prefix = files_prefix
         self._tmp_folder = None
         self._make_tmp_folder()
         self._make_fileX_template()
@@ -84,9 +84,9 @@ class DssatPdi(gym.Env):
         self.observation, self._state, self.done, self.context = self._get_state()
 
     def _load_config(self):
-        config = yaml.load(self.env_yaml_config, Loader=yaml.FullLoader)
-        self.config = config
-        setting_dict = self.config['setting']
+        config = yaml.load(self._env_yaml_config, Loader=yaml.FullLoader)
+        self._config = config
+        setting_dict = self._config['setting']
         setting = self.mode
         if setting not in setting_dict:
             raise ValueError(f'Authorized values for the "mode" parameter  to be in {[*setting_dict]}')
@@ -110,7 +110,7 @@ class DssatPdi(gym.Env):
             key_config = 'state'
         else:
             key_config = 'action'
-        key_data = self.config[key_config]
+        key_data = self._config[key_config]
         for key_variable in key_variables:
             key_variable_dic = key_data[key_variable]
             if 'type' not in [*key_variable_dic]:
@@ -144,7 +144,7 @@ class DssatPdi(gym.Env):
                             f'"high" and "low" must be specified for {key} variable "{key_variable}"')
                     low = key_variable_dic['low']
                     high = key_variable_dic['high']
-                    space = spaces.Box(low=low, high=high, shape=(size, ))
+                    space = spaces.Box(low=low, high=high, shape=(size,))
                 elif subtype == 'discrete':
                     atomic_spaces = []
                     if 'subsize' not in [*key_variable_dic]:
@@ -179,15 +179,15 @@ class DssatPdi(gym.Env):
 
     def _make_fileX_template(self):
         fileX_template_values = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig}
-        self.fileX = utils._fill_template_from_string(value_dic=fileX_template_values,
-                                                      template_string=self.fileX_template)
+        self._fileX = utils._fill_template_from_string(value_dic=fileX_template_values,
+                                                       template_string=self._fileX_template)
 
     def _write_fileX_template(self):
-        utils.save_file(saving_path=f'{self._tmp_folder}/{self.fileX_name}', content=self.fileX)
+        utils.save_file(saving_path=f'{self._tmp_folder}/{self.fileX_name}', content=self._fileX)
 
     def _launch_client(self):
         # print(f'Starting env client: port {self.port}')
-        pdi_command = f'pdirun {self.run_dssat_location} C {self.fileX_name} {self.experiment_number}'
+        pdi_command = f'pdirun {self._run_dssat_location} C {self.fileX_name} {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path
@@ -210,11 +210,11 @@ class DssatPdi(gym.Env):
 
     def _write_pdi_yaml(self):
         value_dic = {'port': self._port,
-                     'rseed1': self.rseed1,
+                     'rseed1': self._rseed1,
                      }
-        self.pdi_yaml = utils._fill_template_from_string(value_dic=value_dic,
-                                                         template_string=self.pdi_yaml_template)
-        utils.save_file(saving_path=f'{self._tmp_folder}/dssat-pdi.yml', content=self.pdi_yaml)
+        self._pdi_yaml = utils._fill_template_from_string(value_dic=value_dic,
+                                                          template_string=self._pdi_yaml_template)
+        utils.save_file(saving_path=f'{self._tmp_folder}/dssat-pdi.yml', content=self._pdi_yaml)
 
     def _get_state(self):
         message = self._server.recv().decode('utf-8')
@@ -226,7 +226,7 @@ class DssatPdi(gym.Env):
             observation = utils._filter_state(full_state=_state,
                                               observation_variables=self.observation_variables)
             context = utils._filter_state(full_state=_state,
-                                              observation_variables=self.observation_variables)
+                                          observation_variables=self.observation_variables)
         else:
             observation = {}
             context = {}
@@ -235,7 +235,7 @@ class DssatPdi(gym.Env):
     def _get_reward(self, _next_state):
         _previous_state = self._state
         _history = self._history
-        reward = self.reward_func(_previous_state, _next_state, _history)
+        reward = self._reward_func(_previous_state, _next_state, _history)
         return reward
 
     def _get_sockets_(self):
@@ -252,26 +252,44 @@ class DssatPdi(gym.Env):
     def _copy_auxiliary_files(self, names):
         if names:
             for name in names:
-                shutil.copyfile(f'{self.files_prefix}{name}', f'{self._tmp_folder}/{name}')
+                shutil.copyfile(f'{self._files_prefix}{name}', f'{self._tmp_folder}/{name}')
+
+    def _reset_attributes(self):
+        self.done = False
+        self.t = 0
+        self.history = {'observation': [], 'action': [], 'reward': []}
+        self._history = {'state': [], 'action': [], 'reward': []}
 
     def _close_client(self):
-        if not self.done:
+        if not self.done and self._client_process_pid:
             utils.recursively_kill_process(self._client_process_pid)
-        gc.collect()
+            self._client_process_pid = None
 
     def _close_server(self):
-        try:
+        if self._server:
             self._server.close()
+            self._server = None
+        if self._zmq_context:
             self._zmq_context.destroy()
-        except Exception as e:
-            logging.exception(e)
+            self._zmq_context = None
+
+    def _close_tmp_folder(self):
+        if self._tmp_folder:
+            shutil.rmtree(self._tmp_folder)
+            self._tmp_folder = None
+
+    def close(self):
+        self._close_server()
+        self._close_client()
+        self._close_tmp_folder()
+
 
     def step(self, action_dict):
         assert isinstance(action_dict, dict)
         for available_action in self.action_variables:
             assert available_action in action_dict
         try:
-            while True:
+            if not self.done:
                 action_js = json.dumps(action_dict, cls=utils.NumpyEncoder).encode('utf-8')
                 self._server.send(action_js)
                 observation, _state, done, context = self._get_state()  # context == ensemble of static features
@@ -291,19 +309,15 @@ class DssatPdi(gym.Env):
                 self.reward = reward
                 self.t += 1
                 return observation, reward, done, context
+            else:
+                return None, None, self.done, None
         except Exception as e:
             logging.exception(e)
-
-    def _reset_attributes(self):
-        self.done = False
-        self.t = 0
-        self.history = {'observation': [], 'action': [], 'reward': []}
-        self._history = {'state': [], 'action': [], 'reward': []}
 
     def reset(self, seed=None):
         self.set_seed(seed)
         if self.random_weather:
-            self.rseed1 = self.random_generator.randint(1, 99999)
+            self._rseed1 = self._random_generator.randint(1, 99999)
         if not self.done:
             self._close_client()
         self._write_pdi_yaml()
@@ -319,25 +333,19 @@ class DssatPdi(gym.Env):
         self._make_tmp_folder()
         self._write_fileX_template()
         if self.random_weather:
-            self.rseed1 = self.random_generator.randint(1, 99999)
+            self._rseed1 = self._random_generator.randint(1, 99999)
         self._get_sockets_()
         self._reset_attributes()
         self.observation, self.state_, self.done, self.context = self._get_state()
         return self.observation
 
-    def close(self):
-        self._close_server()
-        self._close_client()
-        shutil.rmtree(self._tmp_folder, ignore_errors=True)
-        gc.collect()
-
     def set_seed(self, seed=None):
-        self.random_generator, self.seed = seeding.np_random(seed)
+        self._random_generator, self.seed = seeding.np_random(seed)
         return self.seed
 
     def get_env_info(self):
-        config_actions = self.config['action']
-        config_states = self.config['state']
+        config_actions = self._config['action']
+        config_states = self._config['state']
         print('\n******************')
         print('Available actions:')
         print('******************\n')
@@ -369,7 +377,6 @@ class DssatPdi(gym.Env):
             rendering.render_temporal_series(history=self.history, *args, **kwargs)
         else:
             rendering.render_reward(history=self.history, *args, **kwargs)
-
 
     def observation_dict_to_array(self, dict):
         if dict:

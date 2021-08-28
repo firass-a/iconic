@@ -294,7 +294,8 @@ class DssatPdi(gym.Env):
         except Exception as e:
             logging.exception(e)
 
-    def reset(self):
+    def reset(self, seed=None):
+        self.set_seed(seed)
         if self.random_weather:
             self.rseed1 = self.random_generator.randint(1, 99999)
         if not self.done:
@@ -306,6 +307,21 @@ class DssatPdi(gym.Env):
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
         self._server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
+        self.observation, self.state_, self.done, self.context = self._get_state()
+        return self.observation
+
+    def reset_hard(self, seed=None):
+        self.set_seed(seed)
+        self.close()
+        self._make_tmp_folder()
+        self._write_fileX_template()
+        if self.random_weather:
+            self.rseed1 = self.random_generator.randint(1, 99999)
+        self._get_sockets_()
+        self.done = False
+        self.t = 0
+        self.history = {'observation': [], 'action': [], 'reward': []}
+        self._history = {'state': [], 'action': [], 'reward': []}
         self.observation, self.state_, self.done, self.context = self._get_state()
         return self.observation
 

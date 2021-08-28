@@ -140,13 +140,14 @@ if __name__ == '__main__':
                            cumsum=True)
                 env.render(type='reward',
                            cumsum=False)
-                env.reset()
+                env.reset_hard()
                 # env.get_env_info()
                 interaction = interact_with_env(env, verbose=False)
+                print(interaction)
                 if env.save_log in env_args:
                     time.sleep(1)
                 interactions.append(interaction)
-                print(interactions)
+                # print(interactions)
             except Exception as e:
                 logging.exception(e)
             finally:

@@ -1,0 +1,228 @@
+logging:
+
+  level: error
+
+metadata:
+  NLAYR: int
+
+data:
+### random seed
+  RSEED1: int
+### action
+  ANFER: float
+  AMIR: float
+### state
+  YRDOY: int
+  NSTRES: float
+  ISTAGE: int
+  GRNWT: float
+  TOPWT: float
+  PLTPOP: float
+  SWFAC: float
+  PCNGRN: float
+  TLeachD: float
+  TNOXD: float
+  WTNUP: float
+  CLeach: float
+  CNOX: float
+  CumSumFert: float
+  XLAI: float
+  TRNU: float
+  RAIN: float
+  TMIN: float
+  TMAX: float
+  SRAD: float
+  DTT: float
+  DAP: int
+  ES: float
+  RUNOFF: float
+  WTDEP: float
+  RTDEP: float
+  LL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  DUL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  DLAYR:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SW_AVAIL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SW:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  DS:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SAT:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SNO3:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SNH4:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+plugins:
+  trace: ~
+  pycall:
+    on_data:
+      YRDOY: |
+        yrdoy = YRDOY
+      NSTRES: |
+        nstres = NSTRES
+      ISTAGE: |
+        istage = ISTAGE
+      GRNWT: |
+        grnwt = GRNWT
+      TOPWT: |
+        topwt = TOPWT
+      PLTPOP: |
+        pltpop = PLTPOP
+      SWFAC: |
+        swfac = SWFAC
+      PCNGRN: |
+        pcngrn = PCNGRN
+      TLeachD: |
+        tleachd = TLeachD
+      TNOXD: |
+        tnoxd = TNOXD
+      WTNUP: |
+        wtnup = WTNUP
+      CLeach: |
+        cleach = CLeach
+      CNOX: |
+        cnox = CNOX
+      CumSumFert: |
+        cumsumfert = CumSumFert
+      XLAI: |
+        xlai = XLAI
+      TRNU: |
+        trnu = TRNU
+      RAIN: |
+        rain = RAIN
+      TMIN: |
+        tmin = TMIN
+      TMAX: |
+        tmax = TMAX
+      SRAD: |
+        srad = SRAD
+      DTT: |
+        dtt = DTT
+      DAP: |
+        dap = DAP
+      LL: |
+        ll = LL
+      DUL: |
+        dul = DUL
+      SW: |
+        sw = SW
+      SW_AVAIL: |
+        sw_avail = SW_AVAIL
+      DLAYR: |
+        dlayr = DLAYR
+      ES: |
+        es = ES
+      RUNOFF: |
+        runoff = RUNOFF
+      WTDEP: |
+        wtdep = WTDEP
+      SAT: |
+        sat = SAT
+      SNO3: |
+        sno3_ini = SNO3
+      SNH4: |
+        snh4_ini = SNH4
+      RTDEP: |
+        rtdep = RTDEP
+    on_event:
+      start_client:
+        exec: |
+          import zmq
+          import json
+          import logging
+          import numpy as np
+          class NumpyEncoder(json.JSONEncoder):
+            def default(self, obj):
+              if isinstance(obj, np.ndarray):
+                return obj.tolist()
+              return json.JSONEncoder.default(self, obj)
+          context = zmq.Context()
+          client = context.socket(zmq.REQ)
+          client.setsockopt(zmq.LINGER, 0)
+          client.connect('tcp://localhost:38505')
+          done = False
+          print('Client started')
+      stop_client:
+        exec: |
+          done = True
+          message = {'done': done, 'state': {}}
+          client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
+          client.close()
+          context.destroy()
+          print('Client closed')
+      set_rseed:
+        with: {rseed1: $RSEED1}
+        exec:
+          rseed1[()] = 96435
+      interact:
+        exec: |
+          state = {'yrdoy': yrdoy,
+          'nstres': nstres,
+          'istage': istage,
+          'grnwt': grnwt,
+          'topwt': topwt,
+          'pltpop': pltpop,
+          'swfac': swfac,
+          'pcngrn': pcngrn,
+          'tleachd': tleachd,
+          'tnoxd': tnoxd,
+          'wtnup': wtnup,
+          'cleach': cleach,
+          'cnox': cnox,
+          'cumsumfert': cumsumfert,
+          'xlai': xlai,
+          'trnu': trnu,
+          'rain': rain,
+          'tmin': tmin,
+          'tmax': tmax,
+          'srad': srad,
+          'dtt': dtt,
+          'dap': dap,
+          'll': ll,
+          'dul': dul,
+          'sw': sw,
+          'sw_avail': sw_avail,
+          'dlayr': dlayr,
+          'es': es,
+          'runoff': runoff,
+          'wtdep': wtdep,
+          'sat': sat,
+          'sno3_ini': sno3_ini,
+          'snh4_ini': snh4_ini,
+          'rtdep': rtdep,
+          }
+          message = {'done':done, 'state':state}
+          message_js = json.dumps(message, cls=NumpyEncoder)
+          client.send(message_js.encode('utf-8'))
+          action = client.recv().decode('utf-8')
+          action = json.loads(action)
+      fertilize:
+        with: {anfer: $ANFER}
+        exec:
+          anfer[()] = action['anfer']
+      irrigate:
+        with: {amir: $AMIR}
+        exec:
+          amir[()] = action['amir']

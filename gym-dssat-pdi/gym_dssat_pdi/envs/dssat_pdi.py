@@ -18,6 +18,7 @@ import pkgutil
 from pprint import pprint
 import time
 import pdb
+from copy import deepcopy
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
@@ -67,8 +68,9 @@ class DssatPdi(gym.Env):
         self._rseed1 = self._random_generator.randint(1, 99999)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
-        self.ferti = 'L' if mode in ['all', 'irrigation'] else 'R'
-        self.irrig = 'L' if mode in ['all', 'fertilization'] else 'R'
+        self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
+        self.irrig = 'L' if mode in ['all', 'irrigation'] else 'R'
+        self.is_early_stopping = False
         self.done = False
         self.t = 0
         self._port = None
@@ -218,7 +220,7 @@ class DssatPdi(gym.Env):
 
     def _get_state(self):
         message = self._server.recv().decode('utf-8')
-        message = json.loads(message)
+        message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
         _state = message['state']
         if _state:
@@ -226,7 +228,7 @@ class DssatPdi(gym.Env):
             observation = utils._filter_state(full_state=_state,
                                               observation_variables=self.observation_variables)
             context = utils._filter_state(full_state=_state,
-                                          observation_variables=self.observation_variables)
+                                          observation_variables=self.context_variables)
         else:
             observation = {}
             context = {}
@@ -244,7 +246,8 @@ class DssatPdi(gym.Env):
         self._launch_client()
 
     def _make_tmp_folder(self):
-        shutil.rmtree(self._tmp_folder, ignore_errors=True)
+        if self._tmp_folder:
+            shutil.rmtree(self._tmp_folder, ignore_errors=True)
         self._tmp_folder = tempfile.mkdtemp()
         if self.auxiliary_files_names:
             self._copy_auxiliary_files(self.auxiliary_files_names)
@@ -255,6 +258,7 @@ class DssatPdi(gym.Env):
                 shutil.copyfile(f'{self._files_prefix}{name}', f'{self._tmp_folder}/{name}')
 
     def _reset_attributes(self):
+        self.is_early_stopping = False
         self.done = False
         self.t = 0
         self.history = {'observation': [], 'action': [], 'reward': []}
@@ -279,10 +283,15 @@ class DssatPdi(gym.Env):
             self._tmp_folder = None
 
     def close(self):
+        if not self.done:
+            self._early_stopping()
+
         self._close_server()
         self._close_client()
         self._close_tmp_folder()
 
+    def _early_stopping(self):
+        self.is_early_stopping = True
 
     def step(self, action_dict):
         assert isinstance(action_dict, dict)
@@ -290,8 +299,9 @@ class DssatPdi(gym.Env):
             assert available_action in action_dict
         try:
             if not self.done:
-                action_js = json.dumps(action_dict, cls=utils.NumpyEncoder).encode('utf-8')
-                self._server.send(action_js)
+                message = {'early_stopping': self.is_early_stopping, 'action': action_dict}
+                message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
+                self._server.send(message_js)
                 observation, _state, done, context = self._get_state()  # context == ensemble of static features
                 self.done = done
                 if done:
@@ -374,9 +384,9 @@ class DssatPdi(gym.Env):
         if type not in authorized_types:
             raise ValueError(f'"type" parameter has to be in {[*authorized_types]}!')
         if type == 'ts':
-            rendering.render_temporal_series(history=self.history, *args, **kwargs)
+            rendering.render_temporal_series(_history=self._history, *args, **kwargs)
         else:
-            rendering.render_reward(history=self.history, *args, **kwargs)
+            rendering.render_reward(_history=self._history, *args, **kwargs)
 
     def observation_dict_to_array(self, dict):
         if dict:

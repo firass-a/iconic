@@ -19,12 +19,12 @@ action:
     type: float
     low: 0
     high: 200
-    info: nitrogen to fertilize for current day kg/ha
+    info: nitrogen to fertilize for current day (kg/ha)
   amir:
     type: float
     low: 0
     high: 50
-    info: water to irrigate for current day kg/ha
+    info: water depth to irrigate for current day (mm/ha)
 #################
 # RAW STATE SPACE
 #################
@@ -161,11 +161,11 @@ state:
     low: 0
     high: .inf
     info: depth to water table (cm)
-  ds_max:  # ! defined in state transformation from $ds
+  rtdep:
     type: float
     low: 0
-    high: 1000
-    info: total soil depth (cm)
+    high: 300
+    info: root depth (cm)
   ll:
     type: array
     subtype: float
@@ -201,13 +201,27 @@ state:
     high: 1
     size: 9
     info: volumetric soil water content available for evaporation, plant extraction, or movement in soil layers (cm3 [water] / cm3 [soil])
-  ds:
+  dlayr:
     type: array
     subtype: float
     low: 0
     high: .inf
     size: 9
-    info: cumulative depth for soil layers (cm)
+    info: thickness of for soil layers (cm)
+  snh4_ini:
+    type: array
+    subtype: float
+    low: 0
+    high: .inf
+    size: 9
+    info: initial extractable ammonium in soil layer (kg N/ha)
+  sno3_ini:
+    type: array
+    subtype: float
+    low: 0
+    high: .inf
+    size: 9
+    info: initial extractable nitrate in soil layer (kg N/ha)
 
 # OTHER ARRAY DELCARATION EXAMPLES
 #  array_example1:
@@ -260,17 +274,19 @@ setting:
       - es
       - runoff
       - wtdep
+      - rtdep
     context:
       - sat
       - dul
       - ll
-      - ds_max
+      - dlayr
+      - snh4_ini
+      - sno3_ini
   fertilization:
     action:
       - anfer
     state:
       - yrdoy
-      - nstres
       - istage
       - grnwt
       - topwt
@@ -283,22 +299,23 @@ setting:
       - srad
       - dtt
       - dap
+      - rtdep
     context:
       - sat
       - dul
       - ll
-      - ds_max
+      - dlayr
+      - snh4_ini
+      - sno3_ini
   irrigation:
     action:
       - amir
     state:
       - yrdoy
-      - nstres
       - istage
       - grnwt
       - topwt
       - pltpop
-      - swfac
       - xlai
       - rain
       - tmin
@@ -307,12 +324,13 @@ setting:
       - dtt
       - dap
       - sw
-      - sw_avail
       - es
-      - runoff
       - wtdep
+      - rtdep
     context:
       - sat
       - dul
       - ll
-      - ds_max
+      - dlayr
+      - snh4_ini
+      - sno3_ini

@@ -1,58 +1,328 @@
 
 ********************************
-2021/08/28 08:08:19.777280
+2021/08/29 09:57:02.855959
 ********************************
-Environment loaded for PDI version 1.3.1
-
-********************************
-2021/08/28 08:08:19.928635
-********************************
-
-********************************
-2021/08/28 08:08:19.928635
-********************************
-
-********************************
-2021/08/28 08:08:19.929662
-********************************
-
-********************************
-2021/08/28 08:08:19.929135
-********************************
-
-********************************
-2021/08/28 08:08:19.930121
-********************************
-
-********************************
-2021/08/28 08:08:19.930944
-********************************
-
-********************************
-2021/08/28 08:08:19.933569
-********************************
-
-********************************
-2021/08/28 08:08:19.930046
-********************************
-Environment loaded for PDI version 1.3.1
-Environment loaded for PDI version 1.3.1
-Environment loaded for PDI version 1.3.1
-Environment loaded for PDI version 1.3.1
-Environment loaded for PDI version 1.3.1
-Environment loaded for PDI version 1.3.1
-Environment loaded for PDI version 1.3.1
 Environment loaded for PDI version 1.3.1
 Client started
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
 Client closed
-Client started
-Client closed
-Client started
-Client closed
-Client started
-Client closed
-Client started
-Client closed
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
 
 
 
@@ -76,249 +346,339 @@ Client closed
 
 RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
            dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  80 129 16336  8341   811     0   545   158   157    15   8649   87
-Client started
-Client closed
-Client started
-Client closed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  80 128 14997  6786   543     0   524   123   158    20   8655   87
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  83 130 16036  8249   409     0   526   152   163    26   8651   87
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  83 132 15720  8150   843     0   531   137   153    13   8647   87
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  79 130 16209  8867   400     0   476   139   157    25   8652   87
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  75 130 16253  9039   711     0   535   129   154    12   8647   87
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  84 136 15968  8431   987     0   546   136   151    11   8648   87
-Client started
-Client closed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  94 141 16858  7407   432     0   544   122   156    28   8648   87
+  1 MZ   3  81 131 14386  7123   499   264   493   163   151    27   8656   87
 
 ********************************
-2021/08/28 08:08:37.102030
-********************************
-Environment loaded for PDI version 1.3.1
-Client started
-Client closed
-
-********************************
-2021/08/28 08:08:37.567956
-********************************
-Environment loaded for PDI version 1.3.1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  87 136 16323  8212   738     0   568   162   148    13   8644   87
-
-********************************
-2021/08/28 08:08:37.782502
+2021/08/29 09:57:04.763935
 ********************************
 Environment loaded for PDI version 1.3.1
 
 ********************************
-2021/08/28 08:08:37.877123
-********************************
-Environment loaded for PDI version 1.3.1
-
-********************************
-2021/08/28 08:08:37.990096
-********************************
-Environment loaded for PDI version 1.3.1
-
-********************************
-2021/08/28 08:08:38.109285
-********************************
-Environment loaded for PDI version 1.3.1
-
-********************************
-2021/08/28 08:08:38.148616
-********************************
-Environment loaded for PDI version 1.3.1
-
-********************************
-2021/08/28 08:08:38.216246
+2021/08/29 09:57:04.923605
 ********************************
 Environment loaded for PDI version 1.3.1
 Client started
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
+<class 'numpy.ndarray'> 0
 Client closed
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
+ HERE:  F
 
 
 
@@ -342,160 +702,4 @@ Client closed
 
 RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
            dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  79 128 15636  7991   472     0   486   182   156    23   8651   87
-Client started
-Client closed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  87 138 16720  8552   874     0   592   170   156    12   8644   87
-Client started
-Client closed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  79 129 15123  8136   511     0   513   150   160    19   8650   87
-Client started
-Client closed
-Client started
-Client closed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  82 133 16361  8689   393     0   480   193   158    27   8652   87
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  88 134 15496  7864   607     0   541   142   153    20   8648   87
-Client started
-Client closed
-Client started
-Client closed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  86 137 16506  8531   888     0   594   136   152    14   8646   87
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-RUN    TRT FLO MAT TOPWT HARWT  RAIN  TIRR   CET  PESW  TNUP  TNLF   TSON TSOC
-           dap dap kg/ha kg/ha    mm    mm    mm    mm kg/ha kg/ha  kg/ha t/ha
-  1 MZ   3  80 131 15416  7721   518     0   540   150   159    20   8650   87
+  1 MZ   3  81 132 16357  8539   631   264   522   133   153    17   8652   87

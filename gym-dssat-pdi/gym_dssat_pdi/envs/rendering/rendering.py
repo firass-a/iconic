@@ -18,10 +18,10 @@ def make_render_folder(folder_path):
     path = pathlib.Path(folder_path)
     path.mkdir(exist_ok=True)
 
-def render_temporal_series(history, feature_name_1, feature_name_2=None, layout_dict=None, saving_path=None,
+def render_temporal_series(_history, feature_name_1, feature_name_2=None, layout_dict=None, saving_path=None,
                            folder_path='./render', *args, **kwargs):
     make_render_folder(folder_path)
-    trajectory = history['observation']
+    trajectory = _history['state']
     trajectory = transpose_dicts(trajectory)
     y1 = trajectory[feature_name_1]
     x = [int(str(DOY)[-3:]) for DOY in trajectory['yrdoy']]
@@ -40,11 +40,11 @@ def render_temporal_series(history, feature_name_1, feature_name_2=None, layout_
         saving_path = f'{folder_path}/{feature_name_1}{feature_name_2_label}_DOY.pdf'
     plt.savefig(saving_path, bbox_inches='tight')
 
-def render_reward(history, saving_path=None, folder_path='./render', cumsum=True, *args, **kwargs):
+def render_reward(_history, saving_path=None, folder_path='./render', cumsum=True, *args, **kwargs):
     make_render_folder(folder_path)
-    trajectory = history['observation']
+    trajectory = _history['state']
     trajectory = transpose_dicts(trajectory)
-    reward = history['reward']
+    reward = _history['reward']
     x = [int(str(DOY)[-3:]) for DOY in trajectory['yrdoy']]
     y = reward
     if cumsum:

@@ -11,6 +11,8 @@ import json
 import numpy as np
 from pprint import pprint
 
+
+
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
     'Romain Gautron',
@@ -18,6 +20,7 @@ __credits__ = [
 ]
 __license__ = 'BSD 3-Clause'
 __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
+
 
 class DssatPdiHandler:
     """
@@ -29,11 +32,10 @@ class DssatPdiHandler:
 
     def __exit__(self, type, value, traceback):
         try:
-            os.killpg(0, signal.SIGTERM)
+            os.killpg(0, signal.SIGKILL)
         except KeyboardInterrupt:
             pass
-        except:
-            os.killpg(0, signal.SIGKILL)
+
 
 def _fill_template_from_file(value_dic, template_path):
     with open(template_path, mode='r') as f_:
@@ -41,28 +43,41 @@ def _fill_template_from_file(value_dic, template_path):
     filled_template = template.render(**value_dic)
     return filled_template
 
+
 def _fill_template_from_string(value_dic, template_string):
     template = jinja2.Environment(loader=jinja2.BaseLoader).from_string(template_string)
     filled_template = template.render(**value_dic)
     return filled_template
 
+
 def _write_template_from_string(value_dic, template_string, saving_path):
     filled_template = _fill_template_from_string(value_dic, template_string)
     save_file(saving_path, filled_template)
+
 
 def _write_template_from_file(value_dic, template_path, saving_path):
     filled_template = _fill_template_from_file(value_dic, template_path)
     save_file(saving_path, filled_template)
 
-def save_file(saving_path, content):
-    with open(saving_path, mode='w') as f_:
+
+def save_file(saving_path, content, mode='w'):
+    with open(saving_path, mode=mode) as f_:
         f_.write(content)
+
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
+
+
+def NumpyDecoder(dict):
+    for key in [*dict]:
+        value = dict[key]
+        if isinstance(value, list):
+            dict[key] = np.asarray(value)
+    return dict
 
 
 def get_time_stamp():
@@ -92,7 +107,6 @@ def _post_treat_state(state):
     state['pcngrn'] /= 100
     state['wtnup'] *= 10
     state['trnu'] *= 10 * state['pltpop']
-    state['ds_max'] = max(state['ds'])
     return state
 
 
@@ -105,7 +119,6 @@ def _parse_config(path_to_load):
     with open(path_to_load, 'r') as ymlfile:
         config = yaml.load(ymlfile, Loader=yaml.FullLoader)
     return config
-
 
 if __name__ == '__main__':
     pass

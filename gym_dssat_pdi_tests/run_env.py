@@ -144,17 +144,24 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': '/home/rgautron/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
-        'mode': 'all',
+        'mode': 'fertilization',
         'experiment_number': 3,
         'seed': 123456,
     }
     done = False
-    try_interact = not True
-    try_multiproc = True
+    try_interact = True
+    try_multiproc = not True
     if try_interact:
         with utils.DssatPdiHandler():
             try:
                 interactions = []
+                # for _ in range(100):
+                #     try:
+                #         env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                #         env.close()
+                #         pdb.set_trace()
+                #     except Exception as e:
+                #         logging.exception(e)
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
                 # state_variables = list(env.state.keys())
                 # with open('./state_variables.txt', 'w') as f_:
@@ -176,7 +183,8 @@ if __name__ == '__main__':
                 # env.get_env_info()
                 env.reset()
                 interaction = interact_with_env(env, verbose=False)
-                print(interaction)
+                pprint(env.context)
+                # print(interaction)
                 if env.save_log in env_args:
                     time.sleep(1)
                 interactions.append(interaction)

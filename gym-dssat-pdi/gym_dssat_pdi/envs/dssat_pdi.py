@@ -20,6 +20,7 @@ import psutil
 import time
 import pdb
 from copy import deepcopy
+import warnings
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
@@ -204,18 +205,22 @@ class DssatPdi(gym.Env):
                 f_.write('\n********************************\n')
                 f_.write(utils.get_time_stamp())
                 f_.write('\n********************************\n')
-            self._client_process = Popen(pdi_command,
-                                         stdout=f_,
-                                         shell=False,
-                                         universal_newlines=True,
-                                         cwd=self._tmp_folder)
-            self._client_process_pid = self._client_process.pid
+            client_process = Popen(pdi_command,
+                                   stdout=f_,
+                                   shell=False,
+                                   universal_newlines=True,
+                                   cwd=self._tmp_folder)
+            self._client_process = client_process
+            self._client_process_pid = client_process.pid
 
     def _launch_server(self):
         self._zmq_context = zmq.Context()
         self._server = self._zmq_context.socket(zmq.REP)
-        self._server.setsockopt(zmq.LINGER, 0)
-        self._server.setsockopt(zmq.IMMEDIATE, 1)
+        self._server.setsockopt(zmq.RCVHWM, 1)
+        self._server.setsockopt(zmq.SNDHWM, 1)
+        # self._server.setsockopt(zmq.LINGER, 0)
+        # self._server.setsockopt(zmq.MAX_SOCKETS, 256)
+        # self._server.setsockopt(zmq.IMMEDIATE, 1)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
     def _write_pdi_yaml(self):
@@ -275,14 +280,19 @@ class DssatPdi(gym.Env):
         self._history = {'state': [], 'action': [], 'reward': []}
 
     def _close_client(self):
-        if self._client_process:
+        if self._client_process_pid and psutil.pid_exists(self._client_process_pid):
             if not self.done:
                 self._early_stopping()
-            if psutil.pid_exists(self._client_process_pid):
-                utils.recursively_kill_process(self._client_process_pid)
-            self._client_process = None
-            self._client_process_pid = None
-            gc.collect()
+            # if psutil.pid_exists(self._client_process_pid):
+            # print('therrre')
+            # psutil.wait_procs([psutil.Process(self._client_process_pid)])
+            # psutil.Process(self._client_process_pid).kill()
+            # os.kill(self._client_process_pid, 0)
+            # utils.recursively_kill_process(self._client_process_pid)
+            psutil.wait_procs([psutil.Process(self._client_process_pid)])
+        # self._client_process = None
+        # self._client_process_pid = None
+        gc.collect()
 
     def _close_server(self):
         if self._server:
@@ -298,30 +308,32 @@ class DssatPdi(gym.Env):
             self._tmp_folder = None
 
     def _early_stopping(self):
-        print(f'early stopping')
         if not self.done:
             if self._last_is_send:
                 self._server.recv()
                 self._last_is_send = False
             self._is_early_stopping = True
-            message = {'early_stopping': self._is_early_stopping,
-                       'action': {action: 0 for action in self.action_variables}}
+            message = {'early_stopping': True, 'action': {action: 0 for action in self.action_variables}}
             message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
             self._server.send(message_js)
             self._last_is_send = True
-            self._client_process.wait()
+            # psutil.wait_procs([psutil.Process(self._client_process_pid)])
 
     def close(self):
         self._close_client()
         self._close_server()
         self._close_tmp_folder()
         self.closed = True
+        if self._client_process_pid and psutil.pid_exists(self._client_process_pid):
+            print('bad')
         gc.collect()
 
     def step(self, action_dict):
         if self.closed:
             raise ValueError('Environment has been previously closed, please call env.reset() or env.reset_hard()'
                              ' prior to calling env.step(.)')
+        if self.done:
+            warnings.warn("Warning: the environment is done ; you may call env.reset() or env.reset_hard()")
         assert isinstance(action_dict, dict)
         for available_action in self.action_variables:
             assert available_action in action_dict

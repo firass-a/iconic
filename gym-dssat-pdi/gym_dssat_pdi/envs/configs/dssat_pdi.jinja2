@@ -169,9 +169,10 @@ plugins:
           print('Client started')
       stop_client:
         exec: |
-          done = True
-          message = {'done': done, 'state': {}}
-          client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
+          if not early_stopping:
+            done = True
+            message = {'done': done, 'state': {}}
+            client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
           client.close()
           context.destroy()
           print('Client closed')
@@ -179,6 +180,10 @@ plugins:
         with: {rseed1: $RSEED1}
         exec:
           rseed1[()] = {{ '{0:d}'.format(rseed1) }}
+      early_stopping:
+        with: {pdi_early_stopping: $PDI_EARLY_STOPPING}
+        exec:
+          pdi_early_stopping.itemset(early_stopping)
       interact:
         exec: |
           state = {'yrdoy': yrdoy,
@@ -223,16 +228,11 @@ plugins:
           message_from_client = json.loads(message_from_client_js)
           action = message_from_client['action']
           early_stopping = message_from_client['early_stopping']
-      early_stopping:
-        with: {pdi_early_stopping: $PDI_EARLY_STOPPING}
-        exec:
-          # pdi_early_stopping[()] = int(early_stopping)
-          print(type(pdi_early_stopping), pdi_early_stopping)
       fertilize:
         with: {anfer: $ANFER}
         exec:
-          anfer[()] = action['anfer']
+          anfer.itemset(action['anfer'])
       irrigate:
         with: {amir: $AMIR}
         exec:
-          amir[()] = action['amir']
+          amir.itemset(action['amir'])

@@ -16,6 +16,7 @@ import os
 import gc
 import pkgutil
 from pprint import pprint
+import psutil
 import time
 import pdb
 from copy import deepcopy
@@ -70,13 +71,16 @@ class DssatPdi(gym.Env):
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.irrig = 'L' if mode in ['all', 'irrigation'] else 'R'
-        self.is_early_stopping = False
+        self._is_early_stopping = False
         self.done = False
+        self.closed = False
         self.t = 0
         self._port = None
         self._zmq_context = None
         self._server = None
+        self._last_is_send = False
         self._client_process_pid = None
+        self._client_process = None
         self._files_prefix = files_prefix
         self._tmp_folder = None
         self._make_tmp_folder()
@@ -200,8 +204,12 @@ class DssatPdi(gym.Env):
                 f_.write('\n********************************\n')
                 f_.write(utils.get_time_stamp())
                 f_.write('\n********************************\n')
-            process = Popen(pdi_command, stdout=f_, shell=False, universal_newlines=True, cwd=self._tmp_folder)
-            self._client_process_pid = process.pid
+            self._client_process = Popen(pdi_command,
+                                         stdout=f_,
+                                         shell=False,
+                                         universal_newlines=True,
+                                         cwd=self._tmp_folder)
+            self._client_process_pid = self._client_process.pid
 
     def _launch_server(self):
         self._zmq_context = zmq.Context()
@@ -220,6 +228,7 @@ class DssatPdi(gym.Env):
 
     def _get_state(self):
         message = self._server.recv().decode('utf-8')
+        self._last_is_send = False
         message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
         _state = message['state']
@@ -258,16 +267,22 @@ class DssatPdi(gym.Env):
                 shutil.copyfile(f'{self._files_prefix}{name}', f'{self._tmp_folder}/{name}')
 
     def _reset_attributes(self):
-        self.is_early_stopping = False
+        self.closed = False
+        self._is_early_stopping = False
         self.done = False
         self.t = 0
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
 
     def _close_client(self):
-        if not self.done and self._client_process_pid:
-            utils.recursively_kill_process(self._client_process_pid)
+        if self._client_process:
+            if not self.done:
+                self._early_stopping()
+            if psutil.pid_exists(self._client_process_pid):
+                utils.recursively_kill_process(self._client_process_pid)
+            self._client_process = None
             self._client_process_pid = None
+            gc.collect()
 
     def _close_server(self):
         if self._server:
@@ -282,26 +297,40 @@ class DssatPdi(gym.Env):
             shutil.rmtree(self._tmp_folder)
             self._tmp_folder = None
 
-    def close(self):
-        if not self.done:
-            self._early_stopping()
-
-        self._close_server()
-        self._close_client()
-        self._close_tmp_folder()
-
     def _early_stopping(self):
-        self.is_early_stopping = True
+        print(f'early stopping')
+        if not self.done:
+            if self._last_is_send:
+                self._server.recv()
+                self._last_is_send = False
+            self._is_early_stopping = True
+            message = {'early_stopping': self._is_early_stopping,
+                       'action': {action: 0 for action in self.action_variables}}
+            message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
+            self._server.send(message_js)
+            self._last_is_send = True
+            self._client_process.wait()
+
+    def close(self):
+        self._close_client()
+        self._close_server()
+        self._close_tmp_folder()
+        self.closed = True
+        gc.collect()
 
     def step(self, action_dict):
+        if self.closed:
+            raise ValueError('Environment has been previously closed, please call env.reset() or env.reset_hard()'
+                             ' prior to calling env.step(.)')
         assert isinstance(action_dict, dict)
         for available_action in self.action_variables:
             assert available_action in action_dict
         try:
             if not self.done:
-                message = {'early_stopping': self.is_early_stopping, 'action': action_dict}
+                message = {'early_stopping': self._is_early_stopping, 'action': action_dict}
                 message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
                 self._server.send(message_js)
+                self._last_is_send = True
                 observation, _state, done, context = self._get_state()  # context == ensemble of static features
                 self.done = done
                 if done:
@@ -328,12 +357,13 @@ class DssatPdi(gym.Env):
         self.set_seed(seed)
         if self.random_weather:
             self._rseed1 = self._random_generator.randint(1, 99999)
-        if not self.done:
-            self._close_client()
+        self._close_client()
+        if not self._last_is_send:
+            self._server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
+            self._last_is_send = True
         self._write_pdi_yaml()
-        self._reset_attributes()
         self._launch_client()
-        self._server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
+        self._reset_attributes()
         self.observation, self.state_, self.done, self.context = self._get_state()
         return self.observation
 

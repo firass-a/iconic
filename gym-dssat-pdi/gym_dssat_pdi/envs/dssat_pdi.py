@@ -216,12 +216,14 @@ class DssatPdi(gym.Env):
     def _launch_server(self):
         self._zmq_context = zmq.Context()
         self._server = self._zmq_context.socket(zmq.REP)
-        self._server.setsockopt(zmq.RCVHWM, 1)
-        self._server.setsockopt(zmq.SNDHWM, 1)
-        # self._server.setsockopt(zmq.LINGER, 0)
+        # self._server.setsockopt(zmq.RCVHWM, 1)
+        # self._server.setsockopt(zmq.SNDHWM, 1)
+        self._server.setsockopt(zmq.LINGER, 0)
         # self._server.setsockopt(zmq.MAX_SOCKETS, 256)
         # self._server.setsockopt(zmq.IMMEDIATE, 1)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
+        self.poller = zmq.Poller()
+        self.poller.register(self._server, zmq.POLLIN)
 
     def _write_pdi_yaml(self):
         value_dic = {'port': self._port,
@@ -232,7 +234,10 @@ class DssatPdi(gym.Env):
         utils.save_file(saving_path=f'{self._tmp_folder}/dssat-pdi.yml', content=self._pdi_yaml)
 
     def _get_state(self):
-        message = self._server.recv().decode('utf-8')
+        if self.poller.poll(10000):
+            message = self._server.recv().decode('utf-8')
+        else:
+            raise ValueError("Can't reach the client")
         self._last_is_send = False
         message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
@@ -280,18 +285,21 @@ class DssatPdi(gym.Env):
         self._history = {'state': [], 'action': [], 'reward': []}
 
     def _close_client(self):
+        if not self.done:
+            self._early_stopping()
         if self._client_process_pid and psutil.pid_exists(self._client_process_pid):
-            if not self.done:
-                self._early_stopping()
+            psutil.wait_procs([psutil.Process(self._client_process_pid)])
             # if psutil.pid_exists(self._client_process_pid):
             # print('therrre')
             # psutil.wait_procs([psutil.Process(self._client_process_pid)])
             # psutil.Process(self._client_process_pid).kill()
             # os.kill(self._client_process_pid, 0)
             # utils.recursively_kill_process(self._client_process_pid)
-            psutil.wait_procs([psutil.Process(self._client_process_pid)])
-        # self._client_process = None
-        # self._client_process_pid = None
+        self._client_process = None
+        self._client_process_pid = None
+        if not self._last_is_send:
+            self._server.send(b'')
+            self._last_is_send = True
         gc.collect()
 
     def _close_server(self):
@@ -308,24 +316,17 @@ class DssatPdi(gym.Env):
             self._tmp_folder = None
 
     def _early_stopping(self):
-        if not self.done:
-            if self._last_is_send:
-                self._server.recv()
-                self._last_is_send = False
-            self._is_early_stopping = True
-            message = {'early_stopping': True, 'action': {action: 0 for action in self.action_variables}}
-            message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
-            self._server.send(message_js)
-            self._last_is_send = True
-            # psutil.wait_procs([psutil.Process(self._client_process_pid)])
+        self._is_early_stopping = True
+        message = {'early_stopping': True, 'action': {action: 0 for action in self.action_variables}}
+        message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
+        self._server.send(message_js)
+        self._last_is_send = True
 
     def close(self):
         self._close_client()
         self._close_server()
         self._close_tmp_folder()
         self.closed = True
-        if self._client_process_pid and psutil.pid_exists(self._client_process_pid):
-            print('bad')
         gc.collect()
 
     def step(self, action_dict):
@@ -346,7 +347,7 @@ class DssatPdi(gym.Env):
                 observation, _state, done, context = self._get_state()  # context == ensemble of static features
                 self.done = done
                 if done:
-                    self._close_client()
+                    # self._server.send(b'')
                     return None, None, self.done, None
                 self.history['observation'].append(observation)
                 self.history['action'].append(action_dict)
@@ -370,12 +371,20 @@ class DssatPdi(gym.Env):
         if self.random_weather:
             self._rseed1 = self._random_generator.randint(1, 99999)
         self._close_client()
-        if not self._last_is_send:
-            self._server.send(b'')  # to respect REQ/REP send/receive/send/receive/... scheme
-            self._last_is_send = True
         self._write_pdi_yaml()
         self._launch_client()
         self._reset_attributes()
+        self.observation, self.state_, self.done, self.context = self._get_state()
+        return self.observation
+
+    def reset_(self, seed=None):
+        self.set_seed(seed)
+        if self.random_weather:
+            self._rseed1 = self._random_generator.randint(1, 99999)
+        self._write_pdi_yaml()
+        self._reset_attributes()
+        self._server.send(b'')
+        self._last_is_send = True
         self.observation, self.state_, self.done, self.context = self._get_state()
         return self.observation
 

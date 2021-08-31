@@ -155,6 +155,7 @@ plugins:
           import json
           import logging
           import numpy as np
+          import time
           class NumpyEncoder(json.JSONEncoder):
             def default(self, obj):
               if isinstance(obj, np.ndarray):
@@ -162,21 +163,29 @@ plugins:
               return json.JSONEncoder.default(self, obj)
           context = zmq.Context()
           client = context.socket(zmq.REQ)
-          # client.setsockopt(zmq.LINGER, 0)
+          client.setsockopt(zmq.LINGER, 0)
           client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
+          time.sleep(.1)
           done = False
-          early_stopping = False
+          is_early_stopping = False
           is_last_send = False
           print('Client started')
-      stop_client:
+      flag_done:
         exec: |
           done = True
-          if not is_last_send and not early_stopping:
-            message = {'done': done, 'state': {}}
+          message = {'done': done, 'state': {}}
+          if not is_early_stopping:
             client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
           is_last_sent = True
+          client.recv()
+          is_last_sent = False
+      flag_undone:
+        exec: |
+          done = False
+      stop_client:
+        exec: |
           client.close()
-          context.destroy()
+          context.term()
           print('Client closed')
       set_rseed:
         with: {rseed1: $RSEED1}
@@ -185,7 +194,7 @@ plugins:
       early_stopping:
         with: {pdi_early_stopping: $PDI_EARLY_STOPPING}
         exec:
-          pdi_early_stopping.itemset(early_stopping)
+          pdi_early_stopping.itemset(is_early_stopping)
       interact:
         exec: |
           state = {'yrdoy': yrdoy,
@@ -231,7 +240,7 @@ plugins:
           is_last_send = False
           message_from_client = json.loads(message_from_client_js)
           action = message_from_client['action']
-          early_stopping = message_from_client['early_stopping']
+          is_early_stopping = message_from_client['early_stopping']
       fertilize:
         with: {anfer: $ANFER}
         exec:

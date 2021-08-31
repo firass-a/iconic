@@ -113,8 +113,8 @@ def _multiprocess_trial_func_hard_reset(args):
     try:
         env, log_saving_path = args
         all_interactions = []
-        env.reset_hard()
         env.log_saving_path = log_saving_path
+        env.reset_hard()
         for i in range(30):
             interactions = interact_with_env(env, verbose=False)
             all_interactions.append(interactions)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         'mode': 'fertilization',
         'experiment_number': 3,
         'seed': 123456,
-        'random_weather': True,
+        'random_weather': not True,
     }
     done = False
     try_interact = not True
@@ -204,6 +204,7 @@ if __name__ == '__main__':
                 tracker = SummaryTracker()
                 # raw_results1 = multiprocess_trial(env_args, cwd, rep=30)
                 # print(len(raw_results1))
+                env_args['log_saving_path'] = None
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
                 raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=30)
                 print(len(raw_results2))

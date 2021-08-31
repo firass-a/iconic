@@ -176,9 +176,9 @@ plugins:
           message = {'done': done, 'state': {}}
           if not is_early_stopping:
             client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
-          is_last_sent = True
+            is_last_send = True
           rseed1_ = client.recv().decode('utf-8')
-          is_last_sent = False
+          is_last_send = False
       flag_undone:
         exec: |
           done = False

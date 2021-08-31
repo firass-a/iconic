@@ -163,10 +163,10 @@ plugins:
               return json.JSONEncoder.default(self, obj)
           context = zmq.Context()
           client = context.socket(zmq.REQ)
-          client.setsockopt(zmq.LINGER, 0)
+          # client.setsockopt(zmq.LINGER, 0)
           client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
-          time.sleep(.1)
           done = False
+          rseed1_ = {{ '{0:d}'.format(rseed1) }}
           is_early_stopping = False
           is_last_send = False
           print('Client started')
@@ -177,7 +177,7 @@ plugins:
           if not is_early_stopping:
             client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
           is_last_sent = True
-          client.recv()
+          rseed1_ = client.recv().decode('utf-8')
           is_last_sent = False
       flag_undone:
         exec: |
@@ -185,12 +185,12 @@ plugins:
       stop_client:
         exec: |
           client.close()
-          context.term()
+          context.destroy()
           print('Client closed')
       set_rseed:
         with: {rseed1: $RSEED1}
         exec:
-          rseed1[()] = {{ '{0:d}'.format(rseed1) }}
+          rseed1[()] = rseed1_
       early_stopping:
         with: {pdi_early_stopping: $PDI_EARLY_STOPPING}
         exec:

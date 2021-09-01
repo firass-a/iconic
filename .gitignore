@@ -19,3 +19,5 @@ share/python-wheels/
 MANIFEST
 .pdf
 *.log/*
+*/render
+*/logs

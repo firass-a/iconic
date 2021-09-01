@@ -20,8 +20,16 @@ def make_render_folder(folder_path):
 
 def render_temporal_series(_history, feature_name_1, feature_name_2=None, layout_dict=None, saving_path=None,
                            folder_path='./render', *args, **kwargs):
-    make_render_folder(folder_path)
+    if folder_path != './':
+        make_render_folder(folder_path)
     trajectory = _history['state']
+    if not trajectory:
+        raise ValueError(f'environment history is empty')
+    authorized_keys = [*trajectory[0]]
+    if feature_name_1 not in authorized_keys:
+        raise ValueError(f'feature_name_1 "{feature_name_1}" not in {authorized_keys}')
+    if feature_name_2 is not None and feature_name_2 not in authorized_keys:
+        raise ValueError(f'feature_name_2 "{feature_name_2}" not in {authorized_keys}')
     trajectory = transpose_dicts(trajectory)
     y1 = trajectory[feature_name_1]
     x = [int(str(DOY)[-3:]) for DOY in trajectory['yrdoy']]

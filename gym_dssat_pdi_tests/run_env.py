@@ -54,7 +54,10 @@ def default_policy(YRDOY):
 
 def interact_with_env(env, verbose=True):
     interactions = []
+    i = 0
     while not env.done:
+        if i == 24:
+            return interactions
         observation = env.observation
         observation_list = env.observation_dict_to_array(observation)
         YRDOY = observation['yrdoy']
@@ -65,33 +68,40 @@ def interact_with_env(env, verbose=True):
         res = env.step(action)
         new_state, reward, done, info = res
         interactions.append(new_state)
+        i += 1
     if env.log_saving_path:
         # time.sleep(1)
         pass
     return interactions
 
 
-def multiprocess_trial(env_args, cwd, rep):
+def multiprocess_trial(env_args, cwd, rep, save_log=False):
     arguments = []
-    for i in range(rep):
+    n_cores = multiprocessing.cpu_count()
+    rep_by_core = rep // (100 * n_cores)
+    for i in range(100 * n_cores):
         env_args['log_saving_path'] = f'{cwd}/logs/dssat-pdi-{i}.log'
         env_args['seed'] = np.random.randint(1, 999999)
-        arguments.append((deepcopy(env_args)))
+        arguments.append((deepcopy(env_args), rep_by_core, save_log))
     with multiprocessing.Pool() as pool:
-        raw_result = list(pool.imap_unordered(_multiprocess_trial_func, arguments))
+        raw_result = pool.map_async(_multiprocess_trial_func, arguments)
+        pool.close()
+        pool.join()
+        print(raw_result)
     return raw_result
-
 
 def _multiprocess_trial_func(args):
     try:
         all_interactions = []
-        env_args = args
+        env_args, rep, save_log = args
+        if not save_log:
+            env_args['log_saving_path'] = None
         env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-        for i in range(30):
+        for i in range(rep):
             interactions = interact_with_env(env, verbose=False)
             all_interactions.append(interactions)
             env.reset()
-            print(env.log_saving_path, i)
+            # print(f'soft reset {i}')
         return all_interactions
     except Exception as e:
         logging.exception(e)
@@ -99,11 +109,14 @@ def _multiprocess_trial_func(args):
         env.close()
 
 
-def multiprocess_trial_hard_reset(env, cwd, rep):
+def multiprocess_trial_hard_reset(env, cwd, rep, save_log=False):
     env.close()
     arguments = []
-    for i in range(rep):
-        arguments.append((env, f'{cwd}/logs/dssat-pdi-{i}.log'))
+    n_cores = multiprocessing.cpu_count()
+    rep_by_core = rep // (100 * n_cores)
+    for i in range(100 * n_cores):
+        print(env.log_saving_path, i)
+        arguments.append((env, rep_by_core, f'{cwd}/logs/dssat-pdi-{i}.log', save_log))
     with multiprocessing.Pool() as pool:
         raw_result = list(pool.imap_unordered(_multiprocess_trial_func_hard_reset, arguments))
     return raw_result
@@ -111,15 +124,18 @@ def multiprocess_trial_hard_reset(env, cwd, rep):
 
 def _multiprocess_trial_func_hard_reset(args):
     try:
-        env, log_saving_path = args
+        env, rep, log_saving_path, save_log = args
         all_interactions = []
-        env.log_saving_path = log_saving_path
+        if save_log:
+            env.log_saving_path = log_saving_path
+        else:
+            env.log_saving_path = None
         env.reset_hard()
-        for i in range(30):
+        for i in range(rep):
             interactions = interact_with_env(env, verbose=False)
             all_interactions.append(interactions)
             env.reset()
-            print(log_saving_path, i)
+            # print(f'hard reset {i}')
         return interactions
     except Exception as e:
         logging.exception(e)
@@ -138,7 +154,7 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': '/home/rgautron/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
-        'mode': 'fertilization',
+        'mode': 'irrigation',
         'experiment_number': 3,
         'seed': 123456,
         'random_weather': not True,
@@ -149,16 +165,22 @@ if __name__ == '__main__':
     if try_interact:
         # with utils.DssatPdiHandler():
         try:
+            n_rep = 10
             # interactions = []
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            env.reset_hard()
-            for i in range(10):
-                interact_with_env(env, verbose=False)
-                env.reset()
+            for i in range(n_rep):
+                interact_with_env(env, verbose=True)
                 # env.reset()
+                if i < n_rep - 1:
+                    env.reset()
+                # else:
+                #     print('getting in second close')
+                #     print(env._last_is_send)
+                #     env.close()
+            # env.reset()
             # env._get_state()
-            print(env._last_is_send)
-            print(env.observation)
+            # print(env._last_is_send)
+            # print(env.observation)
             # env.reset()
             # print(env._last_is_send)
             # print(env.observation)
@@ -202,12 +224,15 @@ if __name__ == '__main__':
         with utils.DssatPdiHandler():  # avoid zombies in code crashes
             try:
                 tracker = SummaryTracker()
-                # raw_results1 = multiprocess_trial(env_args, cwd, rep=30)
+                raw_results1 = multiprocess_trial(env_args, cwd, rep=10000)
+                print('first test passed')
+                pdb.set_trace()
+                raw_results2 = multiprocess_trial(env_args, cwd, rep=10000)
+                print('second test passed')
                 # print(len(raw_results1))
-                env_args['log_saving_path'] = None
-                env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-                raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=30)
-                print(len(raw_results2))
+                # env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                # raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=1000 * 8)
+                # print(len(raw_results2))
             except Exception as e:
                 logging.exception(e)
                 raise e

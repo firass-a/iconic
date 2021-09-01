@@ -156,14 +156,15 @@ plugins:
           import logging
           import numpy as np
           import time
+          import gc
           class NumpyEncoder(json.JSONEncoder):
             def default(self, obj):
               if isinstance(obj, np.ndarray):
                 return obj.tolist()
               return json.JSONEncoder.default(self, obj)
           context = zmq.Context()
-          client = context.socket(zmq.REQ)
-          # client.setsockopt(zmq.LINGER, 0)
+          client = context.socket(zmq.PAIR)
+          client.setsockopt(zmq.LINGER, 1000)
           client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
           done = False
           rseed1_ = {{ '{0:d}'.format(rseed1) }}
@@ -185,7 +186,7 @@ plugins:
       stop_client:
         exec: |
           client.close()
-          context.destroy()
+          context.term()
           print('Client closed')
       set_rseed:
         with: {rseed1: $RSEED1}

@@ -46,19 +46,21 @@ def irrigation_reward(_previous_state, _next_state, _history):
         swr = ((sw - ll) * dlayr * layer_with_roots).sum()
         swr += ((sw - ll) * dlayr)[first_greater_layer_bottom] * last_layer_depth_porportion_with_root
         ratio = swr / pawr
-        print(ratio)
+        # print(ratio)
         if ratio <= .2:
             ratio_penality = - 10
-        if ratio > .9:
+        elif ratio > .9:
             ratio_penality = - 1
+        else:
+            ratio_penality = 0
         try:
             # reward = np.exp(-1 / (1 - nstres) ** 2) - 4 * ratio ** 2 + 4 * ratio - penality * bool(last_action)
             # reward = - 4 * ratio ** 2 + 4 * ratio - penality * bool(last_action)
-            print(penality * bool(last_action))
+            # print(penality * bool(last_action))
             reward = ratio + 1 - swfac + ratio_penality
         except Exception as e:
             print(e)
-        print(reward)
+        # print(reward)
     return reward
 
 def all_reward(_previous_state, _next_state, _history):

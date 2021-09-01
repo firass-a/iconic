@@ -1,6 +1,6 @@
 logging:
-{#  level: debug#}
-  level: error
+  level: debug
+{#  level: error#}
 
 metadata:
   NLAYR: int
@@ -175,9 +175,8 @@ plugins:
         exec: |
           done = True
           message = {'done': done, 'state': {}}
-          if not is_early_stopping:
-            client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
-            is_last_send = True
+          client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
+          is_last_send = True
           rseed1_ = client.recv().decode('utf-8')
           is_last_send = False
       flag_undone:

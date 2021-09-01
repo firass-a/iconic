@@ -18,6 +18,8 @@ import psutil
 import warnings
 import pdb
 import time
+import sys
+import signal
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
@@ -78,6 +80,7 @@ class DssatPdi(gym.Env):
         self._port = None
         self._zmq_context = None
         self._server = None
+        self._poller = None
         self._last_is_send = False
         self._client_process_pid = None
         self._client_process = None
@@ -223,6 +226,10 @@ class DssatPdi(gym.Env):
         # self._server.setsockopt(zmq.IMMEDIATE, 1)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
+    def _launch_poller(self):
+        self._poller = zmq.Poller()
+        self._poller.register(self._server, zmq.POLLIN)
+
     def _write_pdi_yaml(self):
         value_dic = {'port': self._port,
                      'rseed1': self._rseed1,
@@ -232,7 +239,10 @@ class DssatPdi(gym.Env):
         utils.save_file(saving_path=f'{self._tmp_folder}/dssat-pdi.yml', content=self._pdi_yaml)
 
     def _get_state(self):
-        message = self._server.recv().decode('utf-8')
+        if self._poller.poll(timeout=1000):
+            message = self._server.recv().decode('utf-8')
+        else:
+            sys.exit("client doesn't send message")
         self._last_is_send = False
         message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
@@ -256,6 +266,7 @@ class DssatPdi(gym.Env):
 
     def _get_sockets_(self):
         self._launch_server()
+        self._launch_poller()
         self._write_pdi_yaml()
         self._launch_client()
 
@@ -286,6 +297,8 @@ class DssatPdi(gym.Env):
         if self._client_process_pid and psutil.pid_exists(self._client_process_pid):
             # psutil.wait_procs([psutil.Process(self._client_process_pid)])
             self._client_process.wait()
+        del self._client_process
+        self._client_process = None
         self._client_process_pid = None
         if not self._early_stopped and self._last_is_send:
             self._server.send(b'')
@@ -298,6 +311,11 @@ class DssatPdi(gym.Env):
         if self._zmq_context:
             self._zmq_context.term()
             self._zmq_context = None
+
+    def _close_poller(self):
+        if self._poller is not None:
+            self._poller.unregister(self._server)
+            self._poller = None
 
     def _close_tmp_folder(self):
         if self._tmp_folder:
@@ -325,6 +343,7 @@ class DssatPdi(gym.Env):
     def close(self, _close_tmp=True):
         if not self.closed:
             self._close_client()
+            self._close_poller()
             self._close_server()
             if _close_tmp:
                 self._close_tmp_folder()
@@ -396,7 +415,9 @@ class DssatPdi(gym.Env):
             self._write_fileX_template()
         self._reset_attributes()
         self._get_sockets_()
+        print('sockets_made')
         self.observation, self.state_, self.done, self.context = self._get_state()
+        print('_get_state')
         return self.observation
 
     def set_seed(self, seed=None):

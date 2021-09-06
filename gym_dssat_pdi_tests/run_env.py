@@ -145,6 +145,7 @@ def _multiprocess_trial_func_hard_reset(args):
 
 if __name__ == '__main__':
     dir = './logs'
+    utils.make_folder(dir)
     try:
         for file in os.scandir(dir):
             os.remove(file.path)

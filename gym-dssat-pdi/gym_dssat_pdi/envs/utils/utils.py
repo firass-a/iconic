@@ -10,7 +10,7 @@ import pdb
 import json
 import numpy as np
 from pprint import pprint
-
+import pathlib
 
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
@@ -119,6 +119,10 @@ def _parse_config(path_to_load):
     with open(path_to_load, 'r') as ymlfile:
         config = yaml.load(ymlfile, Loader=yaml.FullLoader)
     return config
+
+def make_folder(folder_path):
+    path = pathlib.Path(folder_path)
+    path.mkdir(exist_ok=True)
 
 if __name__ == '__main__':
     pass

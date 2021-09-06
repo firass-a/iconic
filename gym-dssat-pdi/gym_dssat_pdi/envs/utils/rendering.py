@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from gym_dssat_pdi.envs.utils.utils import transpose_dicts
+from gym_dssat_pdi.envs.utils.utils import transpose_dicts, make_folder
 import numpy as np
 import pathlib
 import pdb
@@ -14,14 +14,10 @@ __credits__ = [
 __license__ = 'BSD 3-Clause'
 __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
-def make_render_folder(folder_path):
-    path = pathlib.Path(folder_path)
-    path.mkdir(exist_ok=True)
-
 def render_temporal_series(_history, feature_name_1, feature_name_2=None, layout_dict=None, saving_path=None,
                            folder_path='./render', *args, **kwargs):
     if folder_path != './':
-        make_render_folder(folder_path)
+        make_folder(folder_path)
     trajectory = _history['state']
     if not trajectory:
         raise ValueError(f'environment history is empty')
@@ -49,7 +45,7 @@ def render_temporal_series(_history, feature_name_1, feature_name_2=None, layout
     plt.savefig(saving_path, bbox_inches='tight')
 
 def render_reward(_history, saving_path=None, folder_path='./render', cumsum=True, *args, **kwargs):
-    make_render_folder(folder_path)
+    make_folder(folder_path)
     trajectory = _history['state']
     trajectory = transpose_dicts(trajectory)
     reward = _history['reward']

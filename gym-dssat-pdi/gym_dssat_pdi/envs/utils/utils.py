@@ -101,12 +101,15 @@ def transpose_dicts(dict_list):
 
 
 def _post_treat_state(state):
-    state['grnwt'] *= state['pltpop']
-    state['nstres'] = 1 - state['nstres']
-    state['swfac'] = 1 - state['swfac']
-    state['pcngrn'] /= 100
-    state['wtnup'] *= 10
-    state['trnu'] *= 10 * state['pltpop']
+    try:
+        state['grnwt'] *= state['pltpop']
+        state['nstres'] = 1 - state['nstres']
+        state['swfac'] = 1 - state['swfac']
+        state['pcngrn'] /= 100
+        state['wtnup'] *= 10
+        state['trnu'] *= 10 * state['pltpop']
+    except Exception as e:
+        print(e)
     return state
 
 

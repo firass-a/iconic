@@ -280,8 +280,8 @@ setting:
       - dul
       - ll
       - dlayr
-      - snh4_ini
-      - sno3_ini
+#      - snh4_ini
+#      - sno3_ini
   fertilization:
     action:
       - anfer
@@ -305,8 +305,8 @@ setting:
       - dul
       - ll
       - dlayr
-      - snh4_ini
-      - sno3_ini
+#      - snh4_ini
+#      - sno3_ini
   irrigation:
     action:
       - amir
@@ -332,5 +332,5 @@ setting:
       - dul
       - ll
       - dlayr
-      - snh4_ini
-      - sno3_ini
+#      - snh4_ini
+#      - sno3_ini

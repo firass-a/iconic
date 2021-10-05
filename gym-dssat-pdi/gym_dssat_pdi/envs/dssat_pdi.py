@@ -3,7 +3,7 @@ import gym.spaces as spaces
 from gym_dssat_pdi.envs.utils import utils, rewards, rendering
 import numpy as np
 from gym.utils import seeding
-from subprocess import Popen
+import subprocess
 import zmq
 import json
 import yaml
@@ -11,15 +11,14 @@ import tempfile
 import shutil
 import logging
 import os
-import gc
 import pkgutil
 from pprint import pprint
 import psutil
 import warnings
 import pdb
-import time
 import sys
 import signal
+import atexit
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
@@ -67,6 +66,7 @@ class DssatPdi(gym.Env):
         self.seed = None
         self.set_seed(seed=seed)
         self._rseed1 = self._random_generator.randint(1, 99999)
+        print(f'\n~~~~~RSEED1: {self._rseed1}~~~~~\n')
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
@@ -83,7 +83,6 @@ class DssatPdi(gym.Env):
         self._poller = None
         self._last_is_send = False
         self._client_process_pid = None
-        self._client_process = None
         self._files_prefix = files_prefix
         self._tmp_folder = None
         self._make_tmp_folder()
@@ -170,7 +169,7 @@ class DssatPdi(gym.Env):
                     high = key_variable_dic['high']
                     atomic_spaces = []
                     sub_size = high - low + 1
-                    for element in ree(size):
+                    for element in range(size):
                         atomic_spaces.append(spaces.Discrete(sub_size))
                     space = spaces.Tuple(atomic_spaces)
                 else:
@@ -207,23 +206,25 @@ class DssatPdi(gym.Env):
             self.f_out.write('\n********************************\n')
             self.f_out.write(utils.get_time_stamp())
             self.f_out.write('\n********************************\n')
-        client_process = Popen(pdi_command,
+        client_process = subprocess.Popen(pdi_command,
                                stdout=self.f_out,
+                               stderr=sys.stderr,
                                shell=False,
                                universal_newlines=True,
                                cwd=self._tmp_folder,
+                               bufsize=0,
                                )
-        self._client_process = client_process
         self._client_process_pid = client_process.pid
+        atexit.register(self._cleanup_process)
+
+    def _cleanup_process(self):
+        if self._client_process_pid is not None and psutil.pid_exists(self._client_process_pid):
+            os.killpg(self._client_process_pid, signal.SIGKILL)
 
     def _launch_server(self):
         self._zmq_context = zmq.Context()
         self._server = self._zmq_context.socket(zmq.PAIR)
-        # self._server.setsockopt(zmq.RCVHWM, 1)
-        # self._server.setsockopt(zmq.SNDHWM, 1)
-        self._server.setsockopt(zmq.LINGER, 1000)
-        # self._server.setsockopt(zmq.MAX_SOCKETS, 256)
-        # self._server.setsockopt(zmq.IMMEDIATE, 1)
+        self._server.setsockopt(zmq.LINGER, 0)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
     def _launch_poller(self):
@@ -269,6 +270,9 @@ class DssatPdi(gym.Env):
         self._launch_poller()
         self._write_pdi_yaml()
         self._launch_client()
+        if not self._poller.poll(timeout=10000):
+            self.close()
+            self._get_sockets_()
 
     def _make_tmp_folder(self):
         if self._tmp_folder:
@@ -292,14 +296,10 @@ class DssatPdi(gym.Env):
         self._history = {'state': [], 'action': [], 'reward': []}
 
     def _close_client(self):
-        # if not self.done:
         self._early_stopping()
         if self._client_process_pid and psutil.pid_exists(self._client_process_pid):
-            # psutil.wait_procs([psutil.Process(self._client_process_pid)])
-            self._client_process.wait()
-        del self._client_process
-        self._client_process = None
-        self._client_process_pid = None
+            psutil.wait_procs([psutil.Process(self._client_process_pid)], timeout=1)
+            self._client_process_pid = None
         if not self._early_stopped and self._last_is_send:
             self._server.send(b'')
             self._last_is_send = True
@@ -351,10 +351,10 @@ class DssatPdi(gym.Env):
         if self.f_out and not self.f_out.closed:
             self.f_out.close()
 
-    def step(self, action_dict):
+    def step(self, action_dict, _update_attibutes=True):
         if self.closed:
             raise ValueError('Environment has been previously closed, please call env.reset() or env.reset_hard()'
-                             ' prior to calling env.step(.)')
+                             ' prior to calling env.step(...)')
         if self.done:
             warnings.warn("Warning: the environment is done ; you may call env.reset() or env.reset_hard()")
         assert isinstance(action_dict, dict)
@@ -370,17 +370,18 @@ class DssatPdi(gym.Env):
                 self.done = done
                 if done:
                     return None, None, self.done, None
-                self.history['observation'].append(observation)
-                self.history['action'].append(action_dict)
-                self._history['state'].append(_state)
-                self._history['action'].append(action_dict)
-                reward = self._get_reward(_state)
-                self.history['reward'].append(reward)
-                self._history['reward'].append(reward)
-                self.observation = observation
-                self._state = _state
-                self.reward = reward
-                self.t += 1
+                if _update_attibutes:
+                    self.history['observation'].append(observation)
+                    self.history['action'].append(action_dict)
+                    self._history['state'].append(_state)
+                    self._history['action'].append(action_dict)
+                    reward = self._get_reward(_state)
+                    self.history['reward'].append(reward)
+                    self._history['reward'].append(reward)
+                    self.observation = observation
+                    self._state = _state
+                    self.reward = reward
+                    self.t += 1
                 return observation, reward, done, context
             else:
                 return None, None, self.done, None
@@ -396,6 +397,7 @@ class DssatPdi(gym.Env):
             self.set_seed(seed)
             if self.random_weather:
                 self._rseed1 = self._random_generator.randint(1, 99999)
+                print(f'\n~~~~~RSEED1: {self._rseed1}~~~~~\n')
             if self.done:
                 self._server.send(f'{self._rseed1}'.encode('utf-8'))
             self._reset_attributes()
@@ -411,6 +413,7 @@ class DssatPdi(gym.Env):
             self._make_tmp_folder()
         if self.random_weather:
             self._rseed1 = self._random_generator.randint(1, 99999)
+            print(f'\n~~~~~RSEED1: {self._rseed1}~~~~~\n')
         if _new_tmp or self.random_weather:
             self._write_fileX_template()
         self._reset_attributes()

@@ -45,7 +45,10 @@ def irrigation_reward(_previous_state, _next_state, _history):
         pawr += ((dul - ll) * dlayr)[first_greater_layer_bottom] * last_layer_depth_porportion_with_root
         swr = ((sw - ll) * dlayr * layer_with_roots).sum()
         swr += ((sw - ll) * dlayr)[first_greater_layer_bottom] * last_layer_depth_porportion_with_root
-        ratio = swr / pawr
+        if pawr > 0:
+            ratio = swr / pawr
+        else:
+            ratio = float('Inf')
         # print(ratio)
         if ratio <= .2:
             ratio_penality = - 10

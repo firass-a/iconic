@@ -164,17 +164,17 @@ if __name__ == '__main__':
     try_interact = True
     try_multiproc = not True
     if try_interact:
-        # with utils.DssatPdiHandler():
         try:
             n_rep = 10000
             # interactions = []
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
             for i in range(n_rep):
-                interact_with_env(env, verbose=False)
+                # interact_with_env(env, verbose=True)
+                # pdb.set_trace()
                 # env.reset()
                 if i < n_rep - 1:
                     print(i)
-                    env.reset_hard(_new_tmp=False)
+                    env.reset_hard()
                 # else:
                 #     print('getting in second close')
                 #     print(env._last_is_send)
@@ -223,20 +223,19 @@ if __name__ == '__main__':
         finally:
             env.close()
     if try_multiproc:
-        with utils.DssatPdiHandler():  # avoid zombies in code crashes
-            try:
-                tracker = SummaryTracker()
-                raw_results1 = multiprocess_trial(env_args, cwd, rep=800, save_log=True)
-                # print('first test passed')
-                # pdb.set_trace()
-                # raw_results2 = multiprocess_trial(env_args, cwd, rep=10000)
-                # print('second test passed')
-                # print(len(raw_results1))
-                # env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-                # raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=1000 * 8)
-                # print(len(raw_results2))
-            except Exception as e:
-                logging.exception(e)
-                raise e
-            finally:
-                tracker.print_diff()
+        try:
+            tracker = SummaryTracker()
+            raw_results1 = multiprocess_trial(env_args, cwd, rep=800, save_log=True)
+            # print('first test passed')
+            # pdb.set_trace()
+            # raw_results2 = multiprocess_trial(env_args, cwd, rep=10000)
+            # print('second test passed')
+            # print(len(raw_results1))
+            # env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+            # raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=1000 * 8)
+            # print(len(raw_results2))
+        except Exception as e:
+            logging.exception(e)
+            raise e
+        finally:
+            tracker.print_diff()

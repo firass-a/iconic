@@ -1,3 +1,3 @@
-[submodule "gym_dssat_pdi"]
-	path = gym_dssat_pdi
-	url = https://gitlab.inria.fr/rgautron/gym_dssat_pdi
+[submodule "dssat-csm-os"]
+	path = dssat-csm-os
+	url = https://gitlab.inria.fr/rgautron/dssat-csm-os

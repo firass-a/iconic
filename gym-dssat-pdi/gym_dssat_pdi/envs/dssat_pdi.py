@@ -19,6 +19,7 @@ import pdb
 import sys
 import signal
 import atexit
+import time
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
@@ -66,7 +67,6 @@ class DssatPdi(gym.Env):
         self.seed = None
         self.set_seed(seed=seed)
         self._rseed1 = self._random_generator.randint(1, 99999)
-        print(f'\n~~~~~RSEED1: {self._rseed1}~~~~~\n')
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
@@ -75,13 +75,13 @@ class DssatPdi(gym.Env):
         self._early_stopped = False
         self.done = False
         self.closed = False
-        self.f_out = None
+        self._f_out = None
         self.t = 0
         self._port = None
         self._zmq_context = None
         self._server = None
         self._poller = None
-        self._last_is_send = False
+        self._last_is_send = True
         self._client_process_pid = None
         self._files_prefix = files_prefix
         self._tmp_folder = None
@@ -194,26 +194,25 @@ class DssatPdi(gym.Env):
         utils.save_file(saving_path=f'{self._tmp_folder}/{self.fileX_name}', content=self._fileX)
 
     def _launch_client(self):
-        # print(f'Starting env client: port {self.port}')
         pdi_command = f'pdirun {self._run_dssat_location} C {self.fileX_name} {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path
         else:
             file_path = os.devnull
-        self.f_out = open(file_path, 'a+')
+        self._f_out = open(file_path, 'a+')
         if self.log_saving_path is not None:
-            self.f_out.write('\n********************************\n')
-            self.f_out.write(utils.get_time_stamp())
-            self.f_out.write('\n********************************\n')
+            self._f_out.write('\n********************************\n')
+            self._f_out.write(utils.get_time_stamp())
+            self._f_out.write('\n********************************\n')
         client_process = subprocess.Popen(pdi_command,
-                               stdout=self.f_out,
-                               stderr=sys.stderr,
-                               shell=False,
-                               universal_newlines=True,
-                               cwd=self._tmp_folder,
-                               bufsize=0,
-                               )
+                                          stdout=self._f_out,
+                                          stderr=sys.stderr,
+                                          shell=False,
+                                          universal_newlines=True,
+                                          cwd=self._tmp_folder,
+                                          bufsize=0,
+                                          )
         self._client_process_pid = client_process.pid
         atexit.register(self._cleanup_process)
 
@@ -240,11 +239,16 @@ class DssatPdi(gym.Env):
         utils.save_file(saving_path=f'{self._tmp_folder}/dssat-pdi.yml', content=self._pdi_yaml)
 
     def _get_state(self):
+        if not self._last_is_send:
+            pdb.set_trace()
+            self.close()
+            raise ValueError("you cannot call env._get_state() two times in a row!")
         if self._poller.poll(timeout=1000):
             message = self._server.recv().decode('utf-8')
+            self._last_is_send = False
         else:
-            sys.exit("client doesn't send message")
-        self._last_is_send = False
+            self.close()
+            raise ValueError("client doesn't send message")
         message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
         _state = message['state']
@@ -300,7 +304,7 @@ class DssatPdi(gym.Env):
         if self._client_process_pid and psutil.pid_exists(self._client_process_pid):
             psutil.wait_procs([psutil.Process(self._client_process_pid)], timeout=1)
             self._client_process_pid = None
-        if not self._early_stopped and self._last_is_send:
+        if not self._last_is_send:
             self._server.send(b'')
             self._last_is_send = True
 
@@ -336,22 +340,27 @@ class DssatPdi(gym.Env):
         self._early_stopped = True
 
     def _get_env_done(self):
-        default_action = {'amir': 0, 'anfer': 0}
+        default_action_dict = {'amir': 0, 'anfer': 0}
         while not self.done:
-            self.step(action_dict=default_action)
+            message = {'early_stopping': self._is_early_stopping, 'action': default_action_dict}
+            message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
+            self._server.send(message_js)
+            self._last_is_send = True
+            observation, _state, done, context = self._get_state()
+            self.done = done
 
-    def close(self, _close_tmp=True):
+    def close(self):
         if not self.closed:
             self._close_client()
             self._close_poller()
             self._close_server()
-            if _close_tmp:
-                self._close_tmp_folder()
+            self._close_tmp_folder()
             self.closed = True
-        if self.f_out and not self.f_out.closed:
-            self.f_out.close()
+        if self._f_out and not self._f_out.closed:
+            self._f_out.close()
+            del self._f_out
 
-    def step(self, action_dict, _update_attibutes=True):
+    def step(self, action_dict):
         if self.closed:
             raise ValueError('Environment has been previously closed, please call env.reset() or env.reset_hard()'
                              ' prior to calling env.step(...)')
@@ -370,57 +379,53 @@ class DssatPdi(gym.Env):
                 self.done = done
                 if done:
                     return None, None, self.done, None
-                if _update_attibutes:
-                    self.history['observation'].append(observation)
-                    self.history['action'].append(action_dict)
-                    self._history['state'].append(_state)
-                    self._history['action'].append(action_dict)
-                    reward = self._get_reward(_state)
-                    self.history['reward'].append(reward)
-                    self._history['reward'].append(reward)
-                    self.observation = observation
-                    self._state = _state
-                    self.reward = reward
-                    self.t += 1
+                self.history['observation'].append(observation)
+                self.history['action'].append(action_dict)
+                self._history['state'].append(_state)
+                self._history['action'].append(action_dict)
+                reward = self._get_reward(_state)
+                self.history['reward'].append(reward)
+                self._history['reward'].append(reward)
+                self.observation = observation
+                self._state = _state
+                self.reward = reward
+                self.t += 1
                 return observation, reward, done, context
             else:
                 return None, None, self.done, None
         except Exception as e:
             logging.exception(e)
 
+    def get_state(self):
+        return self.observation
+
     def reset(self, seed=None):
         if self.closed:
-            self.reset_hard(_new_tmp=True)
+            self.reset_hard()
         elif not self.done:
             self._get_env_done()
         else:
             self.set_seed(seed)
             if self.random_weather:
                 self._rseed1 = self._random_generator.randint(1, 99999)
-                print(f'\n~~~~~RSEED1: {self._rseed1}~~~~~\n')
             if self.done:
                 self._server.send(f'{self._rseed1}'.encode('utf-8'))
+                self._last_is_send = True
             self._reset_attributes()
-            self._last_is_send = True
             self.observation, self.state_, self.done, self.context = self._get_state()
             return self.observation
 
-    def reset_hard(self, seed=None, _new_tmp=True):
+    def reset_hard(self, seed=None):
         self.set_seed(seed)
         if not self.closed:
-            self.close(_close_tmp=_new_tmp)
-        if _new_tmp:
-            self._make_tmp_folder()
+            self.close()
+        self._make_tmp_folder()
         if self.random_weather:
             self._rseed1 = self._random_generator.randint(1, 99999)
-            print(f'\n~~~~~RSEED1: {self._rseed1}~~~~~\n')
-        if _new_tmp or self.random_weather:
-            self._write_fileX_template()
+        self._write_fileX_template()
         self._reset_attributes()
         self._get_sockets_()
-        print('sockets_made')
         self.observation, self.state_, self.done, self.context = self._get_state()
-        print('_get_state')
         return self.observation
 
     def set_seed(self, seed=None):

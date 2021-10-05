@@ -2,6 +2,7 @@ import gym
 import logging
 import multiprocessing
 import faulthandler
+import pathlib
 
 faulthandler.enable()
 from gym_dssat_pdi.envs.utils import utils
@@ -49,6 +50,7 @@ def default_policy(YRDOY):
         amir = irrigation_dic[YRDOY]
     else:
         amir = 0
+    amir = 0
     return {'anfer': anfer, 'amir': amir}
 
 
@@ -56,22 +58,18 @@ def interact_with_env(env, verbose=True):
     interactions = []
     i = 0
     while not env.done:
-        if i == 24:
-            return interactions
         observation = env.observation
         observation_list = env.observation_dict_to_array(observation)
         YRDOY = observation['yrdoy']
         action = default_policy(YRDOY)
         if verbose:
-            pprint(observation)
+            pprint(f'observation: {observation}')
             print(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
+            # print(f'sw: {env._state["sw"]}')
         res = env.step(action)
         new_state, reward, done, info = res
         interactions.append(new_state)
         i += 1
-    if env.log_saving_path:
-        # time.sleep(1)
-        pass
     return interactions
 
 
@@ -84,10 +82,7 @@ def multiprocess_trial(env_args, cwd, rep, save_log=False):
         env_args['seed'] = np.random.randint(1, 999999)
         arguments.append((deepcopy(env_args), rep_by_core, save_log))
     with multiprocessing.Pool() as pool:
-        raw_result = pool.map_async(_multiprocess_trial_func, arguments)
-        pool.close()
-        pool.join()
-        print(raw_result)
+        raw_result = list(pool.imap_unordered(_multiprocess_trial_func, arguments))
     return raw_result
 
 def _multiprocess_trial_func(args):
@@ -101,7 +96,6 @@ def _multiprocess_trial_func(args):
             interactions = interact_with_env(env, verbose=False)
             all_interactions.append(interactions)
             env.reset()
-            # print(f'soft reset {i}')
         return all_interactions
     except Exception as e:
         logging.exception(e)
@@ -115,7 +109,6 @@ def multiprocess_trial_hard_reset(env, cwd, rep, save_log=False):
     n_cores = multiprocessing.cpu_count()
     rep_by_core = rep // (100 * n_cores)
     for i in range(100 * n_cores):
-        print(env.log_saving_path, i)
         arguments.append((env, rep_by_core, f'{cwd}/logs/dssat-pdi-{i}.log', save_log))
     with multiprocessing.Pool() as pool:
         raw_result = list(pool.imap_unordered(_multiprocess_trial_func_hard_reset, arguments))
@@ -135,8 +128,7 @@ def _multiprocess_trial_func_hard_reset(args):
             interactions = interact_with_env(env, verbose=False)
             all_interactions.append(interactions)
             env.reset()
-            # print(f'hard reset {i}')
-        return interactions
+        return all_interactions
     except Exception as e:
         logging.exception(e)
     finally:
@@ -153,71 +145,27 @@ if __name__ == '__main__':
         pass
     cwd = os.path.dirname(os.path.realpath(__file__))
     env_args = {
-        'run_dssat_location': '/home/rgautron/dssat_pdi/run_dssat',
+        'run_dssat_location': f'{pathlib.Path.home()}/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
         'mode': 'irrigation',
         'experiment_number': 3,
         'seed': 123456,
         'random_weather': not True,
     }
-    done = False
     try_interact = True
     try_multiproc = not True
+    verbose = not True
     if try_interact:
         try:
-            n_rep = 10000
-            # interactions = []
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            for i in range(n_rep):
-                # interact_with_env(env, verbose=True)
-                # pdb.set_trace()
-                # env.reset()
-                if i < n_rep - 1:
-                    print(i)
-                    env.reset_hard()
-                # else:
-                #     print('getting in second close')
-                #     print(env._last_is_send)
-                #     env.close()
-            # env.reset()
-            # env._get_state()
-            # print(env._last_is_send)
-            # print(env.observation)
-            # env.reset()
-            # print(env._last_is_send)
-            # print(env.observation)
-            # env.close()
-            # env.get_state()
-            # env.reset()
-            # env.close()
-            # state_variables = list(env.state.keys())
-            # with open('./state_variables.txt', 'w') as f_:
-            #     for state_variables in state_variables:
-            #         f_.write(f'{state_variables}\n')
-            # env.save_log = True
-            # env.get_env_info()
-            # interaction = interact_with_env(env, verbose=True)
-            # interactions.append(interaction)
-            # if env.save_log in env_args:
-            #     time.sleep(1)
-            # env.render(type='ts',
-            #            feature_name_1='nstres',
-            #            feature_name_2='grnwt')
-            # env.render(type='reward',
-            #            cumsum=True)
-            # env.render(type='reward',
-            #            cumsum=False)
-            # env.reset_hard()
-            # env.get_env_info()
-            # env.reset()
-            # env.close()
-            # interaction = interact_with_env(env, verbose=False)
-            # pprint(env.context)
-            # print(interaction)
-            # if env.save_log in env_args:
-            #     time.sleep(1)
-            # interactions.append(interaction)
-            # print(interactions)
+            interact_with_env(env, verbose=verbose)
+            env.render(type='ts',
+                       feature_name_1='nstres',
+                       feature_name_2='grnwt')
+            env.render(type='reward',
+                       cumsum=True)
+            env.render(type='reward',
+                       cumsum=False)
         except Exception as e:
             logging.exception(e)
         finally:
@@ -225,15 +173,11 @@ if __name__ == '__main__':
     if try_multiproc:
         try:
             tracker = SummaryTracker()
-            raw_results1 = multiprocess_trial(env_args, cwd, rep=800, save_log=True)
-            # print('first test passed')
-            # pdb.set_trace()
-            # raw_results2 = multiprocess_trial(env_args, cwd, rep=10000)
-            # print('second test passed')
-            # print(len(raw_results1))
-            # env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            # raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=1000 * 8)
-            # print(len(raw_results2))
+            raw_results1 = multiprocess_trial(env_args, cwd, rep=100, save_log=True)
+            print(len(raw_results1))
+            env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+            raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=100)
+            print(len(raw_results2))
         except Exception as e:
             logging.exception(e)
             raise e

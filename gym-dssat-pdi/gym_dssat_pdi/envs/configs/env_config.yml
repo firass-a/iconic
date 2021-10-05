@@ -194,13 +194,13 @@ state:
     high: 1
     size: 9
     info: volumetric soil water content in soil layers (cm3 [water] / cm3 [soil])
-  sw_avail:
-    type: array
-    subtype: float
-    low: 0
-    high: 1
-    size: 9
-    info: volumetric soil water content available for evaporation, plant extraction, or movement in soil layers (cm3 [water] / cm3 [soil])
+#  sw_avail:
+#    type: array
+#    subtype: float
+#    low: 0
+#    high: 1
+#    size: 9
+#    info: volumetric soil water content available for evaporation, plant extraction, or movement in soil layers (cm3 [water] / cm3 [soil])
   dlayr:
     type: array
     subtype: float
@@ -270,7 +270,7 @@ setting:
       - dtt
       - dap
       - sw
-      - sw_avail
+#      - sw_avail
       - es
       - runoff
       - wtdep

@@ -1,6 +1,6 @@
 logging:
-  level: debug
-{#  level: error#}
+{#  level: debug#}
+  level: error
 
 metadata:
   NLAYR: int
@@ -52,10 +52,11 @@ data:
     type: array
     subtype: float
     size: '$NLAYR'
-  SW_AVAIL:
-    type: array
-    subtype: float
     size: '$NLAYR'
+{#  SW_AVAIL:#}
+{#    type: array#}
+{#    subtype: float#}
+{#    size: '$NLAYR'#}
   SW:
     type: array
     subtype: float
@@ -130,8 +131,8 @@ plugins:
         dul = DUL
       SW: |
         sw = SW
-      SW_AVAIL: |
-        sw_avail = SW_AVAIL
+{#      SW_AVAIL: |#}
+{#        sw_avail = SW_AVAIL#}
       ES: |
         es = ES
       RUNOFF: |
@@ -172,12 +173,10 @@ plugins:
           try:
             client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
           except Exception as e:
-            print(e)
             logging.exception(e)
             time.sleep(1)
           done = False
           rseed1_ = {{ '{0:d}'.format(rseed1) }}
-          print(f'\n~~~~~RSEED1: {rseed1_}~~~~~\n')
           is_early_stopping = False
           is_last_send = False
           print('Client started')
@@ -188,7 +187,6 @@ plugins:
           client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
           is_last_send = True
           rseed1_ = client.recv().decode('utf-8')
-          print(f'\n~~~~~RSEED1: {rseed1_}~~~~~\n')
           is_last_send = False
       flag_undone:
         exec: |
@@ -233,55 +231,26 @@ plugins:
           'll': ll,
           'dul': dul,
           'sw': sw,
-          'sw_avail': sw_avail,
+{#          'sw_avail': sw_avail,#}
           'es': es,
           'runoff': runoff,
           'wtdep': wtdep,
           'sat': sat,
           'rtdep': rtdep,
-{#          'sno3_ini': sno3_ini,#}
-{#          'snh4_ini': snh4_ini,#}
           'dlayr': dlayr
           }
-          try:
-            message_to_client = {'done':done, 'state':state}
-{#            print('before json.dumps', file=sys.stderr, flush=True)#}
-{#            for key, val in state.items():#}
-{#              print('key ', key, file=sys.stderr, flush=True)#}
-{#              print('val ', val, file=sys.stderr, flush=True)#}
-            message_to_client_js = json.dumps(message_to_client, cls=NumpyEncoder)
-{#            print('after json.dumps', file=sys.stderr, flush=True)#}
-          except Exception as e:
-{#            print(f'problem: {state} \n', file=sys.stderr)#}
-            for key, val in state.items():
-              print('key ', key, file=sys.stderr, flush=True)
-              print('val ', val, file=sys.stderr, flush=True)
-            logging.exception(e)
-            time.sleep(1)
-          except FloatingPointError as f_:
-            print(f_, file=sys.stderr)
-            for key, val in state.items():
-              print('key ', key, file=sys.stderr, flush=True)
-              print('val ', val, file=sys.stderr, flush=True)
-            logging.exception(f_)
-            time.sleep(1)
-          except:
-            for key, val in state.items():
-              print('key ', key, file=sys.stderr, flush=True)
-              print('val ', val, file=sys.stderr, flush=True)
+          message_to_client = {'done':done, 'state':state}
+          message_to_client_js = json.dumps(message_to_client, cls=NumpyEncoder)
           message_to_client = {'done':None, 'state':None}
           client.send(message_to_client_js.encode('utf-8'))
           is_last_send = True
           try:
-            if poller.poll(timeout=1000):
-              message_from_client_js = client.recv().decode('utf-8')
+            message_from_client_js = client.recv().decode('utf-8')
             is_last_send = False
             message_from_client = json.loads(message_from_client_js)
             action = message_from_client['action']
             is_early_stopping = message_from_client['early_stopping']
           except Exception as e:
-            print('FAILLLLED')
-            print(e)
             logging.exception(e)
             time.sleep(1)
 

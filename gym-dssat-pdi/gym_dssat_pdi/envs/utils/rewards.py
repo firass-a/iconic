@@ -21,11 +21,9 @@ def fertilization_reward(_previous_state, _next_state, _history):
         reward = (trnu - (tleachd + tnoxd)) - penality * bool(last_action)
     return reward
 
-
 def irrigation_reward(_previous_state, _next_state, _history):
     reward = None
-    last_action = _history['action'][-1]['anfer']
-    penality = 0
+    last_action = _history['action'][-1]['amir']
     if _next_state:
         rtdep = _next_state['rtdep']
         if rtdep < 1:
@@ -37,34 +35,20 @@ def irrigation_reward(_previous_state, _next_state, _history):
         sw = _next_state['sw']
         swfac = _next_state['swfac']
         layer_with_roots = dlayr_cumsum < rtdep
-        first_greater_layer_bottom = np.argmax(np.logical_not(layer_with_roots))
-        last_layer_depth_with_root_proportion = dlayr_cumsum[first_greater_layer_bottom]
-        last_layer_depth_porportion_with_root = (last_layer_depth_with_root_proportion - rtdep) / dlayr[
-            first_greater_layer_bottom]
+        first_greater_layer_index = np.argmax(np.logical_not(layer_with_roots))
+        last_layer_with_root_top = dlayr_cumsum[first_greater_layer_index - 1]
+        last_layer_with_root_thickness_proportion = (rtdep - last_layer_with_root_top) / dlayr[
+            first_greater_layer_index]
         pawr = ((dul - ll) * dlayr * layer_with_roots).sum()
-        pawr += ((dul - ll) * dlayr)[first_greater_layer_bottom] * last_layer_depth_porportion_with_root
+        pawr += ((dul - ll) * dlayr)[first_greater_layer_index] * last_layer_with_root_thickness_proportion
         swr = ((sw - ll) * dlayr * layer_with_roots).sum()
-        swr += ((sw - ll) * dlayr)[first_greater_layer_bottom] * last_layer_depth_porportion_with_root
-        if pawr > 0:
-            ratio = swr / pawr
-        else:
-            ratio = float('Inf')
-        # print(ratio)
-        if ratio <= .2:
-            ratio_penality = - 10
-        elif ratio > .9:
-            ratio_penality = - 1
-        else:
-            ratio_penality = 0
-        try:
-            # reward = np.exp(-1 / (1 - nstres) ** 2) - 4 * ratio ** 2 + 4 * ratio - penality * bool(last_action)
-            # reward = - 4 * ratio ** 2 + 4 * ratio - penality * bool(last_action)
-            # print(penality * bool(last_action))
-            reward = ratio + 1 - swfac + ratio_penality
-        except Exception as e:
-            print(e)
-        # print(reward)
+        swr += ((sw - ll) * dlayr)[first_greater_layer_index] * last_layer_with_root_thickness_proportion
+        ratio = swr / pawr
+        reward = 1 - swfac
+        if swfac == 0 and last_action > 0 and ratio > .5:
+            reward -= ratio
     return reward
+
 
 def all_reward(_previous_state, _next_state, _history):
     ferti_reward = fertilization_reward(_previous_state, _next_state, _history)

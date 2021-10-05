@@ -1,0 +1,3 @@
+[submodule "gym_dssat_pdi"]
+	path = gym_dssat_pdi
+	url = https://gitlab.inria.fr/rgautron/gym_dssat_pdi

@@ -21,6 +21,7 @@ def fertilization_reward(_previous_state, _next_state, _history):
         reward = (trnu - (tleachd + tnoxd)) - penality * bool(last_action)
     return reward
 
+
 def irrigation_reward(_previous_state, _next_state, _history):
     reward = None
     last_action = _history['action'][-1]['amir']
@@ -51,11 +52,10 @@ def irrigation_reward(_previous_state, _next_state, _history):
 
 
 def all_reward(_previous_state, _next_state, _history):
-    ferti_reward = fertilization_reward(_previous_state, _next_state, _history)
-    irrig_reward = irrigation_reward(_previous_state, _next_state, _history)
-    if ferti_reward is None or irrig_reward is None:
-        return
-    return ferti_reward + irrig_reward
+    ferti_reward_value = fertilization_reward(_previous_state, _next_state, _history)
+    irrig_reward_value = irrigation_reward(_previous_state, _next_state, _history)
+    all_reward_value = ferti_reward_value + 2 * irrig_reward_value
+    return all_reward_value
 
 
 def get_reward_function(mode):

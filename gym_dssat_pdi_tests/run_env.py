@@ -50,7 +50,6 @@ def default_policy(YRDOY):
         amir = irrigation_dic[YRDOY]
     else:
         amir = 0
-    amir = 0
     return {'anfer': anfer, 'amir': amir}
 
 
@@ -147,7 +146,9 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': f'{pathlib.Path.home()}/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
-        'mode': 'irrigation',
+        # 'mode': 'irrigation',
+        # 'mode': 'fertilization',
+        'mode': 'all',
         'experiment_number': 3,
         'seed': 123456,
         'random_weather': not True,

@@ -1,0 +1,3 @@
+[submodule "dssat-pdi"]
+	path = dssat-pdi
+	url = https://gitlab.inria.fr/rgautron/dssat-csm-os.git

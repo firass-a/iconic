@@ -152,7 +152,7 @@ if __name__ == '__main__':
         'mode': 'all',
         'experiment_number': 3,
         'seed': 123456,
-        'random_weather': not True,
+        'random_weather': True,
     }
     try_interact = True
     try_multiproc = not True

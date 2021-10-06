@@ -16,28 +16,16 @@ gym-DSSAT is designed to allow great setting flexibility. The environment comes 
 
 gym-DSSAT uses by default the UFGA8201 maize experiment from the University of Florida, but is usable with any DSSAT experiment using the CERES-Maize module.
 
-#### Action space
+#### Action/State spaces
 
 The environment comes with 3 modes:
 + nitrogen fertilization only (continuous quantity): ```mode=='fertilization'```
 + irrigation only (continuous quantity): ```mode=='irrigation'```
 + both nitrogen fertilization and irrigation (both continuous quantities): ```mode=='all'```
 
-Actions are provided to the environment in a dictionary:
-```python
-action_dict = {
-    'amir': 10,  # if mode == irrigation or mode == all ; water to irrigate in L/ha
-    'anfer': 5,  # if mode == fertilization or mode == all ; nitrogen to fertilize in kg/ha
-}
-observation, reward, done, info = env.step(action_dict=action_dict)  # info are contextual variables
-```
-
-#### State space
-
-The action space depends on each mode and are detailed in gym environment's yaml configuration file. State variables can be continuous, discrete and arrays of arbitrary shapes. By default, the observed state is given as a dictionnary as show below:
+The action/state spaces depend on each mode and are detailed in [gym environment's yaml configuration file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/env_config.yml). State variables can be continuous, discrete and arrays of arbitrary shapes. Actions are continuous. By default, the observed state is given as a dictionnary as show below:
 
 ```python
-env.observation = 
 {'cleach': 39.01179885864258,
 'cnox': 0.07707925885915756,
 'cumsumfert': 116.0,
@@ -45,7 +33,6 @@ env.observation =
 'dtt': 20.900001525878906
 ...}
 ```
-This dictionary can be concatenated to a list using ```env.observation_dict_to_array(env.observation)```
 
 #### gym-DSSAT yaml configuration file structure
 ```yaml
@@ -78,9 +65,61 @@ setting:
 Reward functions are explicitely defined in a [separated file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/utils/rewards.py) allowing easy custom reward function definitions. Default reward functions are designed to make challenging problems taking into account the costs of actions and the environmental factors.
 
 ## Usage
+Make sure to well follow the [installation instructions](#installing-gym-dssat) before !
 ### Initialization
+You can use gym-DSSAT as any gym environment. You need to pass gym-DSSAT configuration as following:
 
+```python
+import gym
+env_args = {
+    'run_dssat_location': '/opt/dssat_pdi/run_dssat',  # assuming (modified) DSSAT has been installed in /opt/dssat_pdi
+    'log_saving_path': './logs/dssat-pdi.log',  # if you want to save DSSAT outputs for inspection
+    # 'mode': 'irrigation',  # you can choose one of those 3 modes
+    # 'mode': 'fertilization',
+    'mode': 'all',
+    'experiment_number': 3,
+    'seed': 123456,
+    'random_weather': True,  # if you want stochastic weather
+}
+env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+```
+That's all !
 ### Interacting with gym-DSSAT
+Actions are provided to the environment in a dictionary:
+```python
+action_dict = {
+    'amir': 10,  # if mode == irrigation or mode == all ; water to irrigate in L/ha
+    'anfer': 5,  # if mode == fertilization or mode == all ; nitrogen to fertilize in kg/ha
+}
+observation, reward, done, info = env.step(action_dict=action_dict)  # info are contextual variables
+```
+The ```observation``` variable is a dictionnary. The current observation can be retrieved via ```env.observation``` or equivalently ```env.get_state()```:
+```python
+env.observation = 
+{'cleach': 39.01179885864258,
+'cnox': 0.07707925885915756,
+'cumsumfert': 116.0,
+'dap': 126,
+'dtt': 20.900001525878906
+...}
+```
+This dictionary can be concatenated to a list using ```env.observation_dict_to_array(env.observation)```. When crop is harvested, ```env.done``` is flagged ```True```.
+
+An example of episode (for ```mode=='fertilization'```) is given by:
+```python
+while not env.done:
+    observation = env.observation
+    print(observation)
+    # observation_list = env.observation_dict_to_array(observation)
+    action = {'anfer': 1} # put 1 kg/ha of nitrogen
+    observation, reward, done, info = env.step(action)
+```
+The ```info``` variable contains contextual informations. At any time, you can access the whole history for the ongoing episode with ```env.history```. Once crop is harvested, you need to reset the environment with ```env.reset()```. Else, you will not get any new state.
+
+Once you're done, **terminate gym-DSSAT**:
+```
+env.close()
+```
 
 ### Data visualization
 gym-DSSAT provides a visualization interface both for raw state variables or rewards.
@@ -143,6 +182,9 @@ Observation variables:
 press "return" to continue
 ...
 ```
+
+### More information
+You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym_dssat_pdi_tests/run_env.py), including how to use gym-DSSAT in a multiprocessing context, using the ```env.reset_hard()``` feature.
 
 ## Installing gym-DSSAT
 Here you will find how to install in the order the various components of gym-DSSAT.

@@ -282,6 +282,7 @@ setting:
       - dlayr
 #      - snh4_ini
 #      - sno3_ini
+    experiment_number: 3
   fertilization:
     action:
       - anfer
@@ -307,6 +308,7 @@ setting:
       - dlayr
 #      - snh4_ini
 #      - sno3_ini
+    experiment_number: 1
   irrigation:
     action:
       - amir
@@ -334,3 +336,4 @@ setting:
       - dlayr
 #      - snh4_ini
 #      - sno3_ini
+    experiment_number: 3

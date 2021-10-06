@@ -148,7 +148,6 @@ if __name__ == '__main__':
         # 'mode': 'irrigation',
         # 'mode': 'fertilization',
         'mode': 'all',
-        'experiment_number': 3,
         'seed': 123456,
         'random_weather': True,
     }

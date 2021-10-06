@@ -32,10 +32,9 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location, experiment_number=1, fileX_prefix='UFGA8201', fileX_extension='.MZX',
-                 log_saving_path=None, mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True,
-                 seed=None):
-        self.experiment_number = experiment_number
+    def __init__(self, run_dssat_location, fileX_prefix='UFGA8201', fileX_extension='.MZX', log_saving_path=None,
+                 mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True, seed=None):
+        self.experiment_number = None
         self.fileX_name = f'{fileX_prefix}{fileX_extension}'
         self.mode = mode
         self.action_variables = None
@@ -101,6 +100,7 @@ class DssatPdi(gym.Env):
         self.observation_variables = sorted(setting_dict[setting]['state'])
         self.action_variables = setting_dict[setting]['action']
         self.context_variables = setting_dict[setting]['context']
+        self.experiment_number = setting_dict[setting]['experiment_number']
 
     def _make_gym_spaces(self, key):
         key_spaces = {}
@@ -240,7 +240,6 @@ class DssatPdi(gym.Env):
 
     def _get_state(self):
         if not self._last_is_send:
-            pdb.set_trace()
             self.close()
             raise ValueError("you cannot call env._get_state() two times in a row!")
         if self._poller.poll(timeout=1000):

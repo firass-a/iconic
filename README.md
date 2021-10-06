@@ -273,8 +273,7 @@ pip install -e .
 
 ## About this project
 #### Authors
-Romain Gautron
-Emilio Padrón González
+Romain Gautron and Emilio Padrón González
 
 #### Acknowledgements
 We acknowledge the DSSAT team, especially Gerrit Hoogenboom and Cheryl Porter. Thanks to the PDI team, especially to Julien Bigot. We acknowledge the Consultative Group for International Agricultural Research (CGIAR), the French Agricultural Research Centre for International Development (CIRAD) and the French Institute for Research in Computer Science and Automation (Inria), in particular the SCOOL team, for their support.

@@ -120,6 +120,15 @@ Once you're done, **terminate gym-DSSAT**:
 ```
 env.close()
 ```
+A preferred usage is:
+```python
+try:
+  env = ...
+  ...
+  env.step () ...
+finally:
+  env.close()
+```
 
 ### Data visualization
 gym-DSSAT provides a visualization interface both for raw state variables or rewards.

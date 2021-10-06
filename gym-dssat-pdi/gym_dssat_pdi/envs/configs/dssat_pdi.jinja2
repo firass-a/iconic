@@ -167,9 +167,7 @@ plugins:
               return json.JSONEncoder.default(self, obj)
           context = zmq.Context()
           client = context.socket(zmq.PAIR)
-          client.setsockopt(zmq.LINGER, 1000)
-          poller = zmq.Poller()
-          poller.register(client, zmq.POLLIN)
+          client.setsockopt(zmq.LINGER, 0)
           try:
             client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
           except Exception as e:

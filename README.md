@@ -19,8 +19,8 @@ gym-DSSAT uses by default the UFGA8201 maize experiment from the University of F
 #### Action/State spaces
 
 The environment comes with 3 modes:
-+ nitrogen fertilization only (continuous quantity): ```mode=='fertilization'```
-+ irrigation only (continuous quantity): ```mode=='irrigation'```
++ nitrogen fertilization only (continuous quantity): ```mode=='fertilization'``` ➡ nitrogen fertilizer quantity (kg/ha)
++ irrigation only (continuous quantity): ```mode=='irrigation'``` ➡ water quantity (mm)
 + both nitrogen fertilization and irrigation (both continuous quantities): ```mode=='all'```
 
 The action/state spaces depend on each mode and are detailed in [gym environment's yaml configuration file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/env_config.yml). State variables can be continuous, discrete and arrays of arbitrary shapes. Actions are continuous. By default, the observed state is given as a dictionnary as show below:
@@ -77,7 +77,6 @@ env_args = {
     # 'mode': 'irrigation',  # you can choose one of those 3 modes
     # 'mode': 'fertilization',
     'mode': 'all',
-    'experiment_number': 3,
     'seed': 123456,
     'random_weather': True,  # if you want stochastic weather
 }
@@ -120,12 +119,13 @@ Once you're done, **terminate gym-DSSAT**:
 ```
 env.close()
 ```
-A preferred usage is:
+The preferred usage is:
 ```python
 try:
-  env = ...
+  env = gym.make(...)
   ...
-  env.step () ...
+  env.step(action_dict=...)
+  ...
 finally:
   env.close()
 ```
@@ -136,8 +136,8 @@ gym-DSSAT provides a visualization interface both for raw state variables or rew
 You can call:
 ```python
 env.render(type='ts',  # time series mode
-           feature_name_1='nstres',  # mandatory first raw state variable
-           feature_name_2='grnwt')  # optional second raw state variable
+           feature_name_1='nstres',  # mandatory first raw state variable, here the nitrogen stress factor (unitless)
+           feature_name_2='grnwt')  # optional second raw state variable, here the grain weight (kg/ha)
 ```
 ![plot](./readme_figures/nstresGrnwt.png)
 
@@ -196,7 +196,11 @@ press "return" to continue
 You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym_dssat_pdi_tests/run_env.py), including how to use gym-DSSAT in a multiprocessing context, using the ```env.reset_hard()``` feature.
 
 ## Installing gym-DSSAT
-Here you will find how to install in the order the various components of gym-DSSAT.
+Here you will find how to install in the order the various components of gym-DSSAT. The first step is to clone this repository:
+
+```shell
+git clone https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git
+```
 
 ### 0. Dependencies
 #### i. CMake
@@ -219,8 +223,8 @@ cd openmpi-4.1.1
 <...lots of output...>
 sudo make all install
 ```
-#### iii. gfortran
-To install [gfortran](https://gcc.gnu.org/wiki/GFortran), you can use ```sudo apt-get install gfortran```
+#### iii. A fortran compiler
+For instance, to install [gfortran](https://gcc.gnu.org/wiki/GFortran), you can use ```sudo apt-get install gfortran```
 
 #### iv. Python
 To install [Python](https://www.python.org/) (>=3.6), you can use ```sudo apt install python3.9```. The following Python package are requires:
@@ -228,11 +232,12 @@ To install [Python](https://www.python.org/) (>=3.6), you can use ```sudo apt in
 + numpy: ```pip install numpy```
 + jinja2: ```pip install Jinja2```
 + gym: ```pip install gym```
++ zmq: ```pip install pyzmq```
 
 ### 1. PDI Data Interface (PDI)
-In order to install the [PDI](https://pdi.julien-bigot.fr/master/), you can check the [official instruction](https://pdi.julien-bigot.fr/master/Installation.html) but **be careful to correctly set cmake flags as shown below**
+In order to install the [PDI](https://pdi.julien-bigot.fr/master/), you can check the [official instructions](https://pdi.julien-bigot.fr/master/Installation.html) but **be careful to correctly set cmake flags as shown below**
 
-Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume you installed PDI in ```/opt/pdi```.
+Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume to be installed PDI in ```/opt/pdi```.
 
 ```shell
 wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.3.1/pdi-1.3.1.tar.bz2
@@ -265,3 +270,11 @@ From the root of this repository:
 cd gym-dssat-pdi
 pip install -e .
 ```
+
+## About this project
+#### Authors
+Romain Gautron
+Emilio Padrón González
+
+#### Acknowledgements
+We acknowledge the DSSAT team, especially Gerrit Hoogenboom and Cheryl Porter. Thanks to the PDI team, especially to Julien Bigot. We acknowledge the Consultative Group for International Agricultural Research (CGIAR), the French Agricultural Research Centre for International Development (CIRAD) and the French Institute for Research in Computer Science and Automation (Inria), in particular the SCOOL team, for their support.

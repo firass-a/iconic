@@ -7,12 +7,9 @@ import pathlib
 faulthandler.enable()
 from gym_dssat_pdi.envs.utils import utils
 import os
-import gc
 
-import pdb
 import numpy as np
 from copy import deepcopy
-import time
 from pympler.tracker import SummaryTracker
 
 from pprint import pprint
@@ -143,6 +140,7 @@ if __name__ == '__main__':
             os.remove(file.path)
     except:
         pass
+    utils.make_folder('./render')
     cwd = os.path.dirname(os.path.realpath(__file__))
     env_args = {
         'run_dssat_location': f'{pathlib.Path.home()}/dssat_pdi/run_dssat',
@@ -160,7 +158,7 @@ if __name__ == '__main__':
     if try_interact:
         try:
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            env.get_env_info()
+            # env.get_env_info()
             interact_with_env(env, verbose=verbose)
             env.render(type='ts',
                        feature_name_1='nstres',

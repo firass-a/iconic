@@ -102,7 +102,7 @@ def transpose_dicts(dict_list):
 
 def _post_treat_state(state):
     try:
-        state['grnwt'] *= state['pltpop']
+        state['grnwt'] *= state['pltpop'] * 10
         state['nstres'] = 1 - state['nstres']
         state['swfac'] = 1 - state['swfac']
         state['pcngrn'] /= 100

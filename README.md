@@ -3,19 +3,21 @@ gym-DSSAT is a modification of the [Decision Support System for Agrotechnology T
 
 gym-DSSAT is powered by the [PDI Data Interface (PDI)](https://pdi.julien-bigot.fr/master/) !
 
-**Disclaimer: gym-DSSAT only supports Unix systems!**
+**Disclaimer: gym-DSSAT only supports Unix systems and uses Python 3.6 or above!**
 
 ## In this repository
 + ```./dssat-csm-os```: the submodule of modified the DSSAT Fortran code with PDI for gym-DSSAT
 + ```./gym-dssat-pdi```: the custom gym-DSSAT Python environment
 + ```./dssat-csm-data```: the required experimental files used by DSSAT
 + ```./gym_dssat_pdi_tests```: examples of how to run gym-DSSAT
+
 ## The environment
 gym-DSSAT is designed to allow great setting flexibility. The environment comes with default settings that can easily been modified by editing the [gym environment's yaml configuration file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/env_config.yml). The ```action``` key gives the raw action space, the ```state``` key give the raw action space and each individual setting is found and can be edited in the ```setting``` key. Furthermore, the ```context``` key defines additional contextual variables.
 
 gym-DSSAT uses by default the UFGA8201 maize experiment from the University of Florida, but is usable with any DSSAT experiment using the CERES-Maize module.
 
 #### Action space
+
 The environment comes with 3 modes:
 + nitrogen fertilization only (continuous quantity): ```mode=='fertilization'```
 + irrigation only (continuous quantity): ```mode=='irrigation'```
@@ -29,7 +31,9 @@ action_dict = {
 }
 observation, reward, done, info = env.step(action_dict=action_dict)  # info are contextual variables
 ```
+
 #### State space
+
 The action space depends on each mode and are detailed in gym environment's yaml configuration file. State variables can be continuous, discrete and arrays of arbitrary shapes. By default, the observed state is given as a dictionnary as show below:
 
 ```python
@@ -70,6 +74,42 @@ setting:
 ...
 ```
 
+#### Rewards
+Reward functions are explicitely defined in a [separated file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/utils/rewards.py) allowing easy custom reward function definitions. Default reward functions are designed to make challenging problems taking into account the costs of actions and the environmental factors.
+
+## Usage
+### Initialization
+
+### Interacting with gym-DSSAT
+
+### Data visualization
+gym-DSSAT provides a visualization interface both for raw state variables or rewards.
+#### Trajectories
+You can call:
+```python
+env.render(type='ts',  # time series mode
+           feature_name_1='nstres',  # mandatory first raw state variable
+           feature_name_2='grnwt')  # optional second raw state variable
+```
+![plot](./readme_figures/nstresGrnwt.png)
+
+#### Reward vizualization
+For quick reward inspection, you can use:
+
+```python
+env.render(type='reward')  # plot reward time series (DOY for Day Of Year)
+```
+
+![plot](./readme_figures/rewards.png)
+
+Or
+
+```python
+env.render(type='reward',
+            cumsum=True)  # if you want cumulated rewards
+```           
+![plot](./readme_figures/cumsumRewards.png)
+
 #### Getting information
 You can get information about your current mode using:
 ```python
@@ -103,32 +143,74 @@ Observation variables:
 press "return" to continue
 ...
 ```
-#### Rewards
-Reward functions are explicitely defined in a [separated file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/utils/rewards.py) allowing easy custom reward function definitions. Default reward functions are designed to make challenging problems taking into account the costs of actions and the environmental factors.
-
-### Data visualization
-gym-DSSAT provides a visualization interface both for raw state variables or rewards.
-#### Trajectories
-You can call:
-```python
-env.render(type='ts',  # time series mode
-           feature_name_1='nstres',  # mandatory first raw state variable
-           feature_name_2='grnwt')  # optional second raw state variable
-```
-![plot](./readme_figures/nstresGrnwt.png)
-
-#### Reward vizualization
-For quick reward inspection, you can use:
-```python
-env.render(type='reward')  # plot reward time series
-```
-![plot](./readme_figures/rewards.png)
-Or
-```python
-env.render(type='reward',
-            cumsum=True)  # if you want cumulated rewards
-```           
-![plot](./readme_figures/cumsumRewards.png)
 
 ## Installing gym-DSSAT
-Here you will find how to install in the order the various components of gym-DSSAT
+Here you will find how to install in the order the various components of gym-DSSAT.
+
+### 0. Dependencies
+#### i. CMake
+You can find instructions [here](https://cmake.org/install/)
+```shell
+wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3.tar.gz
+gunzip -c cmake-3.21.3.tar.gz | tar xf -
+cd cmake-3.21.3
+./bootstrap
+make
+sudo make install
+```
+#### ii. OpenMPI
+You can check installation instruction (here)[https://www.open-mpi.org/faq/?category=building#easy-build]
+```shell
+wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.1.tar.bz2
+tar -xjf openmpi-4.1.1.tar.bz2
+cd openmpi-4.1.1
+./configure --prefix=/opt/openmpi-4.1.1
+<...lots of output...>
+sudo make all install
+```
+#### iii. gfortran
+To install [gfortran](https://gcc.gnu.org/wiki/GFortran), you can use ```sudo apt-get install gfortran```
+
+#### iv. Python
+To install [Python](https://www.python.org/) (>=3.6), you can use ```sudo apt install python3.9```. The following Python package are requires:
++ matplotlib: ```pip install matplotlib```
++ numpy: ```pip install numpy```
++ jinja2: ```pip install Jinja2```
++ gym: ```pip install gym```
+
+### 1. PDI Data Interface (PDI)
+In order to install the [PDI](https://pdi.julien-bigot.fr/master/), you can check the [official instruction](https://pdi.julien-bigot.fr/master/Installation.html) but **be careful to correctly set cmake flags as shown below**
+
+Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume you installed PDI in ```/opt/pdi```.
+
+```shell
+wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.3.1/pdi-1.3.1.tar.bz2
+tar -xjf pdi-1.3.1.tar.bz2
+mkdir pdi-1.3.1.tar.bz2/build
+cd pdi-1.3.1.tar.bz2/build
+cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON ..  # configuration
+sudo make install   # compilation and installation
+```
+### 2. (modified) DSSAT
+From the root of this repository, supposing PDI has been installed in ```/opt/pdi``` and (modified) DSSAT to be installed in ```/opt/dssat_pdi```:
+```shell
+cd dssat-csm-os
+mkdir build
+cmake -DCMAKE_INSTALL_PREFIX='/opt/dssat_pdi' -DCMAKE_PREFIX_PATH='/opt/pdi/share/paraconf/cmake;/opt/pdi/share/pdi/cmake' ..
+make
+sudo make install
+```
+*Note: if for some reason DSSAT compilation failed, please empty the folder ```dssat-csm-os/build``` before retrying to compile DSSAT*
+
+After then, you will need to provide DSSAT the required experimental files. From the root of this repository, assuming DSSAT has been installed in ```/opt/dssat_pdi```:
+```shell
+cd dssat-csm-data
+sudo cp -r dssat-csm-data/* /opt/dssat_pdi
+```
+
+### 3. (finally) gym-DSSAT
+From the root of this repository:
+```shell
+cd gym-dssat-pdi
+pip install -e .
+```

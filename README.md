@@ -3,30 +3,66 @@ gym-DSSAT is a modification of the [Decision Support System for Agrotechnology T
 
 The modified DSSAT allows daily based interactions during the growing season between an RL agent and the crop model with usual gym conventions.
 
-##In this repository
-+ ```./dssat-csm-os-pdi```: the modified DSSAT Fortran code
-+ ```./gym_dssat_pdi_project```: the custom gym environment
-##The environment
-### Action space
-The environment comes with 3 modes:
-+ nitrogen fertilization only (continuous quantity)
-+ irrigation only (continuous quantity)
-+ both nitrogen fertilization and irrigation (both continuous quantities)
+gym-DSSAT is powered by the [PDI Data Interface (PDI)](https://pdi.julien-bigot.fr/master/) !
+
+## In this repository
++ ```./dssat-csm-os```: the submodule of modified the DSSAT Fortran code with PDI for gym-DSSAT
++ ```./gym-dssat-pdi```: the custom gym-DSSAT Python environment
++ ```./dssat-csm-data```: the required experimental files used by DSSAT
++ ```./gym_dssat_pdi_tests```: examples of how to run gym-DSSAT
+## The environment
+gym-DSSAT is designed to allow great setting flexibility. The environment comes with default settings that can easily been modified by editing the [gym environment's yaml configuration file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/env_config.yml). The ```action``` key gives the raw action space, the ```state``` key give the raw action space and each individual setting is found and can be edited in the ```setting``` key.
 
 gym-DSSAT uses by default the UFGA8201 maize experiment from the University of Florida, but is usable with any DSSAT experiment using the CERES-Maize module.
 
+### Action space
+The environment comes with 3 modes:
++ nitrogen fertilization only (continuous quantity): ```mode=='fertilization'```
++ irrigation only (continuous quantity): ```mode=='irrigation'```
++ both nitrogen fertilization and irrigation (both continuous quantities): ```mode=='all'```
+
 ### State space
-gym-DSSAT allows to potentially access numerous DSSAT's internal variables. The environment comes with default selected state variables for each mode, but this is fully and easily customizable.
+The action space depends on each mode and are detailed in gym environment's yaml configuration file. State variables can be continuous, discrete and arrays of arbitrary shapes.
+
+### gym-DSSAT yaml configuration file illustration
+```yaml
+action:
+  anfer:
+    type: float
+    low: 0
+    high: 200
+    info: nitrogen to fertilize for current day (kg/ha)
+...
+state:
+  cleach:
+    type: float
+    low: 0
+    high: .inf
+    info: cumulative nitrate leaching (kg/ha)
+
+...
+setting:
+  all:
+    action:
+      - anfer
+      - amir
+    state:
+      - yrdoy
+...
+```
 
 ### Rewards
 Reward functions are explicitely defined in a separated file allowing easy custom reward function definitions.
 Default reward functions are designed to make challenging problems taking into account the costs of actions and the possible induced pollution.
 
 ### Data visualization
-gym-DSSAT provides a simple visualization interface.
+gym-DSSAT provides a visualization interface.
+#### Trajectories
+
+#### Reward vizualization
+
 
 ## Under the hood
-gym-DSSAT is powered by the [PDI Data Interface (PDI)](https://pdi.julien-bigot.fr/master/) !
 
 ## Installing gym-DSSAT
 In process, stable version with full documentation will come soon!

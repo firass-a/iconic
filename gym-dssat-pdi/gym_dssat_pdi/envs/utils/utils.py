@@ -123,6 +123,11 @@ def _parse_config(path_to_load):
         config = yaml.load(ymlfile, Loader=yaml.FullLoader)
     return config
 
+def _load_fileX_template(_load_fileX_template):
+    with open(_load_fileX_template, 'r') as f_:
+        fileX_template = f_.read()
+    return fileX_template
+
 def make_folder(folder_path):
     path = pathlib.Path(folder_path)
     path.mkdir(exist_ok=True)

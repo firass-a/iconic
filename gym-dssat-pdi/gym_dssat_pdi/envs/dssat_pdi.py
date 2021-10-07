@@ -32,15 +32,22 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location, fileX_prefix='UFGA8201', fileX_extension='.MZX', log_saving_path=None,
-                 mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True, seed=None):
-        self.experiment_number = None
-        self.fileX_name = f'{fileX_prefix}{fileX_extension}'
+    def __init__(self, run_dssat_location, fileX_name=None, log_saving_path=None,
+                 mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True, seed=None,
+                 fileX_template_path=None, experiment_number=None):
+        self.experiment_number = experiment_number
+        if fileX_name is None:
+            fileX_name = 'UFGA8201.MZX'
+        self.fileX_name = fileX_name
+        self.fileX_prefix = fileX_name[:-4]
         self.mode = mode
         self.action_variables = None
         self.observation_variables = None
         self.context_variables = None
-        self._fileX_template = pkgutil.get_data(__name__, f'configs/{fileX_prefix}.jinja2').decode('utf-8')
+        if fileX_template_path is None:
+            self._fileX_template = pkgutil.get_data(__name__, f'configs/{self.fileX_prefix}.jinja2').decode('utf-8')
+        else:
+            self._fileX_template = utils._load_fileX_template(fileX_template_path)
         self._fileX = None
         self._pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
         self._pdi_yaml = None
@@ -100,7 +107,8 @@ class DssatPdi(gym.Env):
         self.observation_variables = sorted(setting_dict[setting]['state'])
         self.action_variables = setting_dict[setting]['action']
         self.context_variables = setting_dict[setting]['context']
-        self.experiment_number = setting_dict[setting]['experiment_number']
+        if self.experiment_number is None:
+            self.experiment_number = setting_dict[setting]['experiment_number']
 
     def _make_gym_spaces(self, key):
         key_spaces = {}

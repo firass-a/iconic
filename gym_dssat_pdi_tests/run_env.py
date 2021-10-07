@@ -180,6 +180,5 @@ if __name__ == '__main__':
             print(len(raw_results2))
         except Exception as e:
             logging.exception(e)
-            raise e
         finally:
             tracker.print_diff()

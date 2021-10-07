@@ -196,6 +196,8 @@ press "return" to continue
 You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym_dssat_pdi_tests/run_env.py), including how to use gym-DSSAT in a multiprocessing context, using the ```env.reset_hard()``` feature.
 
 ## Installing gym-DSSAT
+***A simplified installation procedure is under progress !***
+
 Here you will find how to install in the order the various components of gym-DSSAT. The first step is to clone this repository:
 
 ```shell
@@ -213,7 +215,7 @@ cd cmake-3.21.3
 make
 sudo make install
 ```
-#### ii. OpenMPI
+<!-- #### ii. OpenMPI
 You can check installation instruction (here)[https://www.open-mpi.org/faq/?category=building#easy-build]
 ```shell
 wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.1.tar.bz2
@@ -222,11 +224,11 @@ cd openmpi-4.1.1
 ./configure --prefix=/opt/openmpi-4.1.1
 <...lots of output...>
 sudo make all install
-```
-#### iii. A fortran compiler
+``` -->
+#### ii. A fortran compiler
 For instance, to install [gfortran](https://gcc.gnu.org/wiki/GFortran), you can use ```sudo apt-get install gfortran```
 
-#### iv. Python
+#### iii. Python
 To install [Python](https://www.python.org/) (>=3.6), you can use ```sudo apt install python3.9```. The following Python package are requires:
 + matplotlib: ```pip install matplotlib```
 + numpy: ```pip install numpy```
@@ -244,7 +246,7 @@ wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.3.1/pdi-1.3.1
 tar -xjf pdi-1.3.1.tar.bz2
 mkdir pdi-1.3.1.tar.bz2/build
 cd pdi-1.3.1.tar.bz2/build
-cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON ..  # configuration
+cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON BUILD_MPI_PLUGIN=OFF ..  # configuration
 sudo make install   # compilation and installation
 ```
 ### 2. (modified) DSSAT

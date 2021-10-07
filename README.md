@@ -239,14 +239,14 @@ To install [Python](https://www.python.org/) (>=3.6), you can use ```sudo apt in
 ### 1. PDI Data Interface (PDI)
 In order to install the [PDI](https://pdi.julien-bigot.fr/master/), you can check the [official instructions](https://pdi.julien-bigot.fr/master/Installation.html) but **be careful to correctly set cmake flags as shown below**
 
-Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume to be installed PDI in ```/opt/pdi```.
+Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume PDI to be installed in ```/opt/pdi```.
 
 ```shell
 wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.3.1/pdi-1.3.1.tar.bz2
 tar -xjf pdi-1.3.1.tar.bz2
 mkdir pdi-1.3.1.tar.bz2/build
 cd pdi-1.3.1.tar.bz2/build
-cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON BUILD_MPI_PLUGIN=OFF ..  # configuration
+cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON -DBUILD_MPI_PLUGIN=OFF ..  # configuration
 sudo make install   # compilation and installation
 ```
 ### 2. (modified) DSSAT

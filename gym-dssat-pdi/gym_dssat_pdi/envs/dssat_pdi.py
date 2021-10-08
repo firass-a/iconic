@@ -36,16 +36,12 @@ class DssatPdi(gym.Env):
                  mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True, seed=None,
                  fileX_template_path=None, experiment_number=None):
         self.experiment_number = experiment_number
-        if fileX_name is None:
-            fileX_name = 'UFGA8201.MZX'
-        self.fileX_name = fileX_name
-        self.fileX_prefix = fileX_name[:-4]
         self.mode = mode
         self.action_variables = None
         self.observation_variables = None
         self.context_variables = None
         if fileX_template_path is None:
-            self._fileX_template = pkgutil.get_data(__name__, f'configs/{self.fileX_prefix}.jinja2').decode('utf-8')
+            self._fileX_template = pkgutil.get_data(__name__, f'configs/UFGA8201.jinja2').decode('utf-8')
         else:
             self._fileX_template = utils._load_fileX_template(fileX_template_path)
         self._fileX = None
@@ -199,10 +195,10 @@ class DssatPdi(gym.Env):
                                                        template_string=self._fileX_template)
 
     def _write_fileX_template(self):
-        utils.save_file(saving_path=f'{self._tmp_folder}/{self.fileX_name}', content=self._fileX)
+        utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
     def _launch_client(self):
-        pdi_command = f'pdirun {self._run_dssat_location} C {self.fileX_name} {self.experiment_number}'
+        pdi_command = f'pdirun {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path
@@ -226,7 +222,8 @@ class DssatPdi(gym.Env):
 
     def _cleanup_process(self):
         if self._client_process_pid is not None and psutil.pid_exists(self._client_process_pid):
-            os.killpg(self._client_process_pid, signal.SIGKILL)
+            utils.recursively_kill_process(self._client_process_pid)
+            # os.killpg(self._client_process_pid, signal.SIGKILL)
 
     def _launch_server(self):
         self._zmq_context = zmq.Context()

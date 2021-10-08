@@ -123,8 +123,8 @@ def _parse_config(path_to_load):
         config = yaml.load(ymlfile, Loader=yaml.FullLoader)
     return config
 
-def _load_fileX_template(_load_fileX_template):
-    with open(_load_fileX_template, 'r') as f_:
+def _load_fileX_template(fileX_template_path):
+    with open(fileX_template_path, 'r') as f_:
         fileX_template = f_.read()
     return fileX_template
 

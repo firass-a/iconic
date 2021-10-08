@@ -191,6 +191,20 @@ Observation variables:
 press "return" to continue
 ...
 ```
+### Using a custom experimental file
+Remember that gym-DSSAT currently only supports DSSAT's CERES-Maize module. If you want to use any maize experiment distinct from the default one, you can use the 3 last arguments as provided below:
+```python
+env_args = {
+    'run_dssat_location': f'{pathlib.Path.home()}/dssat_pdi/run_dssat',
+    'log_saving_path': './logs/dssat-pdi.log',
+    'mode': 'fertilization',
+    'seed': 123456,
+    'random_weather': True,
+    'fileX_template_path': fileX_template_path,  # where the jinja2 fileX template is located
+    'experiment_number': 1,  # the number of the experiment in the fileX to be run
+}
+```
+**The custom fileX template must present the same expressions ```{{ ... }}``` as the ones found in the [original example](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/UFGA8201.jinja2). Check [jinja documentation](https://jinja.palletsprojects.com/en/3.0.x/templates/). Be careful, any faulty space in the template will raise errors. If you want stochastic climate generation, you must provide to DSSAT the corresponding ".CLI" file.**
 
 ### More information
 You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym_dssat_pdi_tests/run_env.py), including how to use gym-DSSAT in a multiprocessing context, using the ```env.reset_hard()``` feature.
@@ -216,7 +230,7 @@ make
 sudo make install
 ```
 <!-- #### ii. OpenMPI
-You can check installation instruction (here)[https://www.open-mpi.org/faq/?category=building#easy-build]
+You can check installation instruction [here](https://www.open-mpi.org/faq/?category=building#easy-build)
 ```shell
 wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.1.tar.bz2
 tar -xjf openmpi-4.1.1.tar.bz2

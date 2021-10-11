@@ -33,7 +33,7 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 class DssatPdi(gym.Env):
 
     def __init__(self, run_dssat_location, fileX_name=None, log_saving_path=None,
-                 mode='all', auxiliary_files_names=None, files_prefix='./', random_weather=True, seed=None,
+                 mode='all', auxiliary_file_paths=None, files_prefix='./', random_weather=True, seed=None,
                  fileX_template_path=None, experiment_number=None):
         self.experiment_number = experiment_number
         self.mode = mode
@@ -55,10 +55,10 @@ class DssatPdi(gym.Env):
         self.action_space = None
         for key in ['observation', 'context', 'action']:
             self._make_gym_spaces(key=key)
-        if auxiliary_files_names:
-            self.auxiliary_files_names = auxiliary_files_names
+        if auxiliary_file_paths is not None:
+            self.auxiliary_file_paths = auxiliary_file_paths
         else:
-            self.auxiliary_files_names = []
+            self.auxiliary_file_paths = []
         self._run_dssat_location = run_dssat_location
         self.log_saving_path = log_saving_path
         self._cwd = os.getcwd()
@@ -79,6 +79,7 @@ class DssatPdi(gym.Env):
         self.closed = False
         self._f_out = None
         self.t = 0
+        self.reset_counter = 0
         self._port = None
         self._zmq_context = None
         self._server = None
@@ -228,7 +229,7 @@ class DssatPdi(gym.Env):
     def _launch_server(self):
         self._zmq_context = zmq.Context()
         self._server = self._zmq_context.socket(zmq.PAIR)
-        self._server.setsockopt(zmq.LINGER, 0)
+        # self._server.setsockopt(zmq.LINGER, 0)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
     def _launch_poller(self):
@@ -247,12 +248,13 @@ class DssatPdi(gym.Env):
         if not self._last_is_send:
             self.close()
             raise ValueError("you cannot call env._get_state() two times in a row!")
-        if self._poller.poll(timeout=1000):
-            message = self._server.recv().decode('utf-8')
-            self._last_is_send = False
-        else:
-            self.close()
-            raise ValueError("client doesn't send message")
+        # if self._poller.poll(timeout=1000):
+        message = self._server.recv().decode('utf-8')
+        self._last_is_send = False
+        # else:
+        #     pdb.set_trace()
+        #     self.close()
+        #     raise ValueError("client doesn't send message")
         message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
         _state = message['state']
@@ -278,16 +280,16 @@ class DssatPdi(gym.Env):
         self._launch_poller()
         self._write_pdi_yaml()
         self._launch_client()
-        if not self._poller.poll(timeout=10000):
-            self.close()
-            self._get_sockets_()
+        # if not self._poller.poll(timeout=10000):
+        #     self.close()
+        #     self._get_sockets_()
 
     def _make_tmp_folder(self):
         if self._tmp_folder:
             shutil.rmtree(self._tmp_folder, ignore_errors=True)
         self._tmp_folder = tempfile.mkdtemp()
-        if self.auxiliary_files_names:
-            self._copy_auxiliary_files(self.auxiliary_files_names)
+        if self.auxiliary_file_paths:
+            self._copy_auxiliary_files(self.auxiliary_file_paths)
 
     def _copy_auxiliary_files(self, names):
         if names:
@@ -360,9 +362,10 @@ class DssatPdi(gym.Env):
             self._close_server()
             self._close_tmp_folder()
             self.closed = True
-        if self._f_out and not self._f_out.closed:
+        if self._f_out is not None and not self._f_out.closed:
             self._f_out.close()
-            del self._f_out
+            self._f_out = None
+
 
     def step(self, action_dict):
         if self.closed:
@@ -404,8 +407,9 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def reset(self, seed=None):
-        if self.closed:
+        if self.closed or self.reset_counter >= 50:  # dirty fix for memory leak
             self.reset_hard()
+            self.reset_counter = 0
         elif not self.done:
             self._get_env_done()
         else:
@@ -416,6 +420,7 @@ class DssatPdi(gym.Env):
                 self._server.send(f'{self._rseed1}'.encode('utf-8'))
                 self._last_is_send = True
             self._reset_attributes()
+            self.reset_counter += 1
             self.observation, self.state_, self.done, self.context = self._get_state()
             return self.observation
 

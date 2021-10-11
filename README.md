@@ -200,11 +200,12 @@ env_args = {
     'mode': 'fertilization',
     'seed': 123456,
     'random_weather': True,
-    'fileX_template_path': fileX_template_path,  # where the jinja2 fileX template is located
+    'fileX_template_path': './my_custom_fileX.MZX',  # where the jinja2 fileX template is located
     'experiment_number': 1,  # the number of the experiment in the fileX to be run
+    'auxiliary_file_paths': './my_custom_climate_file.CLI'  # required if random_weather is set True
 }
 ```
-**The custom fileX template must present the same expressions ```{{ ... }}``` as the ones found in the [original example](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/UFGA8201.jinja2). Check [jinja documentation](https://jinja.palletsprojects.com/en/3.0.x/templates/). Be careful, any faulty space in the template will raise errors. If you want stochastic climate generation, you must provide to DSSAT the corresponding ".CLI" file.**
+**The custom fileX template must present the same expressions ```{{ ... }}``` as the ones found in the [original example](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/UFGA8201.jinja2). Check [jinja documentation](https://jinja.palletsprojects.com/en/3.0.x/templates/). Be careful, any faulty space in the template will raise errors. If you want stochastic climate generation, you must provide to DSSAT the corresponding ".CLI" file with the extra argument ```auxiliary_files_paths```.** Note that ```my_custom_climate_file.CLI``` must be named according to the 4 first characters of the value of ```WSTA``` in the custom fileX. For instance, if in ```./my_custom_fileX.MZX``` the variable ```WSTA``` is set to ```GAGR9626```, then the corresponding climate file must be named ```GAGR.CLI```.
 
 ### More information
 You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym_dssat_pdi_tests/run_env.py), including how to use gym-DSSAT in a multiprocessing context, using the ```env.reset_hard()``` feature.

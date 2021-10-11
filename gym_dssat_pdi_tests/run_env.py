@@ -13,7 +13,7 @@ from copy import deepcopy
 from pympler.tracker import SummaryTracker
 
 from pprint import pprint
-
+import pdb
 
 def default_policy(YRDOY):
     fertilization_dic = {
@@ -55,7 +55,6 @@ def interact_with_env(env, verbose=True):
     i = 0
     while not env.done:
         observation = env.observation
-        print(observation)
         observation_list = env.observation_dict_to_array(observation)
         YRDOY = observation['yrdoy']
         action = default_policy(YRDOY)
@@ -65,8 +64,10 @@ def interact_with_env(env, verbose=True):
             # print(f'sw: {env._state["sw"]}')
         res = env.step(action)
         new_state, reward, done, info = res
-        interactions.append(new_state)
+        if new_state is not None:
+            interactions.append(new_state)
         i += 1
+    print(interactions[-1]['grnwt'])
     return interactions
 
 
@@ -153,19 +154,21 @@ if __name__ == '__main__':
     }
     try_interact = True
     try_multiproc = not True
-    verbose = True
+    verbose = not True
     if try_interact:
         try:
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
             # env.get_env_info()
-            interact_with_env(env, verbose=verbose)
-            env.render(type='ts',
-                       feature_name_1='nstres',
-                       feature_name_2='grnwt')
-            env.render(type='reward',
-                       cumsum=True)
-            env.render(type='reward',
-                       cumsum=False)
+            for i in range(1000):
+                interact_with_env(env, verbose=verbose)
+                env.reset()
+            # env.render(type='ts',
+            #            feature_name_1='nstres',
+            #            feature_name_2='grnwt')
+            # env.render(type='reward',
+            #            cumsum=True)
+            # env.render(type='reward',
+            #            cumsum=False)
         except Exception as e:
             logging.exception(e)
         finally:

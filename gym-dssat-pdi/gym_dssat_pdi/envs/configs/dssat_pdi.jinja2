@@ -167,7 +167,7 @@ plugins:
               return json.JSONEncoder.default(self, obj)
           context = zmq.Context()
           client = context.socket(zmq.PAIR)
-          client.setsockopt(zmq.LINGER, 0)
+{#          client.setsockopt(zmq.LINGER, 0)#}
           try:
             client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
           except Exception as e:
@@ -182,7 +182,10 @@ plugins:
         exec: |
           done = True
           message = {'done': done, 'state': {}}
-          client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
+          try:
+            client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
+          except:
+            logging.exception(e)
           is_last_send = True
           rseed1_ = client.recv().decode('utf-8')
           is_last_send = False
@@ -249,9 +252,12 @@ plugins:
             action = message_from_client['action']
             is_early_stopping = message_from_client['early_stopping']
           except Exception as e:
+            state_keys = [*state]
+            for state_key in state_keys:
+              print('key ' , state_key, file=sys.stderr, flush=True)
+              print('value ', state[state_key], file=sys.stderr, flush=True)
             logging.exception(e)
             time.sleep(1)
-
       fertilize:
         with: {anfer: $ANFER}
         exec:

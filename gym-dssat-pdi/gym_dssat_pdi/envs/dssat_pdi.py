@@ -407,7 +407,7 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def reset(self, seed=None):
-        if self.closed or self.reset_counter >= 50:  # dirty fix for memory leak
+        if self.closed or self.reset_counter >= 10:  # dirty fix for memory leak
             self.reset_hard()
             self.reset_counter = 0
         elif not self.done:
@@ -438,6 +438,9 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def set_seed(self, seed=None):
+        if seed is not None:
+            seed = int(seed)
+            self.seed = seed
         self._random_generator, self.seed = seeding.np_random(seed)
         return self.seed
 

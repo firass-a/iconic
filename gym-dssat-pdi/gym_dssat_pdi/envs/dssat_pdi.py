@@ -32,9 +32,8 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location, fileX_name=None, log_saving_path=None,
-                 mode='all', auxiliary_file_paths=None, files_prefix='./', random_weather=True, seed=None,
-                 fileX_template_path=None, experiment_number=None):
+    def __init__(self, run_dssat_location, log_saving_path=None, mode='all', auxiliary_file_paths=None,
+                 files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None):
         self.experiment_number = experiment_number
         self.mode = mode
         self.action_variables = None
@@ -289,12 +288,12 @@ class DssatPdi(gym.Env):
             shutil.rmtree(self._tmp_folder, ignore_errors=True)
         self._tmp_folder = tempfile.mkdtemp()
         if self.auxiliary_file_paths:
-            self._copy_auxiliary_files(self.auxiliary_file_paths)
+            self._copy_auxiliary_files()
 
-    def _copy_auxiliary_files(self, names):
-        if names:
-            for name in names:
-                shutil.copyfile(f'{self._files_prefix}{name}', f'{self._tmp_folder}/{name}')
+    def _copy_auxiliary_files(self):
+        for path in self.auxiliary_file_paths:
+            file_name = path.split('/')[-1]
+            shutil.copyfile(path, f'{self._tmp_folder}/{file_name}')
 
     def _reset_attributes(self):
         self.closed = False
@@ -410,17 +409,16 @@ class DssatPdi(gym.Env):
         if self.closed or self.reset_counter >= 10:  # dirty fix for memory leak
             self.reset_hard()
             self.reset_counter = 0
-        elif not self.done:
-            self._get_env_done()
         else:
+            if not self.done:
+                self._get_env_done()
             self.set_seed(seed)
             if self.random_weather:
                 self._rseed1 = self._random_generator.randint(1, 99999)
-            if self.done:
-                self._server.send(f'{self._rseed1}'.encode('utf-8'))
-                self._last_is_send = True
-            self._reset_attributes()
+            self._server.send(f'{self._rseed1}'.encode('utf-8'))
+            self._last_is_send = True
             self.reset_counter += 1
+            self._reset_attributes()
             self.observation, self.state_, self.done, self.context = self._get_state()
             return self.observation
 

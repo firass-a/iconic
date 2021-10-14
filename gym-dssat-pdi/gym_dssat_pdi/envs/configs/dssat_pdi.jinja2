@@ -17,6 +17,7 @@ data:
   YRDOY: int
   NSTRES: float
   ISTAGE: int
+  VSTAGE: float
   GRNWT: float
   TOPWT: float
   PLTPOP: float
@@ -87,6 +88,8 @@ plugins:
         nstres = NSTRES
       ISTAGE: |
         istage = ISTAGE
+      VSTAGE: |
+        vstage = VSTAGE
       GRNWT: |
         grnwt = GRNWT
       TOPWT: |
@@ -210,6 +213,7 @@ plugins:
           state = {'yrdoy': yrdoy,
           'nstres': nstres,
           'istage': istage,
+          'vstage': vstage,
           'grnwt': grnwt,
           'topwt': topwt,
           'pltpop': pltpop,

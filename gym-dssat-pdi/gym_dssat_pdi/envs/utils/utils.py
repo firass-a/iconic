@@ -12,7 +12,6 @@ import numpy as np
 from pprint import pprint
 import pathlib
 
-
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
     'Romain Gautron',
@@ -45,7 +44,8 @@ def _fill_template_from_file(value_dic, template_path):
 
 
 def _fill_template_from_string(value_dic, template_string):
-    template = jinja2.Environment(loader=jinja2.BaseLoader).from_string(template_string)
+    template = jinja2.Environment(loader=jinja2.BaseLoader, trim_blocks=True, lstrip_blocks=True).from_string(
+        template_string)
     filled_template = template.render(**value_dic)
     return filled_template
 
@@ -123,14 +123,17 @@ def _parse_config(path_to_load):
         config = yaml.load(ymlfile, Loader=yaml.FullLoader)
     return config
 
+
 def _load_fileX_template(fileX_template_path):
     with open(fileX_template_path, 'r') as f_:
         fileX_template = f_.read()
     return fileX_template
 
+
 def make_folder(folder_path):
     path = pathlib.Path(folder_path)
     path.mkdir(exist_ok=True)
+
 
 if __name__ == '__main__':
     pass

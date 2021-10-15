@@ -259,16 +259,20 @@ Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; 
 ```shell
 wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.3.1/pdi-1.3.1.tar.bz2
 tar -xjf pdi-1.3.1.tar.bz2
-mkdir pdi-1.3.1.tar.bz2/build
-cd pdi-1.3.1.tar.bz2/build
+mkdir  pdi-1.3.1/build
+cd  pdi-1.3.1/build
 cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON -DBUILD_MPI_PLUGIN=OFF ..  # configuration
 sudo make install   # compilation and installation
 ```
+
+*You may need to install ```libhdf5-serial-dev``` with ```sudo apt-get install libhdf5-serial-dev``` and ```pkg-config``` with ```sudo apt-get install pkg-config```*.
+
 ### 2. (modified) DSSAT
 From the root of this repository, supposing PDI has been installed in ```/opt/pdi``` and (modified) DSSAT to be installed in ```/opt/dssat_pdi```:
 ```shell
 cd dssat-csm-os
 mkdir build
+cd build
 cmake -DCMAKE_INSTALL_PREFIX='/opt/dssat_pdi' -DCMAKE_PREFIX_PATH='/opt/pdi/share/paraconf/cmake;/opt/pdi/share/pdi/cmake' ..
 make
 sudo make install

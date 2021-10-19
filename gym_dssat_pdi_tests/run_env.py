@@ -15,6 +15,7 @@ from pympler.tracker import SummaryTracker
 from pprint import pprint
 import pdb
 
+
 def default_policy(YRDOY):
     fertilization_dic = {
         1982097: 27,
@@ -67,7 +68,7 @@ def interact_with_env(env, verbose=True):
         if new_state is not None:
             interactions.append(new_state)
         i += 1
-    print(interactions[-1]['grnwt'])
+    # print(interactions[-1]['grnwt'])
     return interactions
 
 
@@ -82,6 +83,7 @@ def multiprocess_trial(env_args, cwd, rep, save_log=False):
     with multiprocessing.Pool() as pool:
         raw_result = list(pool.imap_unordered(_multiprocess_trial_func, arguments))
     return raw_result
+
 
 def _multiprocess_trial_func(args):
     try:
@@ -134,7 +136,7 @@ def _multiprocess_trial_func_hard_reset(args):
 
 
 if __name__ == '__main__':
-    dir = './logs'
+    dir = './logs/'
     utils.make_folder(dir)
     try:
         for file in os.scandir(dir):
@@ -159,9 +161,13 @@ if __name__ == '__main__':
         try:
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
             # env.get_env_info()
-            for i in range(1000):
+            n_rep = 1000
+            for i in range(n_rep):
                 interact_with_env(env, verbose=verbose)
+                if (i + 1) % 100 == 0:
+                    print(f'{i + 1}/{n_rep}')
                 env.reset()
+            print(env._tmp_folder)
             # env.render(type='ts',
             #            feature_name_1='nstres',
             #            feature_name_2='grnwt')

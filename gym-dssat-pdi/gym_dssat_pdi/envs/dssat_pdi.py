@@ -198,6 +198,7 @@ class DssatPdi(gym.Env):
         utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
     def _launch_client(self):
+        # pdi_command = f'pdirun valgrind --tool=massif --log-file=memcheck.log {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
         pdi_command = f'pdirun {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
@@ -406,7 +407,7 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def reset(self, seed=None):
-        if self.closed or self.reset_counter >= 10:  # dirty fix for memory leak
+        if self.closed: # or self.reset_counter >= 10:  # dirty fix for memory leak
             self.reset_hard()
             self.reset_counter = 0
         else:

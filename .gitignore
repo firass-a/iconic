@@ -20,3 +20,5 @@ MANIFEST
 *.log/*
 **/render
 **/logs
+*.dat
+massif.out.*

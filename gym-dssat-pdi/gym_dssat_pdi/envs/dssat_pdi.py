@@ -1,6 +1,7 @@
 import gym
 import gym.spaces as spaces
-from gym_dssat_pdi.envs.utils import utils, rewards, rendering
+from gym_dssat_pdi.envs.utils import utils, rendering
+from gym_dssat_pdi.envs.configs import rewards
 import numpy as np
 from gym.utils import seeding
 import subprocess
@@ -15,11 +16,8 @@ import pkgutil
 from pprint import pprint
 import psutil
 import warnings
-import pdb
 import sys
-import signal
 import atexit
-import time
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
@@ -355,12 +353,13 @@ class DssatPdi(gym.Env):
             observation, _state, done, context = self._get_state()
             self.done = done
 
-    def close(self):
+    def close(self, _close_tmp=True):
         if not self.closed:
             self._close_client()
             self._close_poller()
             self._close_server()
-            self._close_tmp_folder()
+            if _close_tmp:
+                self._close_tmp_folder()
             self.closed = True
         if self._f_out is not None and not self._f_out.closed:
             self._f_out.close()
@@ -423,11 +422,12 @@ class DssatPdi(gym.Env):
             self.observation, self.state_, self.done, self.context = self._get_state()
             return self.observation
 
-    def reset_hard(self, seed=None):
+    def reset_hard(self, seed=None, _new_tmp_folder=True):
         self.set_seed(seed)
         if not self.closed:
-            self.close()
-        self._make_tmp_folder()
+            self.close(_close_tmp=_new_tmp_folder)
+        if _new_tmp_folder:
+            self._make_tmp_folder()
         if self.random_weather:
             self._rseed1 = self._random_generator.randint(1, 99999)
         self._write_fileX_template()

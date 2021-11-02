@@ -24,7 +24,7 @@ action:
     type: float
     low: 0
     high: 50
-    info: water depth to irrigate for current day (mm/ha)
+    info: water depth to irrigate for current day (L/ha)
 #################
 # RAW STATE SPACE
 #################
@@ -53,12 +53,12 @@ state:
     type: float
     low: 0
     high: 100
-    info: growing degree day for current day (C/d)
+    info: growing degree days for current day (C/d)
   grnwt:
     type: float
     low: 0
     high: .inf
-    info: grain weight (kg/ha)  # dry matter?
+    info: grain weight dry matter (kg/ha)
   istage:
     type: discrete
     info: DSSAT maize growing stage (index in order 7, 8, 9, 1, 2, 3, 4, 5 ,6)

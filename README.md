@@ -213,11 +213,10 @@ You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/b
 ## Installing gym-DSSAT
 ***A simplified installation procedure is under progress !***
 
-Here you will find how to install in the order the various components of gym-DSSAT. The first step is to clone this repository:
+Here you will find how to install in the order the various components of gym-DSSAT. The first step is to clone this repository with its submodules:
 
 ```shell
-git clone https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git
-```
+git clone --recurse-submodules git@gitlab.inria.fr:rgautron/dssat-csm-os.git```
 
 ### 0. Dependencies
 #### i. CMake
@@ -257,11 +256,10 @@ In order to install the [PDI](https://pdi.julien-bigot.fr/master/), you can chec
 Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume PDI to be installed in ```/opt/pdi```.
 
 ```shell
-wget https://gitlab.maisondelasimulation.fr/pdidev/pdi/-/archive/1.3.1/pdi-1.3.1.tar.bz2
-tar -xjf pdi-1.3.1.tar.bz2
-mkdir  pdi-1.3.1/build
-cd  pdi-1.3.1/build
-cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON -DBUILD_MPI_PLUGIN=OFF ..  # configuration
+git clone https://gitlab.maisondelasimulation.fr/pdidev/pdi.git
+mkdir pdi/build
+cd  pdi/build
+cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON -DBUILD_MPI_PLUGIN=OFF -DUSE_yaml=EMBEDDED ..  # configuration
 sudo make install   # compilation and installation
 ```
 

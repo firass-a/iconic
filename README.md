@@ -216,7 +216,7 @@ You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/b
 Here you will find how to install in the order the various components of gym-DSSAT. The first step is to clone this repository with its submodules:
 
 ```shell
-git clone --recurse-submodules git@gitlab.inria.fr:rgautron/dssat-csm-os.git
+git clone --recurse-submodules https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git
 ```
 
 ### 0. Dependencies
@@ -281,7 +281,7 @@ sudo make install
 After then, you will need to provide DSSAT the required experimental files. From the root of this repository, assuming DSSAT has been installed in ```/opt/dssat_pdi```:
 ```shell
 cd dssat-csm-data
-sudo cp -r dssat-csm-data/* /opt/dssat_pdi
+sudo cp -r ./* /opt/dssat_pdi
 ```
 
 ### 3. (finally) gym-DSSAT

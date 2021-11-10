@@ -1,0 +1,19 @@
+Source: dssat-pdi-rl
+Section: science
+Priority: optional
+Maintainer: Emilio J. Padrón González <emilioj@udc.gal>
+Build-Depends: cmake, debhelper-compat (= 12), libpdi-dev
+Standards-Version: 4.5.0
+Homepage: https://gitlab.inria.fr/rgautron/dssat-csm-os
+
+Package: dssat-pdi-rl
+Architecture: any
+Multi-Arch: foreign
+Depends: libpdi1, pdiplugin-pycall, ${misc:Depends}, ${shlibs:Depends}
+Description: DSSAT modification for gym-DSSAT RL environment.
+ DSSAT + PDI is a modification of the Decision Support System for
+ Agrotechnology Transfer (DSSAT) software, which is the core of an
+ Open AI gym crop management Reinforcement Learning environment named
+ gym-DSSAT. DSSAT + PDI is powered by the PDI Data Interface (PDI),
+ that allows loose coupling between the original Fortran code and
+ Python.

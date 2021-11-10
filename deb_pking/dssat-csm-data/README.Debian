@@ -1,0 +1,12 @@
+dssat-csm-data for Debian
+
+The DSSAT Cropping System Model - experimental data
+
+These datasets are distributed with the DSSAT Cropping System Model
+(https://github.com/dssat/dssat-csm-os) and contain at least one
+experimental dataset for each crop simulation model, including
+management, soils, and weather data.
+
+Read more about DSSAT at http://dssat.net/about
+
+ -- Emilio J. Padrón <>  Sat, 30 Oct 2021 13:21:54 +0200

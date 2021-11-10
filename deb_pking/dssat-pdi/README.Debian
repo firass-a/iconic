@@ -1,0 +1,13 @@
+dssat-pdi-rl for Debian
+
+DSSAT modification for gym-DSSAT RL environment.
+
+DSSAT + PDI is a modification of the Decision Support System for
+Agrotechnology Transfer (DSSAT) software, which is the core of an Open
+AI gym crop management Reinforcement Learning environment named
+gym-DSSAT.
+
+DSSAT + PDI is powered by the PDI Data Interface (PDI), that allows
+loose coupling between the original Fortran code and Python.
+
+ -- Emilio J. Padrón González <emilioj@udc.gal>, Fri, 29 Oct 2021 11:43:16 +0200

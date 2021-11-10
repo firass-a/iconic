@@ -1,0 +1,17 @@
+Source: dssat-csm-data
+Section: science
+Priority: optional
+Maintainer: Emilio J. Padrón González <emilioj@udc.gal>
+Build-Depends: debhelper-compat (= 12)
+Standards-Version: 4.5.0
+Homepage: https://github.com/DSSAT/dssat-csm-data
+
+Package: dssat-csm-data
+Architecture: all
+Multi-Arch: foreign
+Depends: dssat-pdi-rl, ${misc:Depends}, ${shlibs:Depends}
+Description: Experimental data for the DSSAT Cropping System Model
+ These datasets are distributed with the DSSAT Cropping System Model
+ (https://github.com/dssat/dssat-csm-os) and contain at least one
+ experimental dataset for each crop simulation model, including
+ management, soils, and weather data.

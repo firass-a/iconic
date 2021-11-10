@@ -1,0 +1,99 @@
+Source: pdi
+Section: libs
+Priority: optional
+Maintainer: Julien Bigot <julien.bigot@cea.fr>
+Build-Depends: debhelper (>= 11), dh-exec, dh-python,
+  dh-fortran-mod <!bionic>,
+  cmake (>= 3.5) <bionic> <nocheck>,
+  cmake (>= 3.10) <!bionic !nocheck>,
+  gfortran | fortran-compiler,
+  libgmock-dev (>= 1.8.0) <!bionic !nocheck>,
+  libgtest-dev (>= 1.8.0) <!bionic !nocheck>,
+  libparaconf-dev (>= 0.4.0),
+  libspdlog-dev (>= 1:1.3.1),
+  pkg-config,
+  pybind11-dev (>= 2.3.0),
+  python3-dev (>= 3.5),
+  python3-numpy,
+  zpp
+Standards-Version: 4.5.0
+Homepage: https://pdi.julien-bigot.fr/
+
+Package: libpdi1
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: pdiplugin-all
+Recommends:
+  pdiplugin-serialize,
+  pdiplugin-set-value,
+  pdiplugin-trace,
+  pdiplugin-user-code
+Description: the PDI Data , main library
+ PDI is a library that aims to decouple high-performance simulation
+ codes from Input/Output concerns.
+
+Package: libpdi-f90.1
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, libpdi1 (= ${binary:Version})
+Description: the PDI Data Interface for fortran
+ PDI is a library that aims to decouple high-performance simulation
+ codes from Input/Output concerns.
+
+Package: libpdi-pysupport1
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, libpdi1 (= ${binary:Version})
+Description: the PDI Data Interface python support library
+ PDI is a library that aims to decouple high-performance simulation
+ codes from Input/Output concerns.
+
+Package: python3-pdi
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, libpdi-pysupport1 (= ${binary:Version})
+Description: the PDI Data Interface python module
+ PDI is a library that aims to decouple high-performance simulation
+ codes from Input/Output concerns.
+
+Package: libpdi-dev
+Architecture: any
+Section: libs
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${Fortran-Mod},
+  libpdi-f90.1 (= ${binary:Version}),
+  python3-pdi (= ${binary:Version}),
+  libparaconf-dev (>= 0.4.0),
+  libspdlog-dev (>= 1.3.1),
+  pybind11-dev (>= 2.3.0),
+  python3-dev (>= 3.5),
+  python3-numpy
+Recommends: cmake, pkg-config, pdiplugin-all
+Description: Development files for PDI
+ The pdi-dev package contains C/C++/Fortran header files for developing
+ applications or plugins that use PDI.
+
+Package: pdiplugin-all
+Architecture: any
+Section: all
+Depends:
+  pdiplugin-decl-hdf5-mpich,
+  pdiplugin-decl-hdf5-openmpi,
+  pdiplugin-decl-hdf5-serial,
+  pdiplugin-decl-netcdf-mpich,
+  pdiplugin-decl-netcdf-openmpi,
+  pdiplugin-decl-sion-mpich,
+  pdiplugin-decl-sion-openmpi,
+  pdiplugin-decl-sion-serial,
+  pdiplugin-flowvr,
+  pdiplugin-fti,
+  pdiplugin-mpi,
+  pdiplugin-pycall,
+  pdiplugin-serialize,
+  pdiplugin-set-value,
+  pdiplugin-trace,
+  pdiplugin-user-code
+Description: PDI plugins, full set
+ This is a metapackage depending on all available PDI plug-ins to make
+ installation easier.

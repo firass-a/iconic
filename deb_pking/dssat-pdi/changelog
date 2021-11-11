@@ -1,8 +1,8 @@
-dssat-pdi-rl (0.1.4.7-1) UNRELEASED; urgency=medium
+dssat-pdi (0.1.4.7-1) UNRELEASED; urgency=medium
 
   * Initial release
 
-  * DSSAT-PDI-RL: a patched version of DSSAT [1] for interacting with a
+  * DSSAT-PDI: a patched version of DSSAT [1] for interacting with a
     Reinforcement Learning agent through the Pycall plugin of [2] the
     middleware PDI [3].
 

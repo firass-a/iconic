@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: dssat-pdi-rl
+Upstream-Name: dssat-pdi
 Upstream-Contact: Romain Gautron <romain.gautron@cirad.fr>
 Source: <https://gitlab.inria.fr/rgautron/dssat-csm-os>
 #

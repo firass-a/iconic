@@ -13,7 +13,7 @@ Architecture: all
 Multi-Arch: foreign
 Pre-Depends: dpkg (>= 1.16.1), python3 (>= 3.6), python3-venv,
  ${misc:Pre-Depends}
-Depends: dssat-pdi-rl, dssat-csm-data, ${misc:Depends},
+Depends: dssat-pdi, dssat-csm-data, ${misc:Depends},
  ${python3:Depends}
 Description: gym-DSSAT: an easy to manipulate crop environment for
  Reinforcement Learning.

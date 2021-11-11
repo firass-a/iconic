@@ -1,4 +1,4 @@
-Source: dssat-pdi-rl
+Source: dssat-pdi
 Section: science
 Priority: optional
 Maintainer: Emilio J. Padrón González <emilioj@udc.gal>
@@ -6,7 +6,7 @@ Build-Depends: cmake, debhelper-compat (= 12), libpdi-dev
 Standards-Version: 4.5.0
 Homepage: https://gitlab.inria.fr/rgautron/dssat-csm-os
 
-Package: dssat-pdi-rl
+Package: dssat-pdi
 Architecture: any
 Multi-Arch: foreign
 Depends: libpdi1, pdiplugin-pycall, ${misc:Depends}, ${shlibs:Depends}

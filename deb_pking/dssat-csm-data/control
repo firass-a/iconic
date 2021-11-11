@@ -9,7 +9,7 @@ Homepage: https://github.com/DSSAT/dssat-csm-data
 Package: dssat-csm-data
 Architecture: all
 Multi-Arch: foreign
-Depends: dssat-pdi-rl, ${misc:Depends}, ${shlibs:Depends}
+Depends: dssat-pdi, ${misc:Depends}, ${shlibs:Depends}
 Description: Experimental data for the DSSAT Cropping System Model
  These datasets are distributed with the DSSAT Cropping System Model
  (https://github.com/dssat/dssat-csm-os) and contain at least one

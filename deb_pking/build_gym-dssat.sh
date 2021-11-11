@@ -4,7 +4,7 @@
 VERSION="0.0.1"
 UNVERSIONED="gym-dssat-pdi"
 DIRNAME="${UNVERSIONED}-${VERSION}"
-TARBALL="gym-dssat-pdi_${VERSION}.orig.tar.gz"
+TARBALL="${UNVERSIONED}_${VERSION}.orig.tar.gz"
 DEBIAN="gym-dssat"
 
 echo "PACKAGING ${DIRNAME} ($TARBALL)"

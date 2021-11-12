@@ -7,4 +7,5 @@ export DH_VIRTUALENV_INSTALL_ROOT=/opt/
 	dh $@ --with python-virtualenv --buildsystem=pybuild
 
 override_dh_virtualenv:
-	dh_virtualenv --python python3 --use-system-packages
+	dh_virtualenv --python python3 --use-system-packages \
+		--extra-pip-arg "--ignore-installed"

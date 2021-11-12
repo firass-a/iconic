@@ -2,7 +2,7 @@
 
 VERSION="4.7"
 SUBMOD="dssat-csm-data"
-GITVER=$(echo $(git submodule status ../${SUBMOD}) | head -c 8 | tail -c 7)
+GITVER=$(echo $(git submodule status ../${SUBMOD} | head -c 8 | tail -c 7))
 UNVERSIONED="dssat-csm-data"
 DIRNAME="${UNVERSIONED}-${VERSION}~${GITVER}"
 TARBALL="${UNVERSIONED}_${VERSION}~${GITVER}.orig.tar.gz"

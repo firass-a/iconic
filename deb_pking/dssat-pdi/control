@@ -2,8 +2,9 @@ Source: dssat-pdi
 Section: science
 Priority: optional
 Maintainer: Emilio J. Padrón González <emilioj@udc.gal>
-Build-Depends: cmake, debhelper-compat (= 12), libpdi-dev (>= 1.4.0),
- pdiplugin-pycall
+Build-Depends: cmake, gfortran, libevent-pthreads-2.1-7, pybind11-dev,
+ libyaml-dev, pkgconf, debhelper-compat (= 12), libpdi-dev (>= 1.4.0),
+ pdiplugin-pycall, libparaconf-dev
 Standards-Version: 4.5.0
 Homepage: https://gitlab.inria.fr/rgautron/dssat-csm-os
 

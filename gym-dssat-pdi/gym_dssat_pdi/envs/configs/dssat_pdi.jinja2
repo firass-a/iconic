@@ -155,6 +155,13 @@ plugins:
     on_event:
       start_client:
         exec: |
+
+          # Activate venv if executing from package
+          import os
+          activate_this = "/opt/gym-dssat-pdi/bin/activate_this.py"
+          if os.path.exists(activate_this):
+            exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), dict(__file__=activate_this))
+
           import sys
           import zmq
           import json

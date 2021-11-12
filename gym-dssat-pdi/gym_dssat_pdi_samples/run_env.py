@@ -147,7 +147,7 @@ if __name__ == '__main__':
     utils.make_folder('./render')
     cwd = os.path.dirname(os.path.realpath(__file__))
     env_args = {
-        'run_dssat_location': '/opt/dssat_pdi/run_dssat',
+        'run_dssat_location': '/opt/dssat-pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
         # 'mode': 'irrigation',
         # 'mode': 'fertilization',

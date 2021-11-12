@@ -24,6 +24,13 @@ rm -rf ../${DIRNAME}/.git*
 echo "tar zcf ../${TARBALL} ../${DIRNAME}"
 tar zcf ../${TARBALL} ../${DIRNAME}
 
+#FIX THIS (quick workaround)
+echo "UPDATE VERSION STRING IN CHANGELOG IF NEEDED"
+if ! head -1 ${DEBIAN}/changelog | grep -q ${GITVER}
+then
+    sed -i "0,/${VERSION}/s//${VERSION}~${GITVER}/" ${DEBIAN}/changelog
+fi
+
 echo "cp -r ${DEBIAN} ../${DIRNAME}/debian"
 cp -r ${DEBIAN} ../${DIRNAME}/debian
 

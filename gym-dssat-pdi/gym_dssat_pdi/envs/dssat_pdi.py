@@ -196,7 +196,7 @@ class DssatPdi(gym.Env):
         utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
     def _launch_client(self):
-        pdi_command = f'{self._run_dssat_location} C fileX.MZX {self.experiment_number}'
+        pdi_command = f'sh {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path
@@ -210,7 +210,7 @@ class DssatPdi(gym.Env):
         client_process = subprocess.Popen(pdi_command,
                                           stdout=self._f_out,
                                           stderr=sys.stderr,
-                                          shell=True,
+                                          shell=False,
                                           universal_newlines=True,
                                           cwd=self._tmp_folder,
                                           bufsize=0,

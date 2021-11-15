@@ -1,0 +1,8 @@
+gym-dssat-pdi (0.0.1-1) UNRELEASED; urgency=medium
+
+  * Initial release
+
+  * gym-dssat-pdi: a middleware to connect OpenAI Gym with a DSSAT
+  crop simulation leveraging PDI
+
+ -- Emilio J. Padrón González <emilioj@udc.gal>  Mon, 01 Nov 2021 01:21:50 +0100

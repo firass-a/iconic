@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+
+export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+include /usr/share/dpkg/architecture.mk
+ifneq (,$(filter bionic, $(DEB_BUILD_PROFILES)))
+	CMAKEFLAGS += -DBUILD_TESTING=OFF
+	DHFLAGS += --with python3
+else
+	ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS) $(DEB_BUILD_PROFILES)))
+		CMAKEFLAGS += -DBUILD_TESTING=OFF
+	endif
+	DHFLAGS += --with python3,fortran_mod
+endif
+FC := $(shell basename $(shell readlink -f /usr/bin/gfortran))
+FMODDIR := /usr/lib/$(DEB_HOST_MULTIARCH)/fortran/$(FC)
+PKG_VERSION := $(shell dpkg-parsechangelog -S version | sed 's/-.*//')
+
+%:
+	dh $@ --parallel $(DHFLAGS)
+
+override_dh_auto_configure:
+	dh_auto_configure --parallel -D pdi -- \
+		-DBUILD_DOCUMENTATION=OFF \
+		-DBUILD_CFG_VALIDATOR=OFF \
+		-DBUILD_DECL_HDF5_PLUGIN=OFF \
+		-DBUILD_DECL_NETCDF_PLUGIN=OFF \
+		-DBUILD_DECL_SION_PLUGIN=OFF \
+		-DBUILD_FLOWVR_PLUGIN=OFF \
+		-DBUILD_FORTRAN=ON \
+		-DBUILD_FTI_PLUGIN=OFF \
+		-DBUILD_HDF5_PARALLEL=OFF \
+		-DBUILD_MPI_PLUGIN=OFF \
+		-DBUILD_PYCALL_PLUGIN=ON \
+		-DBUILD_PYTHON=ON \
+		-DBUILD_SET_VALUE_PLUGIN=ON \
+		-DBUILD_SERIALIZE_PLUGIN=ON \
+		-DBUILD_SHARED_LIBS=ON \
+		-DBUILD_TEST_PLUGIN=OFF \
+		-DBUILD_TRACE_PLUGIN=ON \
+		-DBUILD_USER_CODE_PLUGIN=ON \
+		-DPython3_EXECUTABLE=/usr/bin/python3 \
+		"-DINSTALL_FMODDIR=$(FMODDIR)" \
+		-DINSTALL_PDIPLUGINDIR=/usr/lib/$(DEB_HOST_MULTIARCH)/pdi/plugins_$(PKG_VERSION)/ \
+		$(CMAKEFLAGS) \
+		-DCMAKE_BUILD_TYPE=Release

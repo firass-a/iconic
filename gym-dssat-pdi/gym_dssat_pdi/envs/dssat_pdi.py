@@ -196,8 +196,7 @@ class DssatPdi(gym.Env):
         utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
     def _launch_client(self):
-        # pdi_command = f'pdirun valgrind --tool=massif --log-file=memcheck.log {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
-        pdi_command = f'pdirun {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
+        pdi_command = f'sh {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path

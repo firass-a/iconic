@@ -5,11 +5,22 @@ gym-DSSAT is powered by the [PDI Data Interface (PDI)](https://pdi.julien-bigot.
 
 **Disclaimer: gym-DSSAT only supports Unix systems and uses Python 3.6 or above!**
 
-## In this repository
-+ ```./dssat-csm-os```: the submodule of modified the DSSAT Fortran code with PDI for gym-DSSAT
+## In this package
 + ```./gym-dssat-pdi```: the custom gym-DSSAT Python environment
-+ ```./dssat-csm-data```: the required experimental files used by DSSAT
-+ ```./gym_dssat_pdi_tests```: examples of how to run gym-DSSAT
+  [Official repository](https://gitlab.inria.fr/rgautron/gym_dssat_pdi)
+
+## Required Python modules included in this package
+    - gym
+    - numpy
+    - matplotlib
+    - jinja2
+    - pyzmq
+
+## Related packages
++ ```libpdi```: PDI Data Interface: library for decoupling high-performance simulation codes from Input/Output concerns. (REQUIRED)
++ ```dssat-pdi```: Modified version of DSSAT with PDI snippets for interacting with gym-DSSAT (REQUIRED)
++ ```dssat-csm-data```: the required experimental files used by DSSAT
++ ```gym-dssat-pdi-examples```: examples of how to run gym-DSSAT
 
 ## The environment
 gym-DSSAT is designed to allow great setting flexibility. The environment comes with default settings that can easily been modified by editing the [gym environment's yaml configuration file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/env_config.yml). The ```action``` key gives the raw action space, the ```state``` key give the raw action space and each individual setting is found and can be edited in the ```setting``` key. Furthermore, the ```context``` key defines additional contextual variables.
@@ -65,7 +76,7 @@ setting:
 Reward functions are explicitely defined in a [separated file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/utils/rewards.py) allowing easy custom reward function definitions. Default reward functions are designed to make challenging problems taking into account the costs of actions and the environmental factors.
 
 ## Usage
-Make sure to well follow the [installation instructions](#installing-gym-dssat) before !
+
 ### Initialization
 You can use gym-DSSAT as any gym environment. You need to pass gym-DSSAT configuration as following:
 
@@ -209,87 +220,6 @@ env_args = {
 
 ### More information
 You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym_dssat_pdi_tests/run_env.py), including how to use gym-DSSAT in a multiprocessing context, using the ```env.reset_hard()``` feature.
-
-## Installing gym-DSSAT
-***A simplified installation procedure is under progress !***
-
-Here you will find how to install in the order the various components of gym-DSSAT. The first step is to clone this repository with its submodules:
-
-```shell
-git clone --recurse-submodules https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git
-```
-
-### 0. Dependencies
-#### i. CMake
-You can find instructions [here](https://cmake.org/install/)
-```shell
-wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3.tar.gz
-gunzip -c cmake-3.21.3.tar.gz | tar xf -
-cd cmake-3.21.3
-./bootstrap
-make
-sudo make install
-```
-<!-- #### ii. OpenMPI
-You can check installation instruction [here](https://www.open-mpi.org/faq/?category=building#easy-build)
-```shell
-wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.1.tar.bz2
-tar -xjf openmpi-4.1.1.tar.bz2
-cd openmpi-4.1.1
-./configure --prefix=/opt/openmpi-4.1.1
-<...lots of output...>
-sudo make all install
-``` -->
-#### ii. A fortran compiler
-For instance, to install [gfortran](https://gcc.gnu.org/wiki/GFortran), you can use ```sudo apt-get install gfortran```
-
-#### iii. Python
-To install [Python](https://www.python.org/) (>=3.6), you can use ```sudo apt install python3.9```. The following Python package are requires:
-+ matplotlib: ```pip install matplotlib```
-+ numpy: ```pip install numpy```
-+ jinja2: ```pip install Jinja2```
-+ gym: ```pip install gym```
-+ zmq: ```pip install pyzmq```
-
-### 1. PDI Data Interface (PDI)
-In order to install the [PDI](https://pdi.julien-bigot.fr/master/), you can check the [official instructions](https://pdi.julien-bigot.fr/master/Installation.html) but **be careful to correctly set cmake flags as shown below**
-
-Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume PDI to be installed in ```/opt/pdi```.
-
-```shell
-git clone https://gitlab.maisondelasimulation.fr/pdidev/pdi.git
-mkdir pdi/build
-cd  pdi/build
-cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON -DBUILD_MPI_PLUGIN=OFF -DUSE_yaml=EMBEDDED ..  # configuration
-sudo make install   # compilation and installation
-```
-
-*You may need to install ```libhdf5-serial-dev``` with ```sudo apt-get install libhdf5-serial-dev``` and ```pkg-config``` with ```sudo apt-get install pkg-config```*.
-
-### 2. (modified) DSSAT
-From the root of this repository, supposing PDI has been installed in ```/opt/pdi``` and (modified) DSSAT to be installed in ```/opt/dssat_pdi```:
-```shell
-cd dssat-csm-os
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX='/opt/dssat_pdi' -DCMAKE_PREFIX_PATH='/opt/pdi/share/paraconf/cmake;/opt/pdi/share/pdi/cmake' ..
-make
-sudo make install
-```
-*Note: if for some reason DSSAT compilation failed, please empty the folder ```dssat-csm-os/build``` before retrying to compile DSSAT*
-
-After then, you will need to provide DSSAT the required experimental files. From the root of this repository, assuming DSSAT has been installed in ```/opt/dssat_pdi```:
-```shell
-cd dssat-csm-data
-sudo cp -r ./* /opt/dssat_pdi
-```
-
-### 3. (finally) gym-DSSAT
-From the root of this repository:
-```shell
-cd gym-dssat-pdi
-pip install -e .
-```
 
 ## About this project
 #### Authors

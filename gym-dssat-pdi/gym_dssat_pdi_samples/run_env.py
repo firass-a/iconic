@@ -62,6 +62,7 @@ def interact_with_env(env, verbose=True):
         if verbose:
             # pprint(f'observation: {observation}')
             pprint(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
+            pprint(f'yrdoy : {YRDOY} -> dap {observation["dap"]}')
             # print(f'sw: {env._state["sw"]}')
         res = env.step(action)
         new_state, reward, done, info = res
@@ -146,7 +147,7 @@ if __name__ == '__main__':
     utils.make_folder('./render')
     cwd = os.path.dirname(os.path.realpath(__file__))
     env_args = {
-        'run_dssat_location': f'{pathlib.Path.home()}/dssat_pdi/run_dssat',
+        'run_dssat_location': '/opt/dssat-pdi/run_dssat',
         'log_saving_path': './logs/dssat-pdi.log',
         # 'mode': 'irrigation',
         # 'mode': 'fertilization',
@@ -156,18 +157,18 @@ if __name__ == '__main__':
     }
     try_interact = True
     try_multiproc = not True
-    verbose = not True
+    verbose = True
     if try_interact:
         try:
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
             # env.get_env_info()
-            n_rep = 1000
+            n_rep = 1
             for i in range(n_rep):
                 interact_with_env(env, verbose=verbose)
-                if (i + 1) % 100 == 0:
-                    print(f'{i + 1}/{n_rep}')
-                env.reset()
-            print(env._tmp_folder)
+                # if (i + 1) % 100 == 0:
+                #     print(f'{i + 1}/{n_rep}')
+                # env.reset()
+            # print(env._tmp_folder)
             # env.render(type='ts',
             #            feature_name_1='nstres',
             #            feature_name_2='grnwt')

@@ -258,13 +258,30 @@ Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; 
 
 ```shell
 git clone https://gitlab.maisondelasimulation.fr/pdidev/pdi.git
-mkdir pdi/build
-cd  pdi/build
-cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' -DBUILD_HDF5_PARALLEL=OFF -DBUILD_PYTHON=ON -DBUILD_PYCALL_PLUGIN=ON -DBUILD_MPI_PLUGIN=OFF -DUSE_yaml=EMBEDDED ..  # configuration
+mkdir pdi/build && cd pdi/build
+cmake -DCMAKE_INSTALL_PREFIX='/opt/pdi' \
+    -DDIST_PROFILE=User \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DBUILD_CFG_VALIDATOR=OFF \
+    -DBUILD_DECL_HDF5_PLUGIN=OFF \
+    -DBUILD_DECL_NETCDF_PLUGIN=OFF \
+    -DBUILD_DECL_SION_PLUGIN=OFF \
+    -DBUILD_FLOWVR_PLUGIN=OFF \
+    -DBUILD_FORTRAN=ON \
+    -DBUILD_FTI_PLUGIN=OFF \
+    -DBUILD_HDF5_PARALLEL=OFF \
+    -DBUILD_MPI_PLUGIN=OFF \
+    -DBUILD_PYCALL_PLUGIN=ON \
+    -DBUILD_PYTHON=ON \
+    -DBUILD_SET_VALUE_PLUGIN=ON \
+    -DBUILD_SERIALIZE_PLUGIN=ON \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_TEST_PLUGIN=OFF \
+    -DBUILD_TRACE_PLUGIN=ON \
+    -DBUILD_USER_CODE_PLUGIN=ON \
+    -DUSE_DEFAULT=EMBEDDED .. # configuration
 sudo make install   # compilation and installation
 ```
-
-*You may need to install ```libhdf5-serial-dev``` with ```sudo apt-get install libhdf5-serial-dev``` and ```pkg-config``` with ```sudo apt-get install pkg-config```*.
 
 ### 2. (modified) DSSAT
 From the root of this repository, supposing PDI has been installed in ```/opt/pdi``` and (modified) DSSAT to be installed in ```/opt/dssat_pdi```:

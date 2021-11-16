@@ -20,7 +20,7 @@ These three scripts should do the job, assuming the Git subprojects ```dssat-csm
   + installs data subdirectories directly in /opt/dssat-pdi
 - ```build_gym-dssat.sh``` => *gym-dssat-pdi-`<version>`.deb*
   + depends on both _dssat-pdi_ and _dssat-csm-data_
-  + installs a virtualenv with all needed stuff in /opt/gym-dssat-pdi
+  + installs a virtualenv with all needed stuff in /opt/gym_dssat_pdi
 
 The Debian stuff (debian/control, debian/rules, etc.) to build the packages is in the three subdirectories ```dssat-pdi```, ```dssat-csm-data``` and ```gym-dssat```. The other subdir, ```pdi```, corresponds to the Debian packaging of the library PDI, unnecessary if the official PDI packages are used (definitely recommended!).
 

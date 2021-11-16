@@ -224,19 +224,19 @@ Using the pre-compiled binary package installation,  ```gym-dssat``` comes with 
 
 After installation is done, you can activate ```gym-dssat```'s Python virtual environment with:
 ```shell
-source /opt/gym-dssat-pdi/bin/activate
+source /opt/gym_dssat_pdi/bin/activate
 ```
 
 You can test your installation running:
 ```shell
-source /opt/gym-dssat-pdi/bin/activate
-python /opt/gym-dssat-pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py
+source /opt/gym_dssat_pdi/bin/activate
+python /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py
 ```
 
 or running:
 
 ```shell
-/opt/gym-dssat-pdi/bin/python /opt/gym-dssat-pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py
+/opt/gym_dssat_pdi/bin/python /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py
 ```
 
 After using ```gym-dssat```, you can deactivate its Python virtual environment with:

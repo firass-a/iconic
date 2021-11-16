@@ -174,6 +174,8 @@ plugins:
             def default(self, obj):
               if isinstance(obj, np.ndarray):
                 return obj.tolist()
+              elif hasattr(obj, 'dtype'):
+                return obj.item()
               return json.JSONEncoder.default(self, obj)
           context = zmq.Context()
           client = context.socket(zmq.PAIR)

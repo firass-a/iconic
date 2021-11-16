@@ -2,7 +2,6 @@ import gym
 import logging
 import multiprocessing
 import faulthandler
-import pathlib
 
 faulthandler.enable()
 from gym_dssat_pdi.envs.utils import utils
@@ -10,10 +9,7 @@ import os
 
 import numpy as np
 from copy import deepcopy
-from pympler.tracker import SummaryTracker
-
 from pprint import pprint
-import pdb
 
 
 def default_policy(YRDOY):
@@ -147,8 +143,8 @@ if __name__ == '__main__':
     utils.make_folder('./render')
     cwd = os.path.dirname(os.path.realpath(__file__))
     env_args = {
-        'run_dssat_location': '/opt/dssat-pdi/run_dssat',
-        'log_saving_path': './logs/dssat-pdi.log',
+        'run_dssat_location': '/opt/dssat_pdi/run_dssat',
+        'log_saving_path': './logs/dssat_pdi.log',
         # 'mode': 'irrigation',
         # 'mode': 'fertilization',
         'mode': 'all',
@@ -182,7 +178,6 @@ if __name__ == '__main__':
             env.close()
     if try_multiproc:
         try:
-            tracker = SummaryTracker()
             raw_results1 = multiprocess_trial(env_args, cwd, rep=100, save_log=True)
             print(len(raw_results1))
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)

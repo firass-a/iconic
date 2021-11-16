@@ -7,10 +7,8 @@ For **installation**, go to [this section](#installing-gym-dssat). **Disclaimer:
 
 ## In this repository
 + ```./dssat-csm-os```: the submodule of modified the DSSAT Fortran code with PDI for ```gym-DSSAT```
-+ ```./gym-dssat-pdi```: the custom ```gym-DSSAT``` Python environment
++ ```./gym-dssat-pdi```: the custom ```gym-DSSAT``` Python environment with a use example.
 + ```./dssat-csm-data```: the required experimental files used by DSSAT
-+ ```./gym_dssat_pdi_tests```: examples of how to run ```gym-DSSAT```
-
 ## The environment
 ```gym-DSSAT``` is designed to allow great setting flexibility. The environment comes with default settings that can easily be modified by editing the [gym environment's yaml configuration file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/env_config.yml). The ```action``` key gives the raw action space, the ```state``` key give the raw action space and each individual setting is found and can be edited in the ```setting``` key. Furthermore, the ```context``` key defines additional contextual variables.
 
@@ -208,7 +206,7 @@ env_args = {
 **The custom fileX template must present the same expressions ```{{ ... }}``` as the ones found in the [original example](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/UFGA8201.jinja2). Check [jinja documentation](https://jinja.palletsprojects.com/en/3.0.x/templates/). Be careful, any faulty space in the template will raise errors. If you want stochastic climate generation, you must provide to DSSAT the corresponding ".CLI" file with the extra argument ```auxiliary_files_paths```.** Note that ```my_custom_climate_file.CLI``` must be named according to the 4 first characters of the value of ```WSTA``` in the custom fileX. For instance, if in ```./my_custom_fileX.MZX``` the variable ```WSTA``` is set to ```GAGR9626```, then the corresponding climate file must be named ```GAGR.CLI```.
 
 ### More information
-You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym_dssat_pdi_tests/run_env.py), including how to use ```gym-DSSAT``` in a multiprocessing context, using the ```env.reset_hard()``` feature.
+You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/dev/gym-dssat-pdi/gym_dssat_pdi_samples/run_env.py), including how to use ```gym-DSSAT``` in a multiprocessing context, using the ```env.reset_hard()``` feature.
 
 ## Installing gym-DSSAT
 At the moment, ```gym-DSSAT``` is only supported for common Linux distributions. Future work will include Linux Fedora and Macintosh operating systems.
@@ -245,7 +243,7 @@ After using ```gym-dssat```, you can deactivate its Python virtual environment w
 ```shell
 deactivate
 ```
-#### Debian11 (Bullseye)
+#### Debian 11 (Bullseye)
 ```shell
 echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/debian bullseye main" | sudo tee /etc/apt/sources.list.d/pdi.list > /dev/null
 sudo wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/debian/pdidev-archive-keyring.gpg
@@ -311,7 +309,7 @@ sudo apt install `find . -name "*.deb"`
 Please go the [Docker instructions](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/tree/dev/docker_recipes#gym-dssat-pdi-coupling-docker-image).
 
 ### From source
-Here you will find how to install from source the components of ```gym-DSSAT```. The first step is to clone this repository with its submodules:
+Here you will find how to install  the components of ```gym-DSSAT``` from source. The first step is to clone this repository with its submodules:
 
 #### Dependices
 You will need:
@@ -326,7 +324,7 @@ You will need:
 
 Please follow the installation procedure given below in the order.
 
-### 1. PDI Data Interface (PDI)
+##### 1. PDI Data Interface (PDI)
 In order to install the [PDI](https://pdi.julien-bigot.fr/master/) software, you can check the [official instructions](https://pdi.julien-bigot.fr/master/Installation.html) but **be careful to correctly set cmake flags as shown below**
 
 Recommended installation directories are ```/opt/pdi``` or ```${HOME}/.pdi``` ; if possible avoid ```/usr/local/```. In the following we assume PDI to be installed in ```/opt/pdi```.
@@ -360,7 +358,7 @@ sudo make install   # compilation and installation
 
 You can find more details, including PID's dependencies [here](https://pdi.julien-bigot.fr/master/Installation.html).
 
-### 2. (modified) DSSAT
+##### 2. (modified) DSSAT
 First, clone this repository and its submodules.
 
 ```shell
@@ -384,7 +382,7 @@ cd dssat-csm-data
 sudo cp -r ./* /opt/dssat_pdi
 ```
 
-### 3. (finally) gym-DSSAT
+##### 3. (finally) gym-DSSAT
 From the root of this repository:
 ```shell
 cd gym-dssat-pdi

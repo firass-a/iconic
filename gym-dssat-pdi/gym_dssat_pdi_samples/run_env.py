@@ -12,36 +12,36 @@ from copy import deepcopy
 from pprint import pprint
 
 
-def default_policy(YRDOY):
+def default_policy(dap):
     fertilization_dic = {
-        1982097: 27,
-        1982102: 35,
-        1982137: 54,
+        40: 27,
+        45: 35,
+        80: 54,
     }
     irrigation_dic = {
-        1982063: 13,
-        1982077: 10,
-        1982094: 10,
-        1982107: 13,
-        1982111: 18,
-        1982122: 25,
-        1982126: 25,
-        1982129: 13,
-        1982132: 15,
-        1982134: 19,
-        1982137: 20,
-        1982141: 20,
-        1982148: 15,
-        1982158: 19,
-        1982161: 4,
-        1982162: 25,
+        6: 13,
+        20: 10,
+        37: 10,
+        50: 13,
+        54: 18,
+        65: 25,
+        69: 25,
+        72: 13,
+        75: 15,
+        77: 19,
+        80: 20,
+        84: 20,
+        91: 15,
+        101: 19,
+        104: 4,
+        105: 25,
     }
-    if YRDOY in fertilization_dic:
-        anfer = fertilization_dic[YRDOY]
+    if dap in fertilization_dic:
+        anfer = fertilization_dic[dap]
     else:
         anfer = 0
-    if YRDOY in irrigation_dic:
-        amir = irrigation_dic[YRDOY]
+    if dap in irrigation_dic:
+        amir = irrigation_dic[dap]
     else:
         amir = 0
     return {'anfer': anfer, 'amir': amir}
@@ -53,13 +53,12 @@ def interact_with_env(env, verbose=True):
     while not env.done:
         observation = env.observation
         observation_list = env.observation_dict_to_array(observation)
-        YRDOY = observation['yrdoy']
-        action = default_policy(YRDOY)
+        dap = observation['dap']
+        action = default_policy(dap)
         if verbose:
             # pprint(f'observation: {observation}')
-            pprint(f'yrdoy : {YRDOY} -> fertilizing {action["anfer"]} kgN/ha')
-            pprint(f'yrdoy : {YRDOY} -> dap {observation["dap"]}')
-            # print(f'sw: {env._state["sw"]}')
+            # pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha')
+            pass
         res = env.step(action)
         new_state, reward, done, info = res
         if new_state is not None:
@@ -145,9 +144,9 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': '/opt/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat_pdi.log',
-        # 'mode': 'irrigation',
+        'mode': 'irrigation',
         # 'mode': 'fertilization',
-        'mode': 'all',
+        # 'mode': 'all',
         'seed': 123456,
         'random_weather': True,
     }
@@ -165,13 +164,13 @@ if __name__ == '__main__':
                 #     print(f'{i + 1}/{n_rep}')
                 # env.reset()
             # print(env._tmp_folder)
-            # env.render(type='ts',
-            #            feature_name_1='nstres',
-            #            feature_name_2='grnwt')
-            # env.render(type='reward',
-            #            cumsum=True)
-            # env.render(type='reward',
-            #            cumsum=False)
+            env.render(type='ts',
+                       feature_name_1='nstres',
+                       feature_name_2='grnwt')
+            env.render(type='reward',
+                       cumsum=True)
+            env.render(type='reward',
+                       cumsum=False)
         except Exception as e:
             logging.exception(e)
         finally:
@@ -185,5 +184,3 @@ if __name__ == '__main__':
             print(len(raw_results2))
         except Exception as e:
             logging.exception(e)
-        finally:
-            tracker.print_diff()

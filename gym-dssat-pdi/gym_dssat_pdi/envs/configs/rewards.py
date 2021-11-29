@@ -25,6 +25,12 @@ def fertilization_reward(_previous_state, _next_state, _history):
 def irrigation_reward(_previous_state, _next_state, _history):
     reward = None
     last_action = _history['action'][-1]['amir']
+    penality1 = 2
+    penality2 = 4
+    istage = _next_state["istage"]
+    print(f'istage {istage}')
+    if istage not in [9, 1, 2, 3, 4]:
+        return 0
     if _next_state:
         rtdep = _next_state['rtdep']
         if rtdep < 1:
@@ -46,8 +52,11 @@ def irrigation_reward(_previous_state, _next_state, _history):
         swr += ((sw - ll) * dlayr)[first_greater_layer_index] * last_layer_with_root_thickness_proportion
         ratio = swr / pawr
         reward = 1 - swfac
-        if swfac == 0 and last_action > 0 and ratio > .5:
-            reward -= ratio
+        # print(swfac, last_action, ratio)
+        if swfac == 0 and last_action > 0 and ratio > .7:
+            reward -= penality1
+        if swfac > .7:
+            reward -= penality2
     return reward
 
 

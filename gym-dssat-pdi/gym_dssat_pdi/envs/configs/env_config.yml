@@ -252,7 +252,7 @@ setting:
       - anfer
       - amir
     state:
-      - yrdoy
+#      - yrdoy
       - nstres
       - istage
       - vstage
@@ -293,7 +293,7 @@ setting:
     action:
       - anfer
     state:
-      - yrdoy
+#      - yrdoy
       - istage
       - vstage
       - grnwt
@@ -321,7 +321,7 @@ setting:
     action:
       - amir
     state:
-      - yrdoy
+#      - yrdoy
       - istage
       - vstage
       - grnwt

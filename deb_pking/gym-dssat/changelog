@@ -1,3 +1,9 @@
+gym-dssat-pdi (0.0.3-1) UNRELEASED; urgency=medium
+
+  * State and reward functions refined
+
+ -- Emilio J. Padrón <emilioj@udc.gal>  Thu, 02 Dec 2021 22:43:34 +0100
+
 gym-dssat-pdi (0.0.2-1) UNRELEASED; urgency=medium
 
   * Fix bug when serializing np.float32 actions

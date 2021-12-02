@@ -309,8 +309,9 @@ sudo apt install `find . -name "*.deb"`
 Please go the [Docker instructions](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/tree/dev/docker_recipes#gym-dssat-pdi-coupling-docker-image).
 
 ### From source
-Here you will find how to install  the components of ```gym-DSSAT``` from source. The first step is to clone this repository with its submodules:
+Here you will find how to install from source the components of ```gym-DSSAT```.
 
+**Warning: if you install gym-DSSAT from source, you must use ```pdirun``` when launching your scripts. For instance: ```pdirun python3 run_env.py```**
 #### Dependices
 You will need:
 - [CMake](https://cmake.org/install/)

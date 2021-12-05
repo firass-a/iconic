@@ -6,13 +6,14 @@ Source: https://gitlab.inria.fr/rgautron/gym_dssat_pdi
 Files:     README.md
            gym_dssat_pdi/__init__.py
            gym_dssat_pdi/envs/__init__.py
+           gym_dssat_pdi/envs/configs/__init__.py
            gym_dssat_pdi/envs/configs/UFGA8201.jinja2
            gym_dssat_pdi/envs/configs/dssat_pdi.jinja2
            gym_dssat_pdi/envs/configs/env_config.yml
+           gym_dssat_pdi/envs/configs/rewards.py
            gym_dssat_pdi/envs/dssat_pdi.py
            gym_dssat_pdi/envs/utils/__init__.py
            gym_dssat_pdi/envs/utils/rendering.py
-           gym_dssat_pdi/envs/utils/rewards.py
            gym_dssat_pdi/envs/utils/utils.py
            gym_dssat_pdi_samples/__init__.py
            gym_dssat_pdi_samples/run_env.py

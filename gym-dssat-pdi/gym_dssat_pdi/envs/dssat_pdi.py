@@ -411,7 +411,8 @@ class DssatPdi(gym.Env):
         else:
             if not self.done:
                 self._get_env_done()
-            self.set_seed(seed)
+            if seed is not None:
+                self.set_seed(seed)
             if self.random_weather:
                 self._rseed1 = self._random_generator.randint(1, 99999)
             self._server.send(f'{self._rseed1}'.encode('utf-8'))
@@ -439,6 +440,8 @@ class DssatPdi(gym.Env):
         if seed is not None:
             seed = int(seed)
             self.seed = seed
+        else:
+            seed = self.seed
         self._random_generator, self.seed = seeding.np_random(seed)
         return self.seed
 

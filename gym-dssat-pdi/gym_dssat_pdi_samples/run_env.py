@@ -58,8 +58,7 @@ def interact_with_env(env, verbose=True):
         action = default_policy(dap)
         if verbose:
             # pprint(f'observation: {observation}')
-            # pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha')
-            pass
+            pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha')
         res = env.step(action)
         new_state, reward, done, info = res
         if new_state is not None:
@@ -145,25 +144,29 @@ if __name__ == '__main__':
     env_args = {
         'run_dssat_location': '/opt/dssat_pdi/run_dssat',
         'log_saving_path': './logs/dssat_pdi.log',
-        'mode': 'irrigation',
-        # 'mode': 'fertilization',
+        # 'mode': 'irrigation',
+        'mode': 'fertilization',
         # 'mode': 'all',
         'seed': 123456,
         'random_weather': True,
     }
     try_interact = True
     try_multiproc = not True
-    verbose = True
+    verbose = not True
     if try_interact:
         try:
             env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
             # env.get_env_info()
-            n_rep = 1
+            n_rep = 16
+            yields = []
             for i in range(n_rep):
-                interact_with_env(env, verbose=verbose)
-                # if (i + 1) % 100 == 0:
-                #     print(f'{i + 1}/{n_rep}')
-                # env.reset()
+                env.reset()
+                interactions = interact_with_env(env, verbose=verbose)
+                yields.append(interactions[-1]['grnwt'])
+                if (i + 1) % 10 == 0:
+                    print(f'{i + 1}/{n_rep}')
+            print(f'mean of yields: {np.mean(yields)} kg/ha')
+            print(f'variance of yields: {np.var(yields)} kg/ha')
             # print(env._tmp_folder)
             env.render(type='ts',
                        feature_name_1='nstres',

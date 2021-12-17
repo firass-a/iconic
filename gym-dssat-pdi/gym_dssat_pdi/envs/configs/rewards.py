@@ -13,12 +13,12 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 def fertilization_reward(_previous_state, _next_state, _history):
     reward = None
     last_action = _history['action'][-1]['anfer']
-    penality = 5
+    penality = .4
     if _next_state:
         tleachd = _next_state['tleachd']
         tnoxd = _next_state['tnoxd']
         trnu = _next_state['trnu']
-        reward = (trnu - (tleachd + tnoxd)) - penality * bool(last_action)
+        reward = (trnu - (tleachd + tnoxd)) - penality * last_action
     return reward
 
 
@@ -30,11 +30,11 @@ def irrigation_reward(_previous_state, _next_state, _history):
     istage = _next_state["istage"]
     print(f'istage {istage}')
     if istage not in [9, 1, 2, 3, 4]:
-        return 0
+        return -penality2
     if _next_state:
         rtdep = _next_state['rtdep']
         if rtdep < 1:
-            return 0
+            return
         ll = _next_state['ll']
         dul = _next_state['dul']
         dlayr = _next_state['dlayr']

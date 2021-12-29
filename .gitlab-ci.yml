@@ -1,0 +1,116 @@
+stages:
+  - build:sid
+  - build:bullseye
+  - build:hirsute
+  - build:focal
+  - test:sid
+  - test:bullseye
+  - test:hirsute
+  - test:focal
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_NAME_SID: sid:latest
+  IMAGE_DESTINATION_SID: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID
+  IMAGE_NAME_BULLSEYE: bullseye:latest
+  IMAGE_DESTINATION_BULLSEYE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_BULLSEYE
+  IMAGE_NAME_HIRSUTE: hirsute:latest
+  IMAGE_DESTINATION_HIRSUTE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_HIRSUTE
+  IMAGE_NAME_FOCAL: focal:latest
+  IMAGE_DESTINATION_FOCAL: $CI_REGISTRY_IMAGE/$IMAGE_NAME_FOCAL
+
+build sid:
+  stage: build:sid
+  allow_failure: true
+  tags: 
+    - flanders
+  image: docker:20.10.12
+  services:
+  - docker:20.10.12-dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE_DESTINATION_SID -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid .
+    - docker push $IMAGE_DESTINATION_SID
+    - echo "Image ${IMAGE_NAME_SID} successfully pushed to ${IMAGE_DESTINATION_SID}"
+
+build bullseye:
+  stage: build:bullseye
+  allow_failure: true
+  tags: 
+    - flanders
+  image: docker:20.10.12
+  services:
+  - docker:20.10.12-dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE_DESTINATION_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye .
+    - docker push $IMAGE_DESTINATION_BULLSEYE
+    - echo "Image ${IMAGE_NAME_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_BULLSEYE}"
+
+build hirsute:
+  stage: build:hirsute
+  allow_failure: true
+  tags: 
+    - flanders
+  image: docker:20.10.12
+  services:
+  - docker:20.10.12-dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE_DESTINATION_HIRSUTE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Hirsute .
+    - docker push $IMAGE_DESTINATION_HIRSUTE
+    - echo "Image ${IMAGE_NAME_HIRSUTE} successfully pushed to ${IMAGE_DESTINATION_HIRSUTE}"
+
+build focal:
+  stage: build:focal
+  allow_failure: true
+  tags: 
+    - flanders
+  image: docker:20.10.12
+  services:
+  - docker:20.10.12-dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE_DESTINATION_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal .
+    - docker push $IMAGE_DESTINATION_FOCAL
+    - echo "Image ${IMAGE_NAME_FOCAL} successfully pushed to ${IMAGE_DESTINATION_FOCAL}"
+
+test sid:
+  stage: test:sid
+  allow_failure: true
+  tags:
+    - flanders
+  script:
+    - docker run $IMAGE_DESTINATION_SID
+    - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
+
+test bullseye:
+  stage: test:bullseye
+  allow_failure: true
+  tags:
+    - flanders
+  script:
+    - docker run $IMAGE_DESTINATION_BULLSEYE
+    - echo "Test successfully passed for image ${IMAGE_NAME_BULLSEYE} in ${IMAGE_DESTINATION_BULLSEYE}"
+
+test hirsute:
+  stage: test:hirsute
+  allow_failure: true
+  tags:
+    - flanders
+  script:
+    - docker run $IMAGE_DESTINATION_HIRSUTE
+    - echo "Test successfully passed for image ${IMAGE_NAME_HIRSUTE} in ${IMAGE_DESTINATION_HIRSUTE}"
+
+test focal:
+  stage: test:focal
+  allow_failure: true
+  tags:
+    - flanders
+  script:
+    - docker run $IMAGE_DESTINATION_FOCAL
+    - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"

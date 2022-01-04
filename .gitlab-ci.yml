@@ -33,6 +33,7 @@ build sid:
     - docker build -t $IMAGE_DESTINATION_SID -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid .
     - docker push $IMAGE_DESTINATION_SID
     - echo "Image ${IMAGE_NAME_SID} successfully pushed to ${IMAGE_DESTINATION_SID}"
+  when: manual
 
 build bullseye:
   stage: build:bullseye
@@ -48,6 +49,7 @@ build bullseye:
     - docker build -t $IMAGE_DESTINATION_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye .
     - docker push $IMAGE_DESTINATION_BULLSEYE
     - echo "Image ${IMAGE_NAME_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_BULLSEYE}"
+  when: manual
 
 build hirsute:
   stage: build:hirsute
@@ -63,6 +65,7 @@ build hirsute:
     - docker build -t $IMAGE_DESTINATION_HIRSUTE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Hirsute .
     - docker push $IMAGE_DESTINATION_HIRSUTE
     - echo "Image ${IMAGE_NAME_HIRSUTE} successfully pushed to ${IMAGE_DESTINATION_HIRSUTE}"
+  when: manual
 
 build focal:
   stage: build:focal
@@ -78,6 +81,7 @@ build focal:
     - docker build -t $IMAGE_DESTINATION_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal .
     - docker push $IMAGE_DESTINATION_FOCAL
     - echo "Image ${IMAGE_NAME_FOCAL} successfully pushed to ${IMAGE_DESTINATION_FOCAL}"
+  when: manual
 
 test sid:
   stage: test:sid

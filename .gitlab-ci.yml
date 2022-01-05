@@ -89,8 +89,9 @@ test sid:
   tags:
     - flanders
   script:
-    - docker run $IMAGE_DESTINATION_SID
+    - docker run -u 0 -i $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py && coverage report"
     - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
+  coverage: '/^TOTAL.+?(\d+\%)$/'
 
 test bullseye:
   stage: test:bullseye

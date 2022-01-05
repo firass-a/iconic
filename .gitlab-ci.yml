@@ -7,6 +7,7 @@ stages:
   - test:bullseye
   - test:hirsute
   - test:focal
+  - coverage
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
@@ -89,9 +90,8 @@ test sid:
   tags:
     - flanders
   script:
-    - docker run -u 0 -i $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py && coverage report"
+    - docker run $IMAGE_DESTINATION_SID
     - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
-  coverage: '/^TOTAL.+?(\d+\%)$/'
 
 test bullseye:
   stage: test:bullseye
@@ -119,3 +119,15 @@ test focal:
   script:
     - docker run $IMAGE_DESTINATION_FOCAL
     - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"
+
+python coverage:
+  stage: coverage
+  tags:
+  - flanders
+  script:
+  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
+  when: on_success
+  artifacts:
+    when: on_success
+    paths:
+      - $PWD/coverage/coverage.json

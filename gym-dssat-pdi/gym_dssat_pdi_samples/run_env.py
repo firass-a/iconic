@@ -1,4 +1,3 @@
-# 
 import gym
 import logging
 import multiprocessing
@@ -71,8 +70,8 @@ def interact_with_env(env, verbose=True):
 def multiprocess_trial(env_args, cwd, rep, save_log=False):
     arguments = []
     n_cores = multiprocessing.cpu_count()
-    rep_by_core = rep // (100 * n_cores)
-    for i in range(100 * n_cores):
+    rep_by_core = rep // n_cores
+    for i in range(n_cores):
         env_args['log_saving_path'] = f'{cwd}/logs/dssat-pdi-{i}.log'
         env_args['seed'] = np.random.randint(1, 999999)
         arguments.append((deepcopy(env_args), rep_by_core, save_log))
@@ -103,8 +102,8 @@ def multiprocess_trial_hard_reset(env, cwd, rep, save_log=False):
     env.close()
     arguments = []
     n_cores = multiprocessing.cpu_count()
-    rep_by_core = rep // (100 * n_cores)
-    for i in range(100 * n_cores):
+    rep_by_core = rep // n_cores
+    for i in range(n_cores):
         arguments.append((env, rep_by_core, f'{cwd}/logs/dssat-pdi-{i}.log', save_log))
     with multiprocessing.Pool() as pool:
         raw_result = list(pool.imap_unordered(_multiprocess_trial_func_hard_reset, arguments))
@@ -141,50 +140,55 @@ if __name__ == '__main__':
         pass
     utils.make_folder('./render')
     cwd = os.path.dirname(os.path.realpath(__file__))
-    env_args = {
-        'run_dssat_location': '/opt/dssat_pdi/run_dssat',
-        'log_saving_path': './logs/dssat_pdi.log',
-        # 'mode': 'irrigation',
-        'mode': 'fertilization',
-        # 'mode': 'all',
-        'seed': 123456,
-        'random_weather': True,
-    }
-    try_interact = True
-    try_multiproc = not True
-    verbose = not True
-    if try_interact:
-        try:
-            env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            # env.get_env_info()
-            n_rep = 16
-            yields = []
-            for i in range(n_rep):
-                env.reset()
-                interactions = interact_with_env(env, verbose=verbose)
-                yields.append(interactions[-1]['grnwt'])
-                if (i + 1) % 10 == 0:
-                    print(f'{i + 1}/{n_rep}')
-            print(f'mean of yields: {np.mean(yields)} kg/ha')
-            print(f'variance of yields: {np.var(yields)} kg/ha')
-            # print(env._tmp_folder)
-            env.render(type='ts',
-                       feature_name_1='nstres',
-                       feature_name_2='grnwt')
-            env.render(type='reward',
-                       cumsum=True)
-            env.render(type='reward',
-                       cumsum=False)
-        except Exception as e:
-            logging.exception(e)
-        finally:
-            env.close()
-    if try_multiproc:
-        try:
-            raw_results1 = multiprocess_trial(env_args, cwd, rep=100, save_log=True)
-            print(len(raw_results1))
-            env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-            raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=100)
-            print(len(raw_results2))
-        except Exception as e:
-            logging.exception(e)
+    for i, mode in enumerate(['fertilization', 'irrigation', 'all']):
+        env_args = {
+            'run_dssat_location': '/opt/dssat_pdi/run_dssat',
+            'log_saving_path': './logs/dssat_pdi.log',
+            'mode': mode,
+            'seed': 123456,
+            'random_weather': True,
+            'auxiliary_file_paths': ['./test_files/GAGR.CLI'],
+        }
+        try_interact = True
+        try_multiproc = True
+        verbose = True
+        if try_interact:
+            try:
+                env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                if i == 0:
+                    env.get_env_info(user_input=False)
+                env.set_seed(123)
+                n_rep = 8
+                yields = []
+                for i in range(n_rep):
+                    env.reset()
+                    interactions = interact_with_env(env, verbose=verbose)
+                    yields.append(interactions[-1]['grnwt'])
+                    if (i + 1) % 10 == 0:
+                        print(f'{i + 1}/{n_rep}')
+                print(f'mean of yields: {np.mean(yields)} kg/ha')
+                print(f'variance of yields: {np.var(yields)} kg/ha')
+                env.render(type='ts',
+                           feature_name_1='nstres',
+                           feature_name_2='grnwt')
+                env.render(type='reward',
+                           cumsum=True)
+                env.render(type='reward',
+                           cumsum=False)
+                env.reset_hard()
+            except Exception as e:
+                logging.exception(e)
+            finally:
+                env.close()
+        if try_multiproc:
+            try:
+                rep = 80
+                n_cores = multiprocessing.cpu_count()
+                # rep_by_core = rep // n_cores
+                raw_results1 = multiprocess_trial(env_args, cwd, rep=rep, save_log=True)
+                print(f'{len(raw_results1)}/{n_cores} multiprocess_trial')
+                env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=rep)
+                print(f'{len(raw_results2)}/{n_cores} multiprocess_trial_hard_reset')
+            except Exception as e:
+                logging.exception(e)

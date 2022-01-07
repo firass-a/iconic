@@ -28,7 +28,6 @@ def irrigation_reward(_previous_state, _next_state, _history):
     penality1 = 2
     penality2 = 4
     istage = _next_state["istage"]
-    print(f'istage {istage}')
     if istage not in [9, 1, 2, 3, 4]:
         return -penality2
     if _next_state:

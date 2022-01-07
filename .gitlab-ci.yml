@@ -1,18 +1,23 @@
 stages:
   - build:sid
+  - build:sid_source
   - build:bullseye
   - build:hirsute
   - build:focal
   - test:sid
+  - test:sid_source
   - test:bullseye
   - test:hirsute
   - test:focal
-  - coverage
+  - coverage:package
+  - coverage:source
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
   IMAGE_NAME_SID: sid:latest
   IMAGE_DESTINATION_SID: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID
+  IMAGE_NAME_SID_SOURCE: sid_source:latest
+  IMAGE_DESTINATION_SID_SOURCE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID_SOURCE
   IMAGE_NAME_BULLSEYE: bullseye:latest
   IMAGE_DESTINATION_BULLSEYE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_BULLSEYE
   IMAGE_NAME_HIRSUTE: hirsute:latest
@@ -34,6 +39,22 @@ build sid:
     - docker build -t $IMAGE_DESTINATION_SID -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid .
     - docker push $IMAGE_DESTINATION_SID
     - echo "Image ${IMAGE_NAME_SID} successfully pushed to ${IMAGE_DESTINATION_SID}"
+  when: manual
+
+build sid source:
+  stage: build:sid_source
+  allow_failure: true
+  tags: 
+    - flanders
+  image: docker:20.10.12
+  services:
+  - docker:20.10.12-dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
+    - docker push $IMAGE_DESTINATION_SID_SOURCE
+    - echo "Image ${IMAGE_NAME_SID_SOURCE} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE}"
   when: manual
 
 build bullseye:
@@ -93,6 +114,15 @@ test sid:
     - docker run $IMAGE_DESTINATION_SID
     - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
 
+test sid source:
+  stage: test:sid_source
+  allow_failure: true
+  tags:
+    - flanders
+  script:
+    - docker run $IMAGE_DESTINATION_SID_SOURCE
+    - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
+
 test bullseye:
   stage: test:bullseye
   allow_failure: true
@@ -120,13 +150,29 @@ test focal:
     - docker run $IMAGE_DESTINATION_FOCAL
     - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"
 
-python coverage:
-  stage: coverage
+python coverage package:
+  stage: coverage:package
   tags:
   - flanders
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
   - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
+  - pip install anybadge
+  - anybadge --value=$COVERAGE --file=coverage.svg coverage
+  when: manual
+  artifacts:
+    when: on_success
+    paths:
+      - coverage.svg
+
+python coverage source:
+  stage: coverage:source
+  tags:
+  - flanders
+  script:
+  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
+  - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
+  - echo -e "\e[1mCOVERAGE RESULT ${COVERAGE}%\e[0m"
   - pip install anybadge
   - anybadge --value=$COVERAGE --file=coverage.svg coverage
   when: on_success

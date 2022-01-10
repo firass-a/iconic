@@ -30,7 +30,7 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location, log_saving_path=None, mode='all', auxiliary_file_paths=None,
+    def __init__(self, run_dssat_location='/opt/dssat_pdi', log_saving_path=None, mode='all', auxiliary_file_paths=None,
                  files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None):
         self.experiment_number = experiment_number
         self.mode = mode
@@ -445,7 +445,7 @@ class DssatPdi(gym.Env):
         self._random_generator, self.seed = seeding.np_random(seed)
         return self.seed
 
-    def get_env_info(self):
+    def get_env_info(self, user_input=True):
         config_actions = self._config['action']
         config_states = self._config['state']
         print('\n******************')
@@ -453,20 +453,23 @@ class DssatPdi(gym.Env):
         print('******************\n')
         for action in self.action_variables:
             pprint({action: config_actions[action]})
-            input('press "return" to continue')
+            if user_input:
+                input('press "return" to continue')
         print('\n*********************')
         print('Observation variables:')
         print('*********************\n')
         for state in self.observation_variables:
             pprint({state: config_states[state]})
-            input('press "return" to continue')
+            if user_input:
+                input('press "return" to continue')
         print('\n******************')
         print('Context variables:')
         print('******************\n')
         if self.context_variables:
             for state in self.context_variables:
                 pprint({state: config_states[state]})
-                input('press "return" to continue')
+                if user_input:
+                    input('press "return" to continue')
         else:
             print('no context information to display')
         print('\nno more information to display -> leaving\n')

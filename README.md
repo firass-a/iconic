@@ -17,7 +17,7 @@
 
 ## How is gym-dssat tested?
 
-Before deploying any new version, **gym-dssat** is build from scratch in a custom Docker image, and the environment tested in a container using [Gitlab CI/CD](https://docs.gitlab.com/ee/ci/), for all supported platforms. If you experience any problem, please create [an issue](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here).
+Before deploying any new version, **gym-dssat** is built from scratch in a custom Docker image, and the environment tested in a container using [Gitlab CI/CD](https://docs.gitlab.com/ee/ci/), for all supported platforms. If you experience any problem, please create [an issue](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here).
 
 
 ## Repository content

@@ -11,6 +11,9 @@ import numpy as np
 from copy import deepcopy
 from pprint import pprint
 
+import os
+dirname = os.path.dirname(__file__)
+auxfiles_path = os.path.join(dirname, 'test_files/GAGR.CLI')
 
 def default_policy(dap):
     fertilization_dic = {
@@ -146,7 +149,7 @@ if __name__ == '__main__':
             'mode': mode,
             'seed': 123456,
             'random_weather': True,
-            'auxiliary_file_paths': ['./test_files/GAGR.CLI'],
+            'auxiliary_file_paths': [auxfiles_path],
         }
         try_interact = True
         try_multiproc = True

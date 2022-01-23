@@ -1,3 +1,20 @@
+gym-dssat-pdi (0.0.4-1) UNRELEASED; urgency=medium
+
+  * Reward shaping to penalize N use
+
+  * Some seed fixes
+
+  * Add user_input arg in tests
+
+  * Add test coverage stuff
+
+  * Improve run_env.py to extend coverage
+    -> Now an additional file is used: test_files/GAGR.CLI
+
+  * Add symbolic link to samples DIR: /opt/gym_dssat_pdi/samples
+
+ -- Emilio J. Padrón <emilioj@udc.gal>  Sun, 23 Jan 2022 10:22:07 +0100
+
 gym-dssat-pdi (0.0.3-1) UNRELEASED; urgency=medium
 
   * State and reward functions refined

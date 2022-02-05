@@ -99,7 +99,6 @@ def _multiprocess_trial_func(args):
 
 
 def multiprocess_trial_hard_reset(env, cwd, rep, save_log=False):
-    env.close()
     arguments = []
     n_cores = multiprocessing.cpu_count()
     rep_by_core = rep // n_cores
@@ -188,6 +187,7 @@ if __name__ == '__main__':
                 raw_results1 = multiprocess_trial(env_args, cwd, rep=rep, save_log=True)
                 print(f'{len(raw_results1)}/{n_cores} multiprocess_trial')
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                env.close()
                 raw_results2 = multiprocess_trial_hard_reset(env, cwd, rep=rep)
                 print(f'{len(raw_results2)}/{n_cores} multiprocess_trial_hard_reset')
             except Exception as e:

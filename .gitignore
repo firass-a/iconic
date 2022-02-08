@@ -22,3 +22,5 @@ MANIFEST
 **/logs
 *.dat
 massif.out.*
+**/coverage/
+**.coverage*

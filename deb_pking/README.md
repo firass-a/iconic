@@ -8,7 +8,7 @@ Three packages are generated:
 
 ## First: build the packages in your local Debian installation
 
-Requirements: ```devscripts```, ```dh-virtualenv```, ```dh-exe```.
+Requirements: ```devscripts```, ```dh-virtualenv```, ```dh-exec```.
 
 These three scripts should do the job, assuming the Git subprojects ```dssat-csm-os``` and ```dssat-csm-data``` are populated (i.e. checked out) in the root directory:
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TODO: grab gym-dssat version from sources
-VERSION="0.0.3"
+VERSION="0.0.4"
 UNVERSIONED="gym-dssat-pdi"
 DIRNAME="${UNVERSIONED}-${VERSION}"
 TARBALL="${UNVERSIONED}_${VERSION}.orig.tar.gz"
@@ -19,8 +19,8 @@ echo "cp -r ${DEBIAN} ../${DIRNAME}/debian"
 cp -r ${DEBIAN} ../${DIRNAME}/debian
 
 # TODO: document debian packages needed to build the package (dh...)
-echo "cd ../${DIRNAME} && debuild -uc -us"
-cd ../${DIRNAME} && debuild -uc -us
+echo "cd ../${DIRNAME} && debuild --no-lintian -uc -us"
+cd ../${DIRNAME} && debuild --no-lintian -uc -us
 
 echo "cd .. && rm -rf ${DIRNAME}"
 cd .. && rm -rf ${DIRNAME}

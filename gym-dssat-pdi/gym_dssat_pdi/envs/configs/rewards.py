@@ -18,7 +18,10 @@ def fertilization_reward(_previous_state, _next_state, _history):
         tleachd = _next_state['tleachd']
         tnoxd = _next_state['tnoxd']
         trnu = _next_state['trnu']
-        reward = (trnu - (tleachd + tnoxd)) - penality * last_action
+        totaml_tm1 = _previous_state['totaml']
+        totaml_t = _next_state['totaml']
+        totaml = totaml_t - totaml_tm1
+        reward = (trnu - (tleachd + tnoxd + totaml)) - penality * last_action
     return reward
 
 

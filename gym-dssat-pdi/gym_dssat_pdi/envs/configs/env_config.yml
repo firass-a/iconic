@@ -171,6 +171,11 @@ state:
     low: 0
     high: 300
     info: root depth (cm)
+  totaml:
+    type: float
+    low: 0
+    high: .inf
+    info: cumulative ammonia volatilization (kgN/ha)
   ll:
     type: array
     subtype: float
@@ -281,6 +286,7 @@ setting:
       - runoff
       - wtdep
       - rtdep
+      - totaml
     context:
       - sat
       - dul
@@ -309,6 +315,7 @@ setting:
       - dap
       - rtdep
       - nstres
+      - totaml
     context:
       - sat
       - dul

@@ -80,7 +80,6 @@ class DssatPdi(gym.Env):
         self._port = None
         self._zmq_context = None
         self._server = None
-        self._poller = None
         self._last_is_send = True
         self._client_process_pid = None
         self._files_prefix = files_prefix
@@ -229,10 +228,6 @@ class DssatPdi(gym.Env):
         # self._server.setsockopt(zmq.LINGER, 0)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
-    def _launch_poller(self):
-        self._poller = zmq.Poller()
-        self._poller.register(self._server, zmq.POLLIN)
-
     def _write_pdi_yaml(self):
         value_dic = {'port': self._port,
                      'rseed1': self._rseed1,
@@ -245,13 +240,8 @@ class DssatPdi(gym.Env):
         if not self._last_is_send:
             self.close()
             raise ValueError("you cannot call env._get_state() two times in a row!")
-        # if self._poller.poll(timeout=1000):
         message = self._server.recv().decode('utf-8')
         self._last_is_send = False
-        # else:
-        #     pdb.set_trace()
-        #     self.close()
-        #     raise ValueError("client doesn't send message")
         message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
         _state = message['state']
@@ -274,12 +264,8 @@ class DssatPdi(gym.Env):
 
     def _get_sockets_(self):
         self._launch_server()
-        self._launch_poller()
         self._write_pdi_yaml()
         self._launch_client()
-        # if not self._poller.poll(timeout=10000):
-        #     self.close()
-        #     self._get_sockets_()
 
     def _make_tmp_folder(self):
         if self._tmp_folder:
@@ -301,6 +287,8 @@ class DssatPdi(gym.Env):
         self.t = 0
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
+        self._state = None
+        self.observation = None
 
     def _close_client(self):
         self._early_stopping()
@@ -318,11 +306,6 @@ class DssatPdi(gym.Env):
         if self._zmq_context:
             self._zmq_context.term()
             self._zmq_context = None
-
-    def _close_poller(self):
-        if self._poller is not None:
-            self._poller.unregister(self._server)
-            self._poller = None
 
     def _close_tmp_folder(self):
         if self._tmp_folder:
@@ -350,12 +333,12 @@ class DssatPdi(gym.Env):
             self._server.send(message_js)
             self._last_is_send = True
             observation, _state, done, context = self._get_state()
-            self.done = done
+            if done:
+                self.done = done
 
     def close(self, _close_tmp=True):
         if not self.closed:
             self._close_client()
-            self._close_poller()
             self._close_server()
             if _close_tmp:
                 self._close_tmp_folder()
@@ -363,7 +346,6 @@ class DssatPdi(gym.Env):
         if self._f_out is not None and not self._f_out.closed:
             self._f_out.close()
             self._f_out = None
-
 
     def step(self, action_dict):
         if self.closed:
@@ -405,7 +387,7 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def reset(self, seed=None):
-        if self.closed: # or self.reset_counter >= 10:  # dirty fix for memory leak
+        if self.closed:  # or self.reset_counter >= 10:  # dirty fix for memory leak
             self.reset_hard()
             self.reset_counter = 0
         else:
@@ -419,7 +401,7 @@ class DssatPdi(gym.Env):
             self._last_is_send = True
             self.reset_counter += 1
             self._reset_attributes()
-            self.observation, self.state_, self.done, self.context = self._get_state()
+            self.observation, self._state, self.done, self.context = self._get_state()
             return self.observation
 
     def reset_hard(self, seed=None, _new_tmp_folder=True):
@@ -433,7 +415,7 @@ class DssatPdi(gym.Env):
         self._write_fileX_template()
         self._reset_attributes()
         self._get_sockets_()
-        self.observation, self.state_, self.done, self.context = self._get_state()
+        self.observation, self._state, self.done, self.context = self._get_state()
         return self.observation
 
     def set_seed(self, seed=None):

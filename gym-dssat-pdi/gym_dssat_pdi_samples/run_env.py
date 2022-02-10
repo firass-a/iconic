@@ -140,6 +140,7 @@ if __name__ == '__main__':
     utils.make_folder('./render')
     cwd = os.path.dirname(os.path.realpath(__file__))
     for i, mode in enumerate(['fertilization', 'irrigation', 'all']):
+        print(mode)
         env_args = {
             'run_dssat_location': '/opt/dssat_pdi/run_dssat',
             'log_saving_path': './logs/dssat_pdi.log',

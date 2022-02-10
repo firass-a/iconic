@@ -11,6 +11,9 @@ import numpy as np
 from copy import deepcopy
 from pprint import pprint
 
+import os
+dirname = os.path.dirname(__file__)
+auxfiles_path = os.path.join(dirname, 'test_files/GAGR.CLI')
 
 def default_policy(dap):
     fertilization_dic = {
@@ -72,7 +75,7 @@ def multiprocess_trial(env_args, cwd, rep, save_log=False):
     n_cores = multiprocessing.cpu_count()
     rep_by_core = rep // n_cores
     for i in range(n_cores):
-        env_args['log_saving_path'] = f'{cwd}/logs/dssat-pdi-{i}.log'
+        env_args['log_saving_path'] = f'./logs/dssat-pdi-{i}.log'
         env_args['seed'] = np.random.randint(1, 999999)
         arguments.append((deepcopy(env_args), rep_by_core, save_log))
     with multiprocessing.Pool() as pool:
@@ -103,7 +106,7 @@ def multiprocess_trial_hard_reset(env, cwd, rep, save_log=False):
     n_cores = multiprocessing.cpu_count()
     rep_by_core = rep // n_cores
     for i in range(n_cores):
-        arguments.append((env, rep_by_core, f'{cwd}/logs/dssat-pdi-{i}.log', save_log))
+        arguments.append((env, rep_by_core, f'./logs/dssat-pdi-{i}.log', save_log))
     with multiprocessing.Pool() as pool:
         raw_result = list(pool.imap_unordered(_multiprocess_trial_func_hard_reset, arguments))
     return raw_result
@@ -147,7 +150,7 @@ if __name__ == '__main__':
             'mode': mode,
             'seed': 123456,
             'random_weather': True,
-            'auxiliary_file_paths': ['./test_files/GAGR.CLI'],
+            'auxiliary_file_paths': [auxfiles_path],
         }
         try_interact = True
         try_multiproc = True

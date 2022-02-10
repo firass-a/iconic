@@ -33,6 +33,8 @@ ENV VIRTUAL_ENV /opt/gym_dssat_pdi
 ENV PATH "${VIRTUAL_ENV}/bin:${PATH}"
 RUN echo "export PATH=${PATH}" >> /etc/profile
 
+RUN bash -l -c 'echo export GYM_DSSAT_PDI_PATH="/opt/gym_dssat_pdi/lib/$(python3 -V | tr -d '[:blank:]' | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//')/site-packages/gym_dssat_pdi" >> /etc/bash.bashrc'
+
 RUN useradd -ms /bin/bash gymusr
 USER gymusr
 WORKDIR /home/gymusr

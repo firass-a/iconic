@@ -12,8 +12,10 @@ from copy import deepcopy
 from pprint import pprint
 
 import os
+
 dirname = os.path.dirname(__file__)
 auxfiles_path = os.path.join(dirname, 'test_files/GAGR.CLI')
+
 
 def default_policy(dap):
     fertilization_dic = {
@@ -58,11 +60,11 @@ def interact_with_env(env, verbose=True):
         observation_list = env.observation_dict_to_array(observation)
         dap = observation['dap']
         action = default_policy(dap)
-        if verbose:
-            # pprint(f'observation: {observation}')
-            pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha')
         res = env.step(action)
         new_state, reward, done, info = res
+        if verbose:
+            # pprint(f'observation: {observation}')
+            pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha ; reward {reward}')
         if new_state is not None:
             interactions.append(new_state)
         i += 1
@@ -142,8 +144,12 @@ if __name__ == '__main__':
         pass
     utils.make_folder('./render')
     cwd = os.path.dirname(os.path.realpath(__file__))
-    for i, mode in enumerate(['fertilization', 'irrigation', 'all']):
-        print(mode)
+    for i, mode in enumerate([
+                              'fertilization',
+                              'irrigation',
+                              'all'
+                              ]):
+        print(f'MODE: {mode}')
         env_args = {
             'run_dssat_location': '/opt/dssat_pdi/run_dssat',
             'log_saving_path': './logs/dssat_pdi.log',
@@ -160,20 +166,20 @@ if __name__ == '__main__':
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
                 if i == 0:
                     env.get_env_info(user_input=False)
-                env.set_seed(123)
+                env.seed(123)
                 n_rep = 8
                 yields = []
-                for i in range(n_rep):
+                for j in range(n_rep):
                     env.reset()
                     interactions = interact_with_env(env, verbose=verbose)
                     yields.append(interactions[-1]['grnwt'])
-                    if (i + 1) % 10 == 0:
-                        print(f'{i + 1}/{n_rep}')
+                    if (j + 1) % 10 == 0:
+                        print(f'{j + 1}/{n_rep}')
                 print(f'mean of yields: {np.mean(yields)} kg/ha')
                 print(f'variance of yields: {np.var(yields)} kg/ha')
                 env.render(type='ts',
-                           feature_name_1='nstres',
-                           feature_name_2='grnwt')
+                           feature_name_1='cleach',
+                           feature_name_2='totaml')
                 env.render(type='reward',
                            cumsum=True)
                 env.render(type='reward',

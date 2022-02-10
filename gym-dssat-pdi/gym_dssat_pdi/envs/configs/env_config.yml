@@ -32,17 +32,17 @@ state:
   cleach:
     type: float
     low: 0
-    high: .inf
+    high: 200
     info: cumulative nitrate leaching (kg/ha)
   cnox:
     type: float
     low: 0
-    high: .inf
+    high: 1
     info: cumulative nitrogen denitrification (kg/ha)
   cumsumfert:
     type: float
     low: 0
-    high: .inf
+    high: 50000
     info: cumulative nitrogen fertilizer applications (kg/ha)
   dap:
     type: int
@@ -57,7 +57,7 @@ state:
   grnwt:
     type: float
     low: 0
-    high: .inf
+    high: 50000
     info: grain weight dry matter (kg/ha)
   istage:
     type: discrete
@@ -75,7 +75,7 @@ state:
   vstage:
     type: float
     low: 0
-    high: .inf
+    high: 30
     info: vegetative growth stage (number of leaves)
   nstres:
     type: float
@@ -90,16 +90,16 @@ state:
   pltpop:
     type: float
     low: 0
-    high: .inf
+    high: 100
     info: plant population density (plant/m2)
   rain:
     type: float
     low: 0
-    high: .inf
+    high: 500
     info: rainfalls for the current day (mm/d)
   srad:
     type: float
-    low: 0
+    low: 50
     high: .inf
     info: solar radiations during the current day (MJ/m2/d)
   swfac:
@@ -110,37 +110,37 @@ state:
   tleachd:
     type: float
     low: 0
-    high: .inf
+    high: 100
     info: daily nitrate leaching (kg/ha)
   tmax:
     type: float
-    low: 0
-    high: 100
+    low: -60
+    high: 60
     info: maximum temparature for current day (C)
   tmin:
     type: float
-    low: 0
-    high: 100
+    low: -60
+    high: 60
     info: minimum temparature for current day (C)
   tnoxd:
     type: float
     low: 0
-    high: .inf
+    high: 1
     info: daily nitrogen denitrification (kg/ha)
   trnu:
     type: float
     low: 0
-    high: .inf
+    high: 10
     info: daily nitrogen plant population uptake (kg/ha)
   wtnup:
     type: float
     low: 0
-    high: .inf
+    high: 500
     info: cumulative plant population  nitrogen uptake (kg/ha)
   xlai:
     type: float
     low: 0
-    high: .inf
+    high: 10
     info: plant population leaf area index (m2_leaf/m2_soil)
   yrdoy:
     type: discrete
@@ -149,22 +149,22 @@ state:
   topwt:
     type: float
     low: 0
-    high: .inf
+    high: 50000
     info: above the ground population biomass (kg/ha)
   es:
     type: float
     low: 0
-    high: .inf
+    high: 50
     info: actual soil evaporation rate (mm/d)
   runoff:
     type: float
     low: 0
-    high: .inf
+    high: 100
     info: calculated runoff (mm/d)
   wtdep:
     type: float
     low: 0
-    high: .inf
+    high: 1000
     info: depth to water table (cm)
   rtdep:
     type: float
@@ -174,7 +174,7 @@ state:
   totaml:
     type: float
     low: 0
-    high: .inf
+    high: 5000
     info: cumulative ammonia volatilization (kgN/ha)
   ll:
     type: array
@@ -215,21 +215,21 @@ state:
     type: array
     subtype: float
     low: 0
-    high: .inf
+    high: 1000
     size: 9
     info: thickness of for soil layers (cm)
   snh4_ini:
     type: array
     subtype: float
     low: 0
-    high: .inf
+    high: 10
     size: 9
     info: initial extractable ammonium in soil layer (kg N/ha)
   sno3_ini:
     type: array
     subtype: float
     low: 0
-    high: .inf
+    high: 10
     size: 9
     info: initial extractable nitrate in soil layer (kg N/ha)
 

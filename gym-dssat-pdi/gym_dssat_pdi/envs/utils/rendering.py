@@ -14,7 +14,7 @@ __credits__ = [
 __license__ = 'BSD 3-Clause'
 __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
-def render_temporal_series(_history, feature_name_1, feature_name_2=None, layout_dict=None, saving_path=None,
+def render_temporal_series(_history, mode, feature_name_1, feature_name_2=None, layout_dict=None, saving_path=None,
                            folder_path='./render', *args, **kwargs):
     if folder_path != './':
         make_folder(folder_path)
@@ -40,28 +40,43 @@ def render_temporal_series(_history, feature_name_1, feature_name_2=None, layout
         ax2.plot(x, y2, 'b-')
         ax2.set_ylabel(feature_name_2, color='b')
         feature_name_2_label = f'_{feature_name_2}'
+    plt.title(f'State feature evolution for mode {mode}')
     if saving_path is None:
-        saving_path = f'{folder_path}/{feature_name_1}{feature_name_2_label}_DOY.pdf'
+        saving_path = f'{folder_path}/{feature_name_1}{feature_name_2_label}_DOY_mode_{mode}.pdf'
     plt.savefig(saving_path, bbox_inches='tight')
 
-def render_reward(_history, saving_path=None, folder_path='./render', cumsum=True, *args, **kwargs):
+def render_reward(_history, mode, saving_path=None, folder_path='./render', cumsum=True, *args, **kwargs):
     make_folder(folder_path)
     trajectory = _history['state']
     trajectory = transpose_dicts(trajectory)
     reward = _history['reward']
     x = [int(str(DOY)[-3:]) for DOY in trajectory['yrdoy']]
-    y = reward
+    y = np.asarray(reward)
+    fig, ax1 = plt.subplots()
+    if mode == 'all':
+        ax2 = ax1.twinx()
+        y = y.T
+        y1 = y[0]
+        y2 = y[1]
+        y1_label = 'fertilization reward'
+        if cumsum:
+            y2 = np.cumsum(y2)
+        ax2.plot(x, y2, 'b-')
+        ax2.set_ylabel('irrigation reward', color='b')
+    else:
+        y1_label = f'{mode} reward'
+        y1 = y
     if cumsum:
-        y = np.cumsum(y)
-    fig, ax = plt.subplots()
-    ax.plot(x, y, 'g-')
-    ax.set_xlabel('DOY')
-    ax.set_ylabel('reward', color='g')
+        y1 = np.cumsum(y1)
+    ax1.plot(x, y1, 'g-')
+    ax1.set_xlabel('DOY')
+    ax1.set_ylabel(y1_label, color='g')
+    plt.title(f'Rewards for mode {mode}')
     cumsum_label = ''
     if cumsum:
         cumsum_label = '_cumsum'
     if saving_path is None:
-        saving_path = f'{folder_path}/reward_DOY{cumsum_label}.pdf'
+        saving_path = f'{folder_path}/reward_DOY{cumsum_label}_mode_{mode}.pdf'
     plt.savefig(saving_path, bbox_inches='tight')
 
 if __name__ == '__main__':

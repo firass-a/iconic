@@ -63,8 +63,8 @@ class DssatPdi(gym.Env):
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
         self._random_generator = None
-        self.seed = None
-        self.set_seed(seed=seed)
+        self.seed_value = None
+        self.seed(seed=seed)
         self._rseed1 = self._random_generator.randint(1, 99999)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
@@ -394,7 +394,7 @@ class DssatPdi(gym.Env):
             if not self.done:
                 self._get_env_done()
             if seed is not None:
-                self.set_seed(seed)
+                self.seed(seed)
             if self.random_weather:
                 self._rseed1 = self._random_generator.randint(1, 99999)
             self._server.send(f'{self._rseed1}'.encode('utf-8'))
@@ -405,7 +405,7 @@ class DssatPdi(gym.Env):
             return self.observation
 
     def reset_hard(self, seed=None, _new_tmp_folder=True):
-        self.set_seed(seed)
+        self.seed(seed)
         if not self.closed:
             self.close(_close_tmp=_new_tmp_folder)
         if _new_tmp_folder:
@@ -418,14 +418,14 @@ class DssatPdi(gym.Env):
         self.observation, self._state, self.done, self.context = self._get_state()
         return self.observation
 
-    def set_seed(self, seed=None):
+    def seed(self, seed=None):
         if seed is not None:
             seed = int(seed)
-            self.seed = seed
+            self.seed_value = seed
         else:
-            seed = self.seed
-        self._random_generator, self.seed = seeding.np_random(seed)
-        return self.seed
+            seed = self.seed_value
+        self._random_generator, self.seed_value = seeding.np_random(seed)
+        return self.seed_value
 
     def get_env_info(self, user_input=True):
         config_actions = self._config['action']
@@ -461,9 +461,9 @@ class DssatPdi(gym.Env):
         if type not in authorized_types:
             raise ValueError(f'"type" parameter has to be in {[*authorized_types]}!')
         if type == 'ts':
-            rendering.render_temporal_series(_history=self._history, *args, **kwargs)
+            rendering.render_temporal_series(_history=self._history, mode=self.mode, *args, **kwargs)
         else:
-            rendering.render_reward(_history=self._history, *args, **kwargs)
+            rendering.render_reward(_history=self._history, mode=self.mode, *args, **kwargs)
 
     def observation_dict_to_array(self, dict):
         if dict:

@@ -65,8 +65,7 @@ def irrigation_reward(_previous_state, _next_state, _history):
 def all_reward(_previous_state, _next_state, _history):
     ferti_reward_value = fertilization_reward(_previous_state, _next_state, _history)
     irrig_reward_value = irrigation_reward(_previous_state, _next_state, _history)
-    all_reward_value = ferti_reward_value + 2 * irrig_reward_value
-    return all_reward_value
+    return [ferti_reward_value, irrig_reward_value]
 
 
 def get_reward_function(mode):

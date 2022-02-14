@@ -427,6 +427,9 @@ class DssatPdi(gym.Env):
         self._random_generator, self.seed_value = seeding.np_random(seed)
         return self.seed_value
 
+    def set_seed(self, seed=None):
+        self.seed(seed)
+
     def get_env_info(self, user_input=True):
         config_actions = self._config['action']
         config_states = self._config['state']

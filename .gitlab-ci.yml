@@ -52,7 +52,7 @@ build sid source:
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
+    - docker build --no-cache -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
     - docker push $IMAGE_DESTINATION_SID_SOURCE
     - echo "Image ${IMAGE_NAME_SID_SOURCE} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE}"
   when: manual

@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Emilio J. Padrón González <emilioj@udc.gal>
 Build-Depends: debhelper-compat (= 13), python3 (>= 3.6),
  python3-venv, python3-dev, dh-python, dh-virtualenv (>= 1.1),
- python3-setuptools, python3-virtualenv, tar (>= 1.30)
+ python3-setuptools (>= 46.4.0), python3-virtualenv, tar (>= 1.30)
 Standards-Version: 4.5.0
 Homepage: https://gitlab.inria.fr/rgautron/gym_dssat_pdi
 

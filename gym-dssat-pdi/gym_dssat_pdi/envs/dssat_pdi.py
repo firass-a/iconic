@@ -30,7 +30,7 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location='/opt/dssat_pdi', log_saving_path=None, mode='all', auxiliary_file_paths=None,
+    def __init__(self, run_dssat_location='/opt/dssat_pdi', log_saving_path=None, error_path=None, mode='all', auxiliary_file_paths=None,
                  files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None):
         self.experiment_number = experiment_number
         self.mode = mode
@@ -58,6 +58,7 @@ class DssatPdi(gym.Env):
             self.auxiliary_file_paths = []
         self._run_dssat_location = run_dssat_location
         self.log_saving_path = log_saving_path
+        self.error_path = error_path
         self._cwd = os.getcwd()
         self._reward_func = rewards.get_reward_function(mode)
         self.history = {'observation': [], 'action': [], 'reward': []}
@@ -75,6 +76,7 @@ class DssatPdi(gym.Env):
         self.done = False
         self.closed = False
         self._f_out = None
+        self._f_err = None
         self.t = 0
         self.reset_counter = 0
         self._port = None
@@ -201,14 +203,16 @@ class DssatPdi(gym.Env):
             file_path = self.log_saving_path
         else:
             file_path = os.devnull
+        err_file_path = self.error_path if self.error_path is not None else os.devnull
         self._f_out = open(file_path, 'a+')
+        self._f_err = open(err_file_path, 'a+')
         if self.log_saving_path is not None:
             self._f_out.write('\n********************************\n')
             self._f_out.write(utils.get_time_stamp())
             self._f_out.write('\n********************************\n')
         client_process = subprocess.Popen(pdi_command,
                                           stdout=self._f_out,
-                                          stderr=sys.stderr,
+                                          stderr=self._f_err,
                                           shell=False,
                                           universal_newlines=True,
                                           cwd=self._tmp_folder,
@@ -346,6 +350,9 @@ class DssatPdi(gym.Env):
         if self._f_out is not None and not self._f_out.closed:
             self._f_out.close()
             self._f_out = None
+        if self._f_err is not None and not self._f_err.closed:
+            self._f_err.close()
+            self._f_err = None
 
     def step(self, action_dict):
         if self.closed:

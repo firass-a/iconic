@@ -31,7 +31,8 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 class DssatPdi(gym.Env):
 
     def __init__(self, run_dssat_location='/opt/dssat_pdi', log_saving_path=None, mode='all', auxiliary_file_paths=None,
-                 files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None):
+                 files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None,
+                 evaluation=False):
         self.experiment_number = experiment_number
         self.mode = mode
         self.action_variables = None
@@ -65,7 +66,10 @@ class DssatPdi(gym.Env):
         self._random_generator = None
         self.seed_value = None
         self.seed(seed=seed)
-        self._rseed1 = self._random_generator.randint(1, 99999)
+        self.evaluation = evaluation
+        self.rseed_args = None
+        self._set_rseed_args()
+        self._rseed1 = self._random_generator.randint(**self.rseed_args)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
@@ -89,6 +93,18 @@ class DssatPdi(gym.Env):
         self._write_fileX_template()
         self._get_sockets_()
         self.observation, self._state, self.done, self.context = self._get_state()
+
+    def _set_rseed_args(self):
+        if self.evaluation:
+            rseed_args = {'low': 1, 'high': 10000}
+        else:
+            rseed_args = {'low': 10001, 'high': 99999}
+        self.rseed_args = rseed_args
+
+    def set_evaluation(self):
+        self.evaluation = True
+        self._set_rseed_args()
+        self._rseed1 = self._random_generator.randint(**self.rseed_args)
 
     def _load_config(self):
         config = yaml.load(self._env_yaml_config, Loader=yaml.FullLoader)
@@ -388,7 +404,7 @@ class DssatPdi(gym.Env):
 
     def reset(self, seed=None):
         if self.closed:  # or self.reset_counter >= 10:  # dirty fix for memory leak
-            self.reset_hard()
+            self.reset_hard(seed=seed)
             self.reset_counter = 0
         else:
             if not self.done:
@@ -396,7 +412,7 @@ class DssatPdi(gym.Env):
             if seed is not None:
                 self.seed(seed)
             if self.random_weather:
-                self._rseed1 = self._random_generator.randint(1, 99999)
+                self._rseed1 = self._random_generator.randint(**self.rseed_args)
             self._server.send(f'{self._rseed1}'.encode('utf-8'))
             self._last_is_send = True
             self.reset_counter += 1
@@ -405,13 +421,17 @@ class DssatPdi(gym.Env):
             return self.observation
 
     def reset_hard(self, seed=None, _new_tmp_folder=True):
+        if seed is None:
+            seed = self.seed_value
+        else:
+            self.seed_value = seed
         self.seed(seed)
         if not self.closed:
             self.close(_close_tmp=_new_tmp_folder)
         if _new_tmp_folder:
             self._make_tmp_folder()
         if self.random_weather:
-            self._rseed1 = self._random_generator.randint(1, 99999)
+            self._rseed1 = self._random_generator.randint(**self.rseed_args)
         self._write_fileX_template()
         self._reset_attributes()
         self._get_sockets_()
@@ -474,3 +494,6 @@ class DssatPdi(gym.Env):
             return np.concatenate(values, axis=None)
         else:
             return []
+
+    def __del__(self):
+        self.close()

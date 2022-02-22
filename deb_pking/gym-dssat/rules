@@ -11,6 +11,6 @@ override_dh_virtualenv:
 	dh_virtualenv --python python3 --use-system-packages \
 		--extra-pip-arg "--ignore-installed" \
 		--install-suffix gym_dssat_pdi \
-		--preinstall "pip==22.0.2" \
+		--preinstall "pip==21.3.1" \
 		--preinstall "setuptools==59.6.0" \
 		--preinstall "wheel==0.37.1"

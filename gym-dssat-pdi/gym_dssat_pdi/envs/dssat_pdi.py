@@ -224,7 +224,7 @@ class DssatPdi(gym.Env):
             self._f_out.write('\n********************************\n')
         client_process = subprocess.Popen(pdi_command,
                                           stdout=self._f_out,
-                                          stderr=sys.stderr,
+                                          stderr=self._f_out,
                                           shell=False,
                                           universal_newlines=True,
                                           cwd=self._tmp_folder,

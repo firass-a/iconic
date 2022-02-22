@@ -2,13 +2,13 @@ dssat-pdi (0.2.4.7~e355a58-1) UNRELEASED; urgency=medium
 
   * Updating dssat-pdi to commit e355a58c17 (Feb 10, 2022)
 
- -- Emilio J. Padrón González <emilioj@udc.gal>  Wed, 17 Nov 2021 09:07:07 +0100
+ -- Emilio J. Padron <emilioj@udc.gal>  Wed, 17 Nov 2021 09:07:07 +0100
 
 dssat-pdi (0.1.4.7~1a443e8-2) UNRELEASED; urgency=medium
 
   * Installation now in /opt/dssat_pdi instead of /opt/dssat-pdi
 
- -- Emilio J. Padrón González <emilioj@udc.gal>  Wed, 17 Nov 2021 09:07:07 +0100
+ -- Emilio J. Padron <emilioj@udc.gal>  Wed, 17 Nov 2021 09:07:07 +0100
 
 dssat-pdi (0.1.4.7~1a443e8-1) UNRELEASED; urgency=medium
 
@@ -22,4 +22,4 @@ dssat-pdi (0.1.4.7~1a443e8-1) UNRELEASED; urgency=medium
   [2] https://pdi.julien-bigot.fr/master/pycall_plugin.html
   [3] https://pdi.julien-bigot.fr/master
 
- -- Emilio J. Padrón González <emilioj@udc.gal>  Fri, 22 Oct 2021 13:27:07 +0200
+ -- Emilio J. Padron <emilioj@udc.gal>  Fri, 22 Oct 2021 13:27:07 +0200

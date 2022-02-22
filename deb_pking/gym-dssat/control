@@ -1,7 +1,7 @@
 Source: gym-dssat-pdi
 Section: science
 Priority: optional
-Maintainer: Emilio J. Padrón González <emilioj@udc.gal>
+Maintainer: Emilio J. Padron <emilioj@udc.gal>
 Build-Depends: debhelper-compat (= 13), python3 (>= 3.6),
  python3-venv, python3-dev, dh-python, dh-virtualenv (>= 1.1),
  python3-setuptools (>= 46.4.0), python3-virtualenv, tar (>= 1.30)

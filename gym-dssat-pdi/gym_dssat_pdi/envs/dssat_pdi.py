@@ -439,11 +439,6 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def seed(self, seed=None):
-        if seed is not None:
-            seed = int(seed)
-            self.seed_value = seed
-        else:
-            seed = self.seed_value
         self._random_generator, self.seed_value = seeding.np_random(seed)
         return self.seed_value
 

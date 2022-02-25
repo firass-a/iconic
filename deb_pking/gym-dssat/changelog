@@ -1,6 +1,15 @@
 gym-dssat-pdi (0.0.5-1) UNRELEASED; urgency=medium
 
-  * DEV version
+  * Add packaging for Ubuntu Bionic (18.04), used by Google Colab
+  * Add license file
+  * Adds error file path to replace sys.stderr due to colab issues
+    -> stdout and stderr to point to the same file
+  * Seed in reset_hard modified
+  * Poller removed
+  * State variable upper bounded
+  * Rewards adjusted
+  * Preinstall specific versions of pip, setuptools and wheel in dh-virtualenv
+  * ADD __version__ attribute
 
  -- Emilio J. Padron <emilioj@udc.gal>  Mon, 21 Feb 2022 23:17:23 +0100
 

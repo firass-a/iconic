@@ -1,4 +1,4 @@
-FROM debian:sid as builder
+FROM ubuntu:focal as builder
 
 USER 0
 
@@ -8,8 +8,8 @@ RUN apt-get upgrade -y
 RUN apt-get install -y wget
 
 ### PDI package install
-RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/debian sid main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
-RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/debian/pdidev-archive-keyring.gpg
+RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu focal main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
+RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/ubuntu/pdidev-archive-keyring.gpg
 RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 
 # Temporary workaround to guarantee the updated tarball is downloaded
@@ -20,12 +20,12 @@ RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
 RUN apt-get update -y
-RUN apt-get install -y pdidev-archive-keyring
+RUN apt install -y pdidev-archive-keyring
 
 ### Custom packages
-RUN wget https://gac.udc.es/~emilioj/sid.tgz
-RUN tar -xf sid.tgz
-WORKDIR /sid
+RUN wget https://gac.udc.es/~emilioj/focal-dev.tgz
+RUN tar -xf focal-dev.tgz
+WORKDIR /focal-dev
 RUN apt install -y `find . -name "*.deb"`
 
 ### Image config

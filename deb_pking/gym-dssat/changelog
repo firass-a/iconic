@@ -1,3 +1,18 @@
+gym-dssat-pdi (0.0.5-1) UNRELEASED; urgency=medium
+
+  * Add packaging for Ubuntu Bionic (18.04), used by Google Colab
+  * Add license file
+  * Adds error file path to replace sys.stderr due to colab issues
+    -> stdout and stderr to point to the same file
+  * Seed in reset_hard modified
+  * Poller removed
+  * State variable upper bounded
+  * Rewards adjusted
+  * Preinstall specific versions of pip, setuptools and wheel in dh-virtualenv
+  * ADD __version__ attribute
+
+ -- Emilio J. Padron <emilioj@udc.gal>  Mon, 21 Feb 2022 23:17:23 +0100
+
 gym-dssat-pdi (0.0.4-1) UNRELEASED; urgency=medium
 
   * Reward shaping to penalize N use
@@ -18,13 +33,13 @@ gym-dssat-pdi (0.0.4-1) UNRELEASED; urgency=medium
 
   * Fix numpy version in venv to 1.21.4
 
- -- Emilio J. Padrón <emilioj@udc.gal>  Sun, 23 Jan 2022 10:22:07 +0100
+ -- Emilio J. Padron <emilioj@udc.gal>  Sun, 23 Jan 2022 10:22:07 +0100
 
 gym-dssat-pdi (0.0.3-1) UNRELEASED; urgency=medium
 
   * State and reward functions refined
 
- -- Emilio J. Padrón <emilioj@udc.gal>  Thu, 02 Dec 2021 22:43:34 +0100
+ -- Emilio J. Padron <emilioj@udc.gal>  Thu, 02 Dec 2021 22:43:34 +0100
 
 gym-dssat-pdi (0.0.2-1) UNRELEASED; urgency=medium
 
@@ -34,7 +49,7 @@ gym-dssat-pdi (0.0.2-1) UNRELEASED; urgency=medium
 
   * Installation now in /opt/gym_dssat_pdi instead of /opt/gym-dssat-pdi
 
- -- Emilio J. Padrón <emilioj@udc.gal>  Tue, 16 Nov 2021 23:49:05 +0100
+ -- Emilio J. Padron <emilioj@udc.gal>  Tue, 16 Nov 2021 23:49:05 +0100
 
 gym-dssat-pdi (0.0.1-1) UNRELEASED; urgency=medium
 
@@ -43,4 +58,4 @@ gym-dssat-pdi (0.0.1-1) UNRELEASED; urgency=medium
   * gym-dssat-pdi: a middleware to connect OpenAI Gym with a DSSAT
   crop simulation leveraging PDI
 
- -- Emilio J. Padrón González <emilioj@udc.gal>  Mon, 01 Nov 2021 01:21:50 +0100
+ -- Emilio J. Padron <emilioj@udc.gal>  Mon, 01 Nov 2021 01:21:50 +0100

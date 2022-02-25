@@ -23,9 +23,9 @@ RUN apt-get update -y
 RUN apt-get install -y pdidev-archive-keyring
 
 ### Custom packages
-RUN wget https://gac.udc.es/~emilioj/sid.tgz
-RUN tar -xf sid.tgz
-WORKDIR /sid
+RUN wget https://gac.udc.es/~emilioj/sid-dev.tgz
+RUN tar -xf sid-dev.tgz
+WORKDIR /sid-dev
 RUN apt install -y `find . -name "*.deb"`
 
 ### Image config

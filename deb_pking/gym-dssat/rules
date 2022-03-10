@@ -1,14 +1,20 @@
 #!/usr/bin/make -f
 
+ifneq ($(filter bionic,$(DEB_BUILD_PROFILES)),)
+   export PYBUILD_INTERPRETERS = python3
+else
+   export PYBUILD_INTERPRETERS = python3.7
+
 export PYBUILD_NAME = gym_dssat_pdi
 export DH_VIRTUALENV_INSTALL_ROOT=/opt/
-export PYTHON_VERSION=$(shell python3 -V | tr -d '[:blank:]' | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$$//')
+export PYTHON_VERSION=$(shell $(PYBUILD_INTERPRETERS) -V | tr -d '[:blank:]' | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$$//')
 
 %:
 	dh $@ --with python-virtualenv --buildsystem=pybuild
 
 override_dh_virtualenv:
-	dh_virtualenv --python python3 --use-system-packages \
+	dh_virtualenv --python $(PYBUILD_INTERPRETERS) \
+		--use-system-packages \
 		--extra-pip-arg "--ignore-installed" \
 		--install-suffix gym_dssat_pdi \
 		--preinstall "pip==21.3.1" \

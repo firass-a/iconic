@@ -10,7 +10,8 @@ stages:
   - test:hirsute
   - test:focal
   - coverage:package
-  - coverage:source
+  - coverage-json:source
+  - coverage-badge:source
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
@@ -28,12 +29,10 @@ variables:
 build sid:
   stage: build:sid
   allow_failure: true
-  tags: 
+  tags:
     - ci.inria.fr
     - medium
-  image: docker:20.10.12
-  services:
-  - docker:20.10.12-dind
+  image: docker:stable
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -45,12 +44,10 @@ build sid:
 build sid source:
   stage: build:sid_source
   allow_failure: true
-  tags: 
+  tags:
     - ci.inria.fr
     - medium
-  image: docker:20.10.12
-  services:
-  - docker:20.10.12-dind
+  image: docker:stable
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -62,12 +59,10 @@ build sid source:
 build bullseye:
   stage: build:bullseye
   allow_failure: true
-  tags: 
+  tags:
     - ci.inria.fr
     - medium
-  image: docker:20.10.12
-  services:
-  - docker:20.10.12-dind
+  image: docker:stable
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -79,12 +74,10 @@ build bullseye:
 build hirsute:
   stage: build:hirsute
   allow_failure: true
-  tags: 
+  tags:
     - ci.inria.fr
     - medium
-  image: docker:20.10.12
-  services:
-  - docker:20.10.12-dind
+  image: docker:stable
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -96,12 +89,10 @@ build hirsute:
 build focal:
   stage: build:focal
   allow_failure: true
-  tags: 
+  tags:
     - ci.inria.fr
     - medium
-  image: docker:20.10.12
-  services:
-  - docker:20.10.12-dind
+  image: docker:stable
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -116,6 +107,7 @@ test sid:
   tags:
     - ci.inria.fr
     - medium
+  image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SID
     - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
@@ -126,6 +118,7 @@ test sid source:
   tags:
     - ci.inria.fr
     - medium
+  image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SID_SOURCE
     - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
@@ -136,6 +129,7 @@ test bullseye:
   tags:
     - ci.inria.fr
     - medium
+  image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_BULLSEYE
     - echo "Test successfully passed for image ${IMAGE_NAME_BULLSEYE} in ${IMAGE_DESTINATION_BULLSEYE}"
@@ -146,6 +140,7 @@ test hirsute:
   tags:
     - ci.inria.fr
     - medium
+  image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_HIRSUTE
     - echo "Test successfully passed for image ${IMAGE_NAME_HIRSUTE} in ${IMAGE_DESTINATION_HIRSUTE}"
@@ -156,6 +151,7 @@ test focal:
   tags:
     - ci.inria.fr
     - medium
+  image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_FOCAL
     - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"
@@ -165,6 +161,7 @@ python coverage package:
   tags:
     - ci.inria.fr
     - medium
+  image: docker:stable
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
   - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
@@ -176,14 +173,30 @@ python coverage package:
     paths:
       - coverage.svg
 
-python coverage source:
-  stage: coverage:source
+python coverage source json:
+  stage: coverage-json:source
   tags:
     - ci.inria.fr
     - medium
+  image: docker:stable
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
-  - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
+  when: on_success
+  artifacts:
+    when: on_success
+    paths:
+      - $PWD/coverage/coverage.json
+
+python coverage source badge:
+  stage: coverage-badge:source
+  tags:
+    - ci.inria.fr
+    - medium
+  image: python:3.9-bullseye
+  dependencies:
+    - python coverage source json
+  script:
+  - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < ${PWD}/coverage/coverage.json)
   - echo -e "\e[1mCOVERAGE RESULT ${COVERAGE}%\e[0m"
   - pip install anybadge
   - anybadge --value=$COVERAGE --file=coverage.svg coverage

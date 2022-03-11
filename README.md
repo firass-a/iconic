@@ -27,6 +27,19 @@ Before deploying any new version, **gym-dssat** is built from scratch in a custo
 + ```./deb_pking```: Linux installation packages
 + ```./docker_recipes```: Dockerfiles for ```gym-dssat```.
 
+## Citing gym-DSSAT
+
+If you use `gym-DSSAT` in your publications, please cite us following this Bibtex entry:
+
+```bibtex
+@misc{gymdssat,
+    author = {Gautron, Romain and {Padr{\'o}n Gonz{\'a}lez}, Emilio J},
+    title = {{gym-DSSAT - A crop model turned into a Reinforcement Learning environment}},
+    url = {https://gitlab.inria.fr/rgautron/gym_dssat_pdi},
+    month = {3},
+    year = {2022}
+}
+```
 
 ## About this project
 
@@ -37,6 +50,17 @@ Any [new issue](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/issues/new?title=
 
 #### Authors
 Romain Gautron and Emilio Padrón González
+
+**Principal contact**:
+
+- first name: romain
+- last name: gautron 
+- institute: cirad
+- country: france
+
+```text
+f_n dot l_n at institute dot two_first_letters_of_country
+```
 
 #### Acknowledgements
 We acknowledge the DSSAT team, especially Gerrit Hoogenboom and Cheryl Porter. Thanks to the PDI team, especially to Julien Bigot. We acknowledge Bruno Raffin, leader of Inria’s DataMove team, for his support. We acknowledge the Consultative Group for International Agricultural Research’s (CGIAR) Platform for Big Data in Agriculture, special thanks to Brian King. Thanks to the French Agricultural Research Centre for International Development (CIRAD) and the French Institute for Research in Computer Science and Automation (Inria), in particular the SCOOL team, for their support.

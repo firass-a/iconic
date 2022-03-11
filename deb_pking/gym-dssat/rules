@@ -1,9 +1,10 @@
 #!/usr/bin/make -f
 
 ifneq ($(filter bionic,$(DEB_BUILD_PROFILES)),)
-   export PYBUILD_INTERPRETERS = python3
-else
    export PYBUILD_INTERPRETERS = python3.7
+else
+   export PYBUILD_INTERPRETERS = python3
+endif
 
 export PYBUILD_NAME = gym_dssat_pdi
 export DH_VIRTUALENV_INSTALL_ROOT=/opt/

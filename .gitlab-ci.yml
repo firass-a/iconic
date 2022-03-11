@@ -29,7 +29,8 @@ build sid:
   stage: build:sid
   allow_failure: true
   tags: 
-    - flanders
+    - ci.inria.fr
+    - medium
   image: docker:20.10.12
   services:
   - docker:20.10.12-dind
@@ -45,7 +46,8 @@ build sid source:
   stage: build:sid_source
   allow_failure: true
   tags: 
-    - flanders
+    - ci.inria.fr
+    - medium
   image: docker:20.10.12
   services:
   - docker:20.10.12-dind
@@ -61,7 +63,8 @@ build bullseye:
   stage: build:bullseye
   allow_failure: true
   tags: 
-    - flanders
+    - ci.inria.fr
+    - medium
   image: docker:20.10.12
   services:
   - docker:20.10.12-dind
@@ -77,7 +80,8 @@ build hirsute:
   stage: build:hirsute
   allow_failure: true
   tags: 
-    - flanders
+    - ci.inria.fr
+    - medium
   image: docker:20.10.12
   services:
   - docker:20.10.12-dind
@@ -93,7 +97,8 @@ build focal:
   stage: build:focal
   allow_failure: true
   tags: 
-    - flanders
+    - ci.inria.fr
+    - medium
   image: docker:20.10.12
   services:
   - docker:20.10.12-dind
@@ -109,7 +114,8 @@ test sid:
   stage: test:sid
   allow_failure: true
   tags:
-    - flanders
+    - ci.inria.fr
+    - medium
   script:
     - docker run $IMAGE_DESTINATION_SID
     - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
@@ -118,7 +124,8 @@ test sid source:
   stage: test:sid_source
   allow_failure: true
   tags:
-    - flanders
+    - ci.inria.fr
+    - medium
   script:
     - docker run $IMAGE_DESTINATION_SID_SOURCE
     - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
@@ -127,7 +134,8 @@ test bullseye:
   stage: test:bullseye
   allow_failure: true
   tags:
-    - flanders
+    - ci.inria.fr
+    - medium
   script:
     - docker run $IMAGE_DESTINATION_BULLSEYE
     - echo "Test successfully passed for image ${IMAGE_NAME_BULLSEYE} in ${IMAGE_DESTINATION_BULLSEYE}"
@@ -136,7 +144,8 @@ test hirsute:
   stage: test:hirsute
   allow_failure: true
   tags:
-    - flanders
+    - ci.inria.fr
+    - medium
   script:
     - docker run $IMAGE_DESTINATION_HIRSUTE
     - echo "Test successfully passed for image ${IMAGE_NAME_HIRSUTE} in ${IMAGE_DESTINATION_HIRSUTE}"
@@ -145,7 +154,8 @@ test focal:
   stage: test:focal
   allow_failure: true
   tags:
-    - flanders
+    - ci.inria.fr
+    - medium
   script:
     - docker run $IMAGE_DESTINATION_FOCAL
     - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"
@@ -153,7 +163,8 @@ test focal:
 python coverage package:
   stage: coverage:package
   tags:
-  - flanders
+    - ci.inria.fr
+    - medium
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
   - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
@@ -168,7 +179,8 @@ python coverage package:
 python coverage source:
   stage: coverage:source
   tags:
-  - flanders
+    - ci.inria.fr
+    - medium
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
   - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)

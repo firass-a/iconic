@@ -22,7 +22,7 @@ import atexit
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
     'Romain Gautron',
-    'Emilio Padrón González',
+    'Emilio J. Padron',
 ]
 __license__ = 'BSD 3-Clause'
 __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
@@ -31,7 +31,8 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 class DssatPdi(gym.Env):
 
     def __init__(self, run_dssat_location='/opt/dssat_pdi', log_saving_path=None, mode='all', auxiliary_file_paths=None,
-                 files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None):
+                 files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None,
+                 evaluation=False):
         self.experiment_number = experiment_number
         self.mode = mode
         self.action_variables = None
@@ -63,9 +64,12 @@ class DssatPdi(gym.Env):
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
         self._random_generator = None
-        self.seed = None
-        self.set_seed(seed=seed)
-        self._rseed1 = self._random_generator.randint(1, 99999)
+        self.seed_value = None
+        self.seed(seed=seed)
+        self.evaluation = evaluation
+        self.rseed_args = None
+        self._set_rseed_args()
+        self._rseed1 = self._random_generator.randint(**self.rseed_args)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
@@ -80,7 +84,6 @@ class DssatPdi(gym.Env):
         self._port = None
         self._zmq_context = None
         self._server = None
-        self._poller = None
         self._last_is_send = True
         self._client_process_pid = None
         self._files_prefix = files_prefix
@@ -90,6 +93,18 @@ class DssatPdi(gym.Env):
         self._write_fileX_template()
         self._get_sockets_()
         self.observation, self._state, self.done, self.context = self._get_state()
+
+    def _set_rseed_args(self):
+        if self.evaluation:
+            rseed_args = {'low': 1, 'high': 10000}
+        else:
+            rseed_args = {'low': 10001, 'high': 99999}
+        self.rseed_args = rseed_args
+
+    def set_evaluation(self):
+        self.evaluation = True
+        self._set_rseed_args()
+        self._rseed1 = self._random_generator.randint(**self.rseed_args)
 
     def _load_config(self):
         config = yaml.load(self._env_yaml_config, Loader=yaml.FullLoader)
@@ -209,7 +224,7 @@ class DssatPdi(gym.Env):
             self._f_out.write('\n********************************\n')
         client_process = subprocess.Popen(pdi_command,
                                           stdout=self._f_out,
-                                          stderr=sys.stderr,
+                                          stderr=self._f_out,
                                           shell=False,
                                           universal_newlines=True,
                                           cwd=self._tmp_folder,
@@ -229,10 +244,6 @@ class DssatPdi(gym.Env):
         # self._server.setsockopt(zmq.LINGER, 0)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
 
-    def _launch_poller(self):
-        self._poller = zmq.Poller()
-        self._poller.register(self._server, zmq.POLLIN)
-
     def _write_pdi_yaml(self):
         value_dic = {'port': self._port,
                      'rseed1': self._rseed1,
@@ -245,13 +256,8 @@ class DssatPdi(gym.Env):
         if not self._last_is_send:
             self.close()
             raise ValueError("you cannot call env._get_state() two times in a row!")
-        # if self._poller.poll(timeout=1000):
         message = self._server.recv().decode('utf-8')
         self._last_is_send = False
-        # else:
-        #     pdb.set_trace()
-        #     self.close()
-        #     raise ValueError("client doesn't send message")
         message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
         _state = message['state']
@@ -274,12 +280,8 @@ class DssatPdi(gym.Env):
 
     def _get_sockets_(self):
         self._launch_server()
-        self._launch_poller()
         self._write_pdi_yaml()
         self._launch_client()
-        # if not self._poller.poll(timeout=10000):
-        #     self.close()
-        #     self._get_sockets_()
 
     def _make_tmp_folder(self):
         if self._tmp_folder:
@@ -301,6 +303,8 @@ class DssatPdi(gym.Env):
         self.t = 0
         self.history = {'observation': [], 'action': [], 'reward': []}
         self._history = {'state': [], 'action': [], 'reward': []}
+        self._state = None
+        self.observation = None
 
     def _close_client(self):
         self._early_stopping()
@@ -318,11 +322,6 @@ class DssatPdi(gym.Env):
         if self._zmq_context:
             self._zmq_context.term()
             self._zmq_context = None
-
-    def _close_poller(self):
-        if self._poller is not None:
-            self._poller.unregister(self._server)
-            self._poller = None
 
     def _close_tmp_folder(self):
         if self._tmp_folder:
@@ -350,12 +349,12 @@ class DssatPdi(gym.Env):
             self._server.send(message_js)
             self._last_is_send = True
             observation, _state, done, context = self._get_state()
-            self.done = done
+            if done:
+                self.done = done
 
     def close(self, _close_tmp=True):
         if not self.closed:
             self._close_client()
-            self._close_poller()
             self._close_server()
             if _close_tmp:
                 self._close_tmp_folder()
@@ -363,7 +362,6 @@ class DssatPdi(gym.Env):
         if self._f_out is not None and not self._f_out.closed:
             self._f_out.close()
             self._f_out = None
-
 
     def step(self, action_dict):
         if self.closed:
@@ -405,45 +403,47 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def reset(self, seed=None):
-        if self.closed: # or self.reset_counter >= 10:  # dirty fix for memory leak
-            self.reset_hard()
+        if self.closed:  # or self.reset_counter >= 10:  # dirty fix for memory leak
+            self.reset_hard(seed=seed)
             self.reset_counter = 0
         else:
             if not self.done:
                 self._get_env_done()
             if seed is not None:
-                self.set_seed(seed)
+                self.seed(seed)
             if self.random_weather:
-                self._rseed1 = self._random_generator.randint(1, 99999)
+                self._rseed1 = self._random_generator.randint(**self.rseed_args)
             self._server.send(f'{self._rseed1}'.encode('utf-8'))
             self._last_is_send = True
             self.reset_counter += 1
             self._reset_attributes()
-            self.observation, self.state_, self.done, self.context = self._get_state()
+            self.observation, self._state, self.done, self.context = self._get_state()
             return self.observation
 
     def reset_hard(self, seed=None, _new_tmp_folder=True):
-        self.set_seed(seed)
+        if seed is None:
+            seed = self.seed_value
+        else:
+            self.seed_value = seed
+        self.seed(seed)
         if not self.closed:
             self.close(_close_tmp=_new_tmp_folder)
         if _new_tmp_folder:
             self._make_tmp_folder()
         if self.random_weather:
-            self._rseed1 = self._random_generator.randint(1, 99999)
+            self._rseed1 = self._random_generator.randint(**self.rseed_args)
         self._write_fileX_template()
         self._reset_attributes()
         self._get_sockets_()
-        self.observation, self.state_, self.done, self.context = self._get_state()
+        self.observation, self._state, self.done, self.context = self._get_state()
         return self.observation
 
+    def seed(self, seed=None):
+        self._random_generator, self.seed_value = seeding.np_random(seed)
+        return self.seed_value
+
     def set_seed(self, seed=None):
-        if seed is not None:
-            seed = int(seed)
-            self.seed = seed
-        else:
-            seed = self.seed
-        self._random_generator, self.seed = seeding.np_random(seed)
-        return self.seed
+        self.seed(seed)
 
     def get_env_info(self, user_input=True):
         config_actions = self._config['action']
@@ -479,9 +479,9 @@ class DssatPdi(gym.Env):
         if type not in authorized_types:
             raise ValueError(f'"type" parameter has to be in {[*authorized_types]}!')
         if type == 'ts':
-            rendering.render_temporal_series(_history=self._history, *args, **kwargs)
+            rendering.render_temporal_series(_history=self._history, mode=self.mode, *args, **kwargs)
         else:
-            rendering.render_reward(_history=self._history, *args, **kwargs)
+            rendering.render_reward(_history=self._history, mode=self.mode, *args, **kwargs)
 
     def observation_dict_to_array(self, dict):
         if dict:
@@ -489,3 +489,6 @@ class DssatPdi(gym.Env):
             return np.concatenate(values, axis=None)
         else:
             return []
+
+    def __del__(self):
+        self.close()

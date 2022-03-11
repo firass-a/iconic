@@ -15,7 +15,7 @@ import pathlib
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
     'Romain Gautron',
-    'Emilio Padrón González',
+    'Emilio J. Padron',
 ]
 __license__ = 'BSD 3-Clause'
 __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'

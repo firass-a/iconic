@@ -10,4 +10,4 @@ Python. gym-DSSAT allows daily based interactions during the growing
 season between an RL agent and the crop model with usual gym
 conventions.
 
- -- Emilio J. Padrón González <emilioj@udc.gal>, Mon,  1 Nov 2021 01:40:10 +0100
+ -- Emilio J. Padron <emilioj@udc.gal>, Mon,  1 Nov 2021 01:40:10 +0100

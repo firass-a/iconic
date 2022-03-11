@@ -42,4 +42,4 @@ ENV BASH_ENV=/etc/profile
 SHELL ["/bin/bash", "-c"]
 ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD ["python /opt/gym_dssat_pdi/lib/python3.8/site-packages/gym_dssat_pdi_samples/run_env.py"]
+CMD ["python /opt/gym_dssat_pdi/samples/run_env.py"]

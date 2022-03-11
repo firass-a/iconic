@@ -1,6 +1,6 @@
 from gym.envs.registration import register
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 register(
     id='GymDssatPdi-v0',

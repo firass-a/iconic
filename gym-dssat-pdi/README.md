@@ -30,8 +30,8 @@ gym-DSSAT uses by default the UFGA8201 maize experiment from the University of F
 #### Action/State spaces
 
 The environment comes with 3 modes:
-+ nitrogen fertilization only (continuous quantity): ```mode=='fertilization'``` ➡ nitrogen fertilizer quantity (kg/ha)
-+ irrigation only (continuous quantity): ```mode=='irrigation'``` ➡ water quantity (mm)
++ nitrogen fertilization only (continuous quantity): ```mode=='fertilization'``` => nitrogen fertilizer quantity (kg/ha)
++ irrigation only (continuous quantity): ```mode=='irrigation'``` => water quantity (mm)
 + both nitrogen fertilization and irrigation (both continuous quantities): ```mode=='all'```
 
 The action/state spaces depend on each mode and are detailed in [gym environment's yaml configuration file](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/blob/stable/gym-dssat-pdi/gym_dssat_pdi/envs/configs/env_config.yml). State variables can be continuous, discrete and arrays of arbitrary shapes. Actions are continuous. By default, the observed state is given as a dictionnary as show below:
@@ -223,7 +223,7 @@ You can check [more examples](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/b
 
 ## About this project
 #### Authors
-Romain Gautron and Emilio Padrón González
+Romain Gautron and Emilio J. Padron
 
 #### Acknowledgements
 We acknowledge the DSSAT team, especially Gerrit Hoogenboom and Cheryl Porter. Thanks to the PDI team, especially to Julien Bigot. We acknowledge the Consultative Group for International Agricultural Research (CGIAR), the French Agricultural Research Centre for International Development (CIRAD) and the French Institute for Research in Computer Science and Automation (Inria), in particular the SCOOL team, for their support.

@@ -5,21 +5,21 @@ FROM debian:sid as builder
 
 USER 0
 
-RUN apt-get update -y \
- && apt-get upgrade -y \
- && apt-get autoremove -y \
- && apt-get clean \
- && apt-get autoclean
+RUN apt update -y \
+ && apt upgrade -y \
+ && apt autoremove -y \
+ && apt clean \
+ && apt autoclean
 
-RUN apt-get install -y wget python3-pip python3-dev
+RUN apt install -y wget python3-pip python3-dev
 
 ### PDI package install
 RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/debian sid main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
 RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/debian/pdidev-archive-keyring.gpg
 RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 RUN apt update -y
-RUN apt-get upgrade -y
-RUN apt-get install -y pdidev-archive-keyring libpdi-dev pdiplugin-pycall cmake gfortran python3-numpy git
+RUN apt upgrade -y
+RUN apt install -y pdidev-archive-keyring libpdi-dev pdiplugin-pycall cmake gfortran python3-numpy git
 
 # DSSAT INSTALLATION
 RUN git clone --recurse-submodules https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git

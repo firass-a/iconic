@@ -2,10 +2,10 @@ FROM ubuntu:focal as builder
 
 USER 0
 
-RUN apt update -y
-RUN apt upgrade -y
+RUN apt-get update -y
+RUN apt-get upgrade -y
 
-RUN apt install -y wget
+RUN apt-get install -y wget
 
 ### PDI package install
 RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu focal main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
@@ -19,13 +19,13 @@ RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources
 # (https://stackoverflow.com/questions/35134713/disable-cache-for-specific-run-commands/58801213#58801213)
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
-RUN apt update -y
+RUN apt-get update -y
 RUN apt install -y pdidev-archive-keyring
 
 ### Custom packages
-RUN wget https://gac.udc.es/~emilioj/focal.tgz
-RUN tar -xf focal.tgz
-WORKDIR /focal
+RUN wget https://gac.udc.es/~emilioj/focal-dev.tgz
+RUN tar -xf focal-dev.tgz
+WORKDIR /focal-dev
 RUN apt install -y `find . -name "*.deb"`
 
 ### Image config

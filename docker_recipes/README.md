@@ -2,7 +2,7 @@
 This repository contain Dockerfiles to build images under:
 - [Debian11 (Bullseye)](https://www.debian.org/releases/bullseye): ```Dockerfile_Debian_Bullseye```
 - [Debian Unstable (Sid)](https://www.debian.org/releases/sid): ```Dockerfile_Debian_Sid```
-- [Ubuntu 21.04 LTS (Hirsute Hippo)](http://releases.ubuntu.com/hirsute): ```Dockerfile_Ubuntu_Hirsute```
+- [Ubuntu 21.10 (Impish Indri)](http://releases.ubuntu.com/impish): ```Dockerfile_Ubuntu_Impish```
 - [Ubuntu 20.04 LTS (Focal Fossa)](http://releases.ubuntu.com/focal): ```Dockerfile_Ubuntu_Focal```
 - [Ubuntu 18.04 LTS (Bionic Beaver)](http://releases.ubuntu.com/bionic): ```Dockerfile_Ubuntu_Bionic``` (Python3.7-based version of gym-DSSAT-PDI, useful for Google Colab)
 

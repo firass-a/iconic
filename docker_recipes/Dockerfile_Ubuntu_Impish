@@ -1,14 +1,14 @@
-FROM ubuntu:hirsute as builder
+FROM ubuntu:impish as builder
 
 USER 0
 
-RUN apt-get update -y
-RUN apt-get upgrade -y
+RUN apt update -y
+RUN apt upgrade -y
 
-RUN apt-get install -y wget
+RUN apt install -y wget
 
 ### PDI package install
-RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu hirsute main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
+RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu impish main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
 RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/ubuntu/pdidev-archive-keyring.gpg
 RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 
@@ -19,13 +19,13 @@ RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources
 # (https://stackoverflow.com/questions/35134713/disable-cache-for-specific-run-commands/58801213#58801213)
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
-RUN apt-get update -y
+RUN apt update -y
 RUN apt install -y pdidev-archive-keyring
 
 ### Custom packages
-RUN wget https://gac.udc.es/~emilioj/hirsute-dev.tgz
-RUN tar -xf hirsute-dev.tgz
-WORKDIR /hirsute-dev
+RUN wget https://gac.udc.es/~emilioj/impish.tgz
+RUN tar -xf impish.tgz
+WORKDIR /impish
 RUN apt install -y `find . -name "*.deb"`
 
 ### Image config

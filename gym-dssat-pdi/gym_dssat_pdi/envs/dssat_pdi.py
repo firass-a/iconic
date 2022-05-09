@@ -439,6 +439,8 @@ class DssatPdi(gym.Env):
         return self.observation
 
     def seed(self, seed=None):
+        if seed is not None:
+            seed = int(seed)
         self._random_generator, self.seed_value = seeding.np_random(seed)
         return self.seed_value
 
@@ -489,6 +491,3 @@ class DssatPdi(gym.Env):
             return np.concatenate(values, axis=None)
         else:
             return []
-
-    def __del__(self):
-        self.close()

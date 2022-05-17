@@ -423,8 +423,6 @@ class DssatPdi(gym.Env):
     def reset_hard(self, seed=None, _new_tmp_folder=True):
         if seed is None:
             seed = self.seed_value
-        else:
-            self.seed_value = seed
         self.seed(seed)
         if not self.closed:
             self.close(_close_tmp=_new_tmp_folder)
@@ -445,7 +443,7 @@ class DssatPdi(gym.Env):
         return self.seed_value
 
     def set_seed(self, seed=None):
-        self.seed(seed)
+        self.seed(seed=seed)
 
     def get_env_info(self, user_input=True):
         config_actions = self._config['action']

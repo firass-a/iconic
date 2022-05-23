@@ -24,7 +24,7 @@ action:
     type: float
     low: 0
     high: 50
-    info: water depth to irrigate for current day (L/ha)
+    info: water depth to irrigate for current day (L/m2)
 #################
 # RAW STATE SPACE
 #################

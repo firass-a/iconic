@@ -18,6 +18,7 @@ import psutil
 import warnings
 import sys
 import atexit
+import numbers
 
 __copyright__ = 'Copyright CGIAR, Inria and CIRAD'
 __credits__ = [
@@ -374,6 +375,8 @@ class DssatPdi(gym.Env):
             assert available_action in action_dict
         try:
             if not self.done:
+                self._sanitary_check_action_dict(action_dict)
+                action_dict = self._clip_action_dict(action_dict)
                 message = {'early_stopping': self._is_early_stopping, 'action': action_dict}
                 message_js = json.dumps(message, cls=utils.NumpyEncoder).encode('utf-8')
                 self._server.send(message_js)
@@ -398,6 +401,31 @@ class DssatPdi(gym.Env):
                 return None, None, self.done, None
         except Exception as e:
             logging.exception(e)
+
+    @staticmethod
+    def _sanitary_check_action_dict(action_dict):
+        import pdb
+        authorized_keys = ('anfer', 'amir')
+        authorized_value_types = (int, float)
+        for key in [*action_dict]:
+            if key not in authorized_keys:
+                raise ValueError(f'"action_dict" keys have to be in {authorized_keys}!')
+            value = action_dict[key]
+            if not isinstance(value, numbers.Number):
+                raise ValueError(
+                    f'"action_dict" value {value} for key {key} must be a number!')
+        return action_dict
+
+    def _clip_action_dict(self, action_dict):
+        for key in [*action_dict]:
+            action_space = self.action_space[key]
+            value = action_dict[key]
+            lower_limit = action_space.low.item()
+            higher_limit = action_space.high.item()
+            if not lower_limit <= value <= higher_limit:
+                action_dict[key] = max((lower_limit, min(higher_limit, value)))
+                warnings.warn(f'Value {value} for action key {key} clipped into {[lower_limit, higher_limit]}')
+        return action_dict
 
     def get_state(self):
         return self.observation

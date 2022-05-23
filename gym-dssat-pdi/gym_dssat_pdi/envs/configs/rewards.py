@@ -10,20 +10,28 @@ __license__ = 'BSD 3-Clause'
 __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 
+# def fertilization_reward(_previous_state, _next_state, _history):
+#     reward = None
+#     last_action = _history['action'][-1]['anfer']
+#     penality = .4
+#     if _next_state:
+#         tleachd = _next_state['tleachd']
+#         tnoxd = _next_state['tnoxd']
+#         trnu = _next_state['trnu']
+#         totaml_tm1 = _previous_state['totaml']
+#         totaml_t = _next_state['totaml']
+#         totaml = totaml_t - totaml_tm1
+#         reward = (trnu - (tleachd + tnoxd + totaml)) - penality * last_action
+#     return reward
+
 def fertilization_reward(_previous_state, _next_state, _history):
     reward = None
     last_action = _history['action'][-1]['anfer']
-    penality = .4
+    penality = .5
     if _next_state:
-        tleachd = _next_state['tleachd']
-        tnoxd = _next_state['tnoxd']
         trnu = _next_state['trnu']
-        totaml_tm1 = _previous_state['totaml']
-        totaml_t = _next_state['totaml']
-        totaml = totaml_t - totaml_tm1
-        reward = (trnu - (tleachd + tnoxd + totaml)) - penality * last_action
+        reward = trnu - penality * last_action
     return reward
-
 
 def irrigation_reward(_previous_state, _next_state, _history):
     reward = None

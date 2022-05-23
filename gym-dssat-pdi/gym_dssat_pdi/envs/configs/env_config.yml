@@ -24,7 +24,7 @@ action:
     type: float
     low: 0
     high: 50
-    info: water depth to irrigate for current day (L/ha)
+    info: water depth to irrigate for current day (mm/m2 equivalent to L/m2)
 #################
 # RAW STATE SPACE
 #################
@@ -48,7 +48,7 @@ state:
     type: int
     low: 0
     high: 366
-    info: days after simulation started
+    info: days after planting
   dtt:
     type: float
     low: 0
@@ -96,7 +96,7 @@ state:
     type: float
     low: 0
     high: 500
-    info: rainfalls for the current day (mm/d)
+    info: rainfall for the current day (mm/d)
   srad:
     type: float
     low: 50
@@ -261,32 +261,32 @@ setting:
       - nstres
       - istage
       - vstage
-      - grnwt
+#      - grnwt
       - topwt
-      - pltpop
+#      - pltpop
       - swfac
-      - pcngrn
-      - tleachd
-      - tnoxd
-      - wtnup
-      - cleach
-      - cnox
+#      - pcngrn
+#      - tleachd
+#      - tnoxd
+#      - wtnup
+#      - cleach
+#      - cnox
       - cumsumfert
       - xlai
-      - trnu
+#      - trnu
       - rain
-      - tmin
-      - tmax
-      - srad
+#      - tmin
+#      - tmax
+#      - srad
       - dtt
       - dap
-      - sw
+#      - sw
 #      - sw_avail
-      - es
-      - runoff
+#      - es
+#      - runoff
       - wtdep
       - rtdep
-      - totaml
+#      - totaml
     context:
       - sat
       - dul

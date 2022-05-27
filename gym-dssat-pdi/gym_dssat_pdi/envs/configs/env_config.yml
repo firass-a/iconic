@@ -176,6 +176,11 @@ state:
     low: 0
     high: 5000
     info: cumulative ammonia volatilization (kgN/ha)
+  totir:
+    type: float
+    low: 0
+    high: 15000
+    info: total irrigated water (mm)
   ll:
     type: array
     subtype: float
@@ -287,6 +292,7 @@ setting:
       - wtdep
       - rtdep
 #      - totaml
+      - totir
     context:
       - sat
       - dul
@@ -333,7 +339,7 @@ setting:
       - vstage
       - grnwt
       - topwt
-      - pltpop
+#      - pltpop
       - xlai
       - rain
       - tmin
@@ -345,6 +351,7 @@ setting:
       - es
       - wtdep
       - rtdep
+      - totir
     context:
       - sat
       - dul

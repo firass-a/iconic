@@ -42,6 +42,7 @@ data:
   WTDEP: float
   RTDEP: float
   TOTAML: float
+  TOTIR: float
   LL:
     type: array
     subtype: float
@@ -151,6 +152,8 @@ plugins:
         rtdep = RTDEP
       TOTAML: |
         totaml = TOTAML
+      TOTIR: |
+        totir = TOTIR
 {#      SNO3: |#}
 {#        sno3_ini = SNO3#}
 {#      SNH4: |#}
@@ -256,6 +259,7 @@ plugins:
           'rtdep': rtdep,
           'dlayr': dlayr,
           'totaml': totaml,
+          'totir': totir,
           }
           message_to_client = {'done':done, 'state':state}
           message_to_client_js = json.dumps(message_to_client, cls=NumpyEncoder)

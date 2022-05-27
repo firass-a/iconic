@@ -75,6 +75,7 @@ class DssatPdi(gym.Env):
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.irrig = 'L' if mode in ['all', 'irrigation'] else 'R'
+        self.plant = 'A' if mode == 'fertilization' else 'R'
         self._is_early_stopping = False
         self._early_stopped = False
         self.done = False
@@ -204,7 +205,7 @@ class DssatPdi(gym.Env):
             self.action_space = spaces.Dict(key_spaces)
 
     def _make_fileX_template(self):
-        fileX_template_values = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig}
+        fileX_template_values = {'wther': self.wther, 'ferti': self.ferti, 'irrig': self.irrig, 'plant': self.plant}
         self._fileX = utils._fill_template_from_string(value_dic=fileX_template_values,
                                                        template_string=self._fileX_template)
 

@@ -178,13 +178,14 @@ if __name__ == '__main__':
                         print(f'{j + 1}/{n_rep}')
                 print(f'mean of yields: {np.mean(yields)} kg/ha')
                 print(f'variance of yields: {np.var(yields)} kg/ha')
-                env.render(type='ts',
-                           feature_name_1='cleach',
-                           feature_name_2='totaml')
-                env.render(type='reward',
-                           cumsum=True)
-                env.render(type='reward',
-                           cumsum=False)
+                if mode == 'mode':
+                    env.render(type='ts',
+                               feature_name_1='cleach',
+                               feature_name_2='totaml')
+                    env.render(type='reward',
+                               cumsum=True)
+                    env.render(type='reward',
+                               cumsum=False)
                 env.reset_hard()
             except Exception as e:
                 logging.exception(e)

@@ -156,6 +156,26 @@ state:
     low: 0
     high: 50
     info: actual soil evaporation rate (mm/d)
+  eo:
+    type: float
+    low: 0
+    high: 50
+    info: potential evapotranspiration rate (mm/d)
+  eop:
+    type: float
+    low: 0
+    high: 50
+    info: potential plant transpiration rate (mm/d)
+  eos:
+    type: float
+    low: 0
+    high: 50
+    info: potential rate of soil evaporation (mm/d)
+  ep:
+    type: float
+    low: 0
+    high: 50
+    info: actual plant transpiration rate (mm/d)
   runoff:
     type: float
     low: 0
@@ -209,13 +229,6 @@ state:
     high: 1
     size: 9
     info: volumetric soil water content in soil layers (cm3 [water] / cm3 [soil])
-#  sw_avail:
-#    type: array
-#    subtype: float
-#    low: 0
-#    high: 1
-#    size: 9
-#    info: volumetric soil water content available for evaporation, plant extraction, or movement in soil layers (cm3 [water] / cm3 [soil])
   dlayr:
     type: array
     subtype: float
@@ -223,20 +236,6 @@ state:
     high: 1000
     size: 9
     info: thickness of for soil layers (cm)
-  snh4_ini:
-    type: array
-    subtype: float
-    low: 0
-    high: 10
-    size: 9
-    info: initial extractable ammonium in soil layer (kg N/ha)
-  sno3_ini:
-    type: array
-    subtype: float
-    low: 0
-    high: 10
-    size: 9
-    info: initial extractable nitrate in soil layer (kg N/ha)
 
 # OTHER ARRAY DELCARATION EXAMPLES
 #  array_example1:
@@ -256,13 +255,23 @@ state:
 #######################################################
 # ACTION AND STATE SPACES RESTRICTIONS FOR ENV SETTINGS
 #######################################################
+# setting: -> defines the learning tasks
+#   all: -> name of the learning task which must coincide with the name associated with the reward function in 'reward_func_dic'
+#     action: -> defines the action space
+#       - anfer
+#       - amir
+#     state: -> defines the state space
+#       - nstres
+#       - istage
+#     context: -> defines the 'info' output in the env.step() method of the gym environment
+#       - sat
+#     experiment_number: 3 -> number of the experiment of the learning task in DSSAT fileX
 setting:
   all:
     action:
       - anfer
       - amir
     state:
-#      - yrdoy
       - nstres
       - istage
       - vstage
@@ -298,57 +307,53 @@ setting:
       - dul
       - ll
       - dlayr
-#      - snh4_ini
-#      - sno3_ini
     experiment_number: 3
   fertilization:
     action:
       - anfer
     state:
-#      - yrdoy
       - istage
       - vstage
       - grnwt
       - topwt
-      - pltpop
       - swfac
       - xlai
-      - rain
-      - tmin
-      - tmax
-      - srad
+#      - rain
+#      - tmin
+#      - tmax
+#      - srad
       - dtt
       - dap
-      - rtdep
+#      - rtdep
       - nstres
-      - totaml
+      - cumsumfert
+#      - es
+      - ep
+#      - sw
     context:
       - sat
       - dul
       - ll
       - dlayr
-#      - snh4_ini
-#      - sno3_ini
     experiment_number: 1
   irrigation:
     action:
       - amir
     state:
-#      - yrdoy
       - istage
       - vstage
       - grnwt
       - topwt
-#      - pltpop
       - xlai
-      - rain
-      - tmin
+#      - rain
+#      - tmin
       - tmax
       - srad
       - dtt
       - dap
       - sw
-      - es
+      - ep
+#      - es
       - wtdep
       - rtdep
       - totir
@@ -357,6 +362,4 @@ setting:
       - dul
       - ll
       - dlayr
-#      - snh4_ini
-#      - sno3_ini
     experiment_number: 3

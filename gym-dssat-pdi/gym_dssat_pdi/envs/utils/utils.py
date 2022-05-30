@@ -110,7 +110,7 @@ def _post_treat_state(state):
         state['pcngrn'] /= 100
         state['wtnup'] *= 10
         state['trnu'] *= 10 * state['pltpop']
-        state['topwt'] *= 10 * state['topwt']
+        state['topwt'] *= 10
     except Exception as e:
         print(e)
     return state

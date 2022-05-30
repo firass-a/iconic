@@ -38,6 +38,10 @@ data:
   DTT: float
   DAP: int
   ES: float
+  EO: float
+  EOP: float
+  EOS: float
+  EP: float
   RUNOFF: float
   WTDEP: float
   RTDEP: float
@@ -140,6 +144,14 @@ plugins:
 {#        sw_avail = SW_AVAIL#}
       ES: |
         es = ES
+      EO: |
+        eo = EO
+      EOS: |
+        eos = EOS
+      EOP: |
+        eop = EOP
+      EP: |
+        ep = EP
       RUNOFF: |
         runoff = RUNOFF
       WTDEP: |
@@ -253,6 +265,10 @@ plugins:
           'sw': sw,
 {#          'sw_avail': sw_avail,#}
           'es': es,
+          'eo': eo,
+          'eop': eop,
+          'eos': eos,
+          'ep': ep,
           'runoff': runoff,
           'wtdep': wtdep,
           'sat': sat,

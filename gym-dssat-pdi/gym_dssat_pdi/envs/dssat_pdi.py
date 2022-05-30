@@ -405,9 +405,7 @@ class DssatPdi(gym.Env):
 
     @staticmethod
     def _sanitary_check_action_dict(action_dict):
-        import pdb
         authorized_keys = ('anfer', 'amir')
-        authorized_value_types = (int, float)
         for key in [*action_dict]:
             if key not in authorized_keys:
                 raise ValueError(f'"action_dict" keys have to be in {authorized_keys}!')
@@ -418,7 +416,8 @@ class DssatPdi(gym.Env):
         return action_dict
 
     def _clip_action_dict(self, action_dict):
-        for key in [*action_dict]:
+        for key in [*self.action_space]:
+            assert key in action_dict
             action_space = self.action_space[key]
             value = action_dict[key]
             lower_limit = action_space.low.item()

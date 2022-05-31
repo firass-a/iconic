@@ -101,7 +101,7 @@ state:
     type: float
     low: 50
     high: .inf
-    info: solar radiations during the current day (MJ/m2/d)
+    info: solar radiation during the current day (MJ/m2/d)
   swfac:
     type: float
     low: 0
@@ -116,7 +116,7 @@ state:
     type: float
     low: -60
     high: 60
-    info: maximum temparature for current day (C)
+    info: maximum temperature for current day (C)
   tmin:
     type: float
     low: -60
@@ -161,6 +161,11 @@ state:
     low: 0
     high: 50
     info: potential evapotranspiration rate (mm/d)
+  ep:
+    type: float
+    low: 0
+    high: 50
+    info: actual plant transpiration rate (mm/d)
   eop:
     type: float
     low: 0
@@ -171,11 +176,6 @@ state:
     low: 0
     high: 50
     info: potential rate of soil evaporation (mm/d)
-  ep:
-    type: float
-    low: 0
-    high: 50
-    info: actual plant transpiration rate (mm/d)
   runoff:
     type: float
     low: 0
@@ -272,36 +272,23 @@ setting:
       - anfer
       - amir
     state:
-      - nstres
       - istage
       - vstage
-#      - grnwt
+      - grnwt
       - topwt
-#      - pltpop
       - swfac
-#      - pcngrn
-#      - tleachd
-#      - tnoxd
-#      - wtnup
-#      - cleach
-#      - cnox
-      - cumsumfert
+      - nstres
       - xlai
-#      - trnu
-      - rain
-#      - tmin
-#      - tmax
-#      - srad
+      - tmax
+      - srad
       - dtt
       - dap
-#      - sw
-#      - sw_avail
-#      - es
-#      - runoff
+      - cumsumfert
+      - totir
+      - sw
+      - ep
       - wtdep
       - rtdep
-#      - totaml
-      - totir
     context:
       - sat
       - dul
@@ -317,19 +304,12 @@ setting:
       - grnwt
       - topwt
       - swfac
+      - nstres
       - xlai
-#      - rain
-#      - tmin
-#      - tmax
-#      - srad
       - dtt
       - dap
-#      - rtdep
-      - nstres
       - cumsumfert
-#      - es
       - ep
-#      - sw
     context:
       - sat
       - dul
@@ -345,15 +325,12 @@ setting:
       - grnwt
       - topwt
       - xlai
-#      - rain
-#      - tmin
       - tmax
       - srad
       - dtt
       - dap
       - sw
       - ep
-#      - es
       - wtdep
       - rtdep
       - totir

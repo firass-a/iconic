@@ -1,3 +1,9 @@
+dssat-pdi (0.3.4.7~e355a58-1) UNRELEASED; urgency=medium
+
+  * Updating DSSAT-PDI to 0.3.4.7
+
+ -- Emilio J. Padron <emilioj@udc.gal>  Wed, 08 Jun 2022 17:35:07 +0100
+
 dssat-pdi (0.2.4.7~e355a58-2) UNRELEASED; urgency=medium
 
   * Updating PDI dependency to 1.5.x

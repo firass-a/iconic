@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Emilio J. Padrón González <emilioj@udc.gal>
 Build-Depends: cmake, gfortran, libevent-pthreads-2.1-6 |
  libevent-pthreads-2.1-7, pybind11-dev, libyaml-dev, pkgconf,
- debhelper-compat (= 12), libpdi-dev (>= 1.4.0), pdiplugin-pycall,
+ debhelper-compat (= 12), libpdi-dev (>= 1.5.0), pdiplugin-pycall,
  libparaconf-dev
 Standards-Version: 4.5.0
 Homepage: https://gitlab.inria.fr/rgautron/dssat-csm-os
@@ -12,7 +12,7 @@ Homepage: https://gitlab.inria.fr/rgautron/dssat-csm-os
 Package: dssat-pdi
 Architecture: any
 Multi-Arch: foreign
-Depends: libpdi1 (>= 1.4.0), pdiplugin-pycall, python3-pdi,
+Depends: libpdi1 (>= 1.5.0), pdiplugin-pycall, python3-pdi,
  ${misc:Depends}, ${shlibs:Depends}
 Description: DSSAT modification for gym-DSSAT RL environment.
  DSSAT + PDI is a modification of the Decision Support System for

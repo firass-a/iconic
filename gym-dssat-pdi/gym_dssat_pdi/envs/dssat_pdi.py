@@ -34,7 +34,7 @@ class DssatPdi(gym.Env):
     def __init__(self, run_dssat_location='/opt/dssat_pdi/run_dssat', log_saving_path=None, mode='all',
                  auxiliary_file_paths=None, files_prefix='./', random_weather=True, seed=None, fileX_template_path=None,
                  experiment_number=None, evaluation=False):
-        assert shutil.which(run_dssat_location) is not None, f'no DSSAT-PDI exectuable found at: {run_dssat_location}'
+        assert shutil.which(run_dssat_location) is not None, f'no DSSAT-PDI executable found at: {run_dssat_location}'
         self._run_dssat_location = run_dssat_location
         self.experiment_number = experiment_number
         self.mode = mode

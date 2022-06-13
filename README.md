@@ -19,6 +19,24 @@
 
 Before deploying any new version, **gym-dssat** is built from scratch in a custom Docker image, and the environment tested in a container using [Gitlab CI/CD](https://docs.gitlab.com/ee/ci/), for all supported platforms. If you experience any problem, please create [an issue](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here).
 
+## Help & support
+
+Tha main support channel for gym-dssat is our mailing list:
+https://sympa.inria.fr/sympa/info/gym-dssat
+
+You can send there any issue/request related to gym-dssat and we will
+try to manage it as soon as possible. The list archive can be
+consulted without being subscribed to it:
+https://sympa.inria.fr/sympa/arc/gym-dssat
+
+Additionaly, you can get interactive support or just talk about
+gym-dssat in this IRC channel:
+
+    #gym-dssat in OFTC
+
+You can use your favorite IRC client (use irc.oftc.net as server's
+address. SSL is optional) or a web client like the one OFTC provides:
+https://webchat.oftc.net
 
 ## Repository content
 + ```./dssat-csm-os```: the submodule of ```dssat-pdi```:  modified the DSSAT Fortran code with PDI for ```gym-DSSAT```

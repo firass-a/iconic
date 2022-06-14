@@ -2,12 +2,14 @@ stages:
   - build:sid
   - build:sid_source
   - build:bullseye
-  - build:hirsute
+  - build:jammy
+  - build:impish
   - build:focal
   - test:sid
   - test:sid_source
   - test:bullseye
-  - test:hirsute
+  - test:jammy
+  - test:impish
   - test:focal
   - coverage:package
   - coverage-json:source
@@ -21,8 +23,10 @@ variables:
   IMAGE_DESTINATION_SID_SOURCE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID_SOURCE
   IMAGE_NAME_BULLSEYE: bullseye:latest
   IMAGE_DESTINATION_BULLSEYE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_BULLSEYE
-  IMAGE_NAME_HIRSUTE: hirsute:latest
-  IMAGE_DESTINATION_HIRSUTE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_HIRSUTE
+  IMAGE_NAME_JAMMY: jammy:latest
+  IMAGE_DESTINATION_JAMMY: $CI_REGISTRY_IMAGE/$IMAGE_NAME_JAMMY
+  IMAGE_NAME_IMPISH: impish:latest
+  IMAGE_DESTINATION_IMPISH: $CI_REGISTRY_IMAGE/$IMAGE_NAME_IMPISH
   IMAGE_NAME_FOCAL: focal:latest
   IMAGE_DESTINATION_FOCAL: $CI_REGISTRY_IMAGE/$IMAGE_NAME_FOCAL
 
@@ -71,8 +75,8 @@ build bullseye:
     - echo "Image ${IMAGE_NAME_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_BULLSEYE}"
   # when: manual
 
-build hirsute:
-  stage: build:hirsute
+build jammy:
+  stage: build:jammy
   allow_failure: true
   tags:
     - ci.inria.fr
@@ -81,9 +85,24 @@ build hirsute:
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE_DESTINATION_HIRSUTE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Hirsute .
-    - docker push $IMAGE_DESTINATION_HIRSUTE
-    - echo "Image ${IMAGE_NAME_HIRSUTE} successfully pushed to ${IMAGE_DESTINATION_HIRSUTE}"
+    - docker build -t $IMAGE_DESTINATION_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy .
+    - docker push $IMAGE_DESTINATION_JAMMY
+    - echo "Image ${IMAGE_NAME_JAMMY} successfully pushed to ${IMAGE_DESTINATION_JAMMY}"
+  # when: manual
+
+build impish:
+  stage: build:impish
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    - medium
+  image: docker:stable
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE_DESTINATION_IMPISH -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Impish .
+    - docker push $IMAGE_DESTINATION_IMPISH
+    - echo "Image ${IMAGE_NAME_IMPISH} successfully pushed to ${IMAGE_DESTINATION_IMPISH}"
   # when: manual
 
 build focal:
@@ -134,16 +153,27 @@ test bullseye:
     - docker run $IMAGE_DESTINATION_BULLSEYE
     - echo "Test successfully passed for image ${IMAGE_NAME_BULLSEYE} in ${IMAGE_DESTINATION_BULLSEYE}"
 
-test hirsute:
-  stage: test:hirsute
+test jammy:
+  stage: test:jammy
   allow_failure: true
   tags:
     - ci.inria.fr
     - medium
   image: docker:stable
   script:
-    - docker run $IMAGE_DESTINATION_HIRSUTE
-    - echo "Test successfully passed for image ${IMAGE_NAME_HIRSUTE} in ${IMAGE_DESTINATION_HIRSUTE}"
+    - docker run $IMAGE_DESTINATION_JAMMY
+    - echo "Test successfully passed for image ${IMAGE_NAME_JAMMY} in ${IMAGE_DESTINATION_JAMMY}"
+
+test impish:
+  stage: test:impish
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    - medium
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_IMPISH
+    - echo "Test successfully passed for image ${IMAGE_NAME_IMPISH} in ${IMAGE_DESTINATION_IMPISH}"
 
 test focal:
   stage: test:focal

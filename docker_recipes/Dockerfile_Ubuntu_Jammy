@@ -1,4 +1,4 @@
-FROM ubuntu:impish as builder
+FROM ubuntu:jammy as builder
 
 USER 0
 
@@ -8,7 +8,7 @@ RUN apt upgrade -y
 RUN apt install -y wget
 
 ### PDI package install
-RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu impish main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
+RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu jammy main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
 RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/ubuntu/pdidev-archive-keyring.gpg
 RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 
@@ -22,13 +22,11 @@ ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 RUN apt update -y
 RUN apt install -y pdidev-archive-keyring
 
-### GYM-DSSAT package install
-RUN mkdir -p /usr/local/share/keyrings
-RUN wget -O- http://burgas.des.udc.es/gym-dssat/gym-dssat-archive-keyring.gpg | tee /usr/local/share/keyrings/gym-dssat-archive-keyring.gpg > /dev/null
-RUN echo "deb [signed-by=/usr/local/share/keyrings/gym-dssat-archive-keyring.gpg] http://burgas.des.udc.es/gym-dssat impish main dev" | tee /etc/apt/sources.list.d/gym-dssat.list > /dev/null
-RUN chmod a+r /usr/local/share/keyrings/gym-dssat-archive-keyring.gpg
-RUN apt update -y
-RUN apt install -y gym-dssat-pdi
+### Custom packages
+RUN wget https://gac.udc.es/~emilioj/jammy.tgz
+RUN tar -xf jammy.tgz
+WORKDIR /jammy
+RUN apt install -y `find . -name "*.deb"`
 
 ### Image config
 ENV VIRTUAL_ENV /opt/gym_dssat_pdi

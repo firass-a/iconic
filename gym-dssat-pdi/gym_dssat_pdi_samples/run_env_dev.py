@@ -64,10 +64,12 @@ def interact_with_env(env, verbose=True):
         new_state, reward, done, info = res
         if verbose:
             # pprint(f'observation: {observation}')
-            pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha ; reward {reward}')
+            pprint(f'totir: {env._state["totir"]}')
+            # pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha ; reward {reward}')
         if new_state is not None:
             interactions.append(new_state)
         i += 1
+    # print(interactions[-1]['grnwt'])
     return interactions
 
 
@@ -158,7 +160,7 @@ if __name__ == '__main__':
             'auxiliary_file_paths': [auxfiles_path],
         }
         try_interact = True
-        try_multiproc = True
+        try_multiproc = not True
         verbose = True
         if try_interact:
             try:

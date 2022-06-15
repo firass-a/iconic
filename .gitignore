@@ -24,3 +24,4 @@ MANIFEST
 massif.out.*
 **/coverage/
 **.coverage*
+run_env_dev.py

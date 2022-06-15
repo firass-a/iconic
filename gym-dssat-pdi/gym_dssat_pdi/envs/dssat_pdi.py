@@ -31,9 +31,11 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location='/opt/dssat_pdi', log_saving_path=None, mode='all', auxiliary_file_paths=None,
-                 files_prefix='./', random_weather=True, seed=None, fileX_template_path=None, experiment_number=None,
-                 evaluation=False):
+    def __init__(self, run_dssat_location='/opt/dssat_pdi/run_dssat', log_saving_path=None, mode='all',
+                 auxiliary_file_paths=None, files_prefix='./', random_weather=True, seed=None, fileX_template_path=None,
+                 experiment_number=None, evaluation=False):
+        assert shutil.which(run_dssat_location) is not None, f'no DSSAT-PDI executable found at: {run_dssat_location}'
+        self._run_dssat_location = run_dssat_location
         self.experiment_number = experiment_number
         self.mode = mode
         self.action_variables = None
@@ -58,7 +60,6 @@ class DssatPdi(gym.Env):
             self.auxiliary_file_paths = auxiliary_file_paths
         else:
             self.auxiliary_file_paths = []
-        self._run_dssat_location = run_dssat_location
         self.log_saving_path = log_saving_path
         self._cwd = os.getcwd()
         self._reward_func = rewards.get_reward_function(mode)
@@ -105,6 +106,11 @@ class DssatPdi(gym.Env):
 
     def set_evaluation(self):
         self.evaluation = True
+        self._set_rseed_args()
+        self._rseed1 = self._random_generator.randint(**self.rseed_args)
+
+    def set_training(self):
+        self.evaluation = False
         self._set_rseed_args()
         self._rseed1 = self._random_generator.randint(**self.rseed_args)
 

@@ -193,7 +193,7 @@ python coverage package:
     - medium
   image: docker:stable
   script:
-  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.9/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
+  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
   - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
   - pip install anybadge
   - anybadge --value=$COVERAGE --file=coverage.svg coverage

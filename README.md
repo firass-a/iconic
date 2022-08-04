@@ -14,6 +14,7 @@
 | <a href="https://rgautron.gitlabpages.inria.fr/gym-dssat-docs/Installation/index.html"><img alt="Installation Instructions" src="./readme_figures/installation_button.png" style="height:30px"></a> | Installation with package (recommended), using [Docker](https://www.docker.com/) or from source. |
 | <a href="https://rgautron.gitlabpages.inria.fr/gym-dssat-docs/"><img alt="User Documentation" src="./readme_figures/documentation_button.png" style="height:30px"></a> | Get a tour of gym-dssat, including advanced usage. |
 | <a href="https://rgautron.gitlabpages.inria.fr/gym-dssat-docs/Tutorials/index.html"><img alt="Tutorials" src="./readme_figures/tutorials_button.png" style="height:30px"></a> | Learn to use by practice in Google Colab (to come soon) |
+| <a href="https://hal.inria.fr/hal-03711132/"><img alt="Companion paper" src="./readme_figures/companion_button.png" style="height:30px"></a> | More information about how gym-DSSAT works, and provides use cases |
 
 ## How is gym-dssat tested?
 
@@ -50,13 +51,12 @@ https://webchat.oftc.net
 If you use `gym-DSSAT` in your publications, please cite us following this Bibtex entry:
 
 ```bibtex
-@misc{gymdssat,
-    author = {Gautron, Romain and {Padr{\'o}n Gonz{\'a}lez}, Emilio J},
-    title = {{gym-DSSAT - A crop model turned into a Reinforcement Learning environment}},
-    url = {https://gitlab.inria.fr/rgautron/gym_dssat_pdi},
-    month = {3},
-    year = {2022}
-}
+@phdthesis{gautron2022gym,
+title={gym-DSSAT: a crop model turned into a Reinforcement Learning environment},
+author={Gautron, Romain and Gonzalez, Emilio Jos{\'e} Padron and Preux, Philippe and Bigot, Julien and Maillard, Odalric-Ambrym and Emukpere, David},
+year={2022},
+school={Inria Lille}
+    }
 ```
 
 ## About this project

@@ -4,3 +4,4 @@
 [submodule "dssat-csm-data"]
 	path = dssat-csm-data
 	url = https://github.com/DSSAT/dssat-csm-data.git
+	tag = v4.8.0.27

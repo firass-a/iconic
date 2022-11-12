@@ -218,6 +218,17 @@ class DssatPdi(gym.Env):
     def _write_fileX_template(self):
         utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
+    def _deactivate_automatic_planting(self):
+        """
+        utility function for debugging
+        :return:
+        :rtype:
+        """
+        self.plant = 'R'
+        self._make_fileX_template()
+        self._write_fileX_template()
+        print('Automatic planting deactivated')
+
     def _launch_client(self):
         pdi_command = f'/usr/bin/env {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
         pdi_command = pdi_command.split(' ')

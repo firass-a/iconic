@@ -148,7 +148,7 @@ if __name__ == '__main__':
     for i, mode in enumerate([
                               'fertilization',
                               'irrigation',
-                              'all'
+                              # 'all'
                               ]):
         print(f'MODE: {mode}')
         env_args = {
@@ -156,18 +156,24 @@ if __name__ == '__main__':
             'log_saving_path': './logs/dssat_pdi.log',
             'mode': mode,
             'seed': 123456,
-            'random_weather': True,
+            # 'random_weather': True,
+            'random_weather': False,
             'auxiliary_file_paths': [auxfiles_path],
         }
         try_interact = True
         try_multiproc = not True
-        verbose = True
+        # verbose = True
+        verbose = False
+        # automatic_planting =  True
+        automatic_planting = False
         if try_interact:
             try:
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
                 if i == 0:
                     env.get_env_info(user_input=False)
                 env.seed(123)
+                if not automatic_planting:
+                    env._deactivate_automatic_planting()
                 n_rep = 8
                 yields = []
                 for j in range(n_rep):

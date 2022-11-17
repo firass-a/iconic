@@ -4,7 +4,7 @@
 [submodule "dssat-csm-data"]
 	path = dssat-csm-data
 	url = https://github.com/DSSAT/dssat-csm-data.git
-	tag = v4.8.0.27
+	tag = v4.8.0.28
 [submodule "spack_pking"]
 	path = spack_pking
 	url = https://gitlab.inria.fr/rgautron/gym_dssat_pdi-spack

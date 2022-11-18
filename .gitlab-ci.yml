@@ -5,6 +5,7 @@ stages:
   - build:jammy
   - build:impish
   - build:focal
+  - build:spack
   - test:sid
   - test:sid_source
   - test:bullseye
@@ -29,6 +30,10 @@ variables:
   IMAGE_DESTINATION_IMPISH: $CI_REGISTRY_IMAGE/$IMAGE_NAME_IMPISH
   IMAGE_NAME_FOCAL: focal:latest
   IMAGE_DESTINATION_FOCAL: $CI_REGISTRY_IMAGE/$IMAGE_NAME_FOCAL
+  SPACK_REPO: https://github.com/spack/spack.git
+  SPACK_REF: v0.19.0
+  PDI_SPACK_REPO : https://github.com/pdidev/spack.git
+  GYM_DSSAT_PDI_SPACK_REPO : https://gitlab.inria.fr/rgautron/gym_dssat_pdi-spack.git
 
 build sid:
   stage: build:sid
@@ -43,7 +48,7 @@ build sid:
     - docker build -t $IMAGE_DESTINATION_SID -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid .
     - docker push $IMAGE_DESTINATION_SID
     - echo "Image ${IMAGE_NAME_SID} successfully pushed to ${IMAGE_DESTINATION_SID}"
-  # when: manual
+  when: manual
 
 build sid source:
   stage: build:sid_source
@@ -58,7 +63,7 @@ build sid source:
     - docker build --no-cache -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
     - docker push $IMAGE_DESTINATION_SID_SOURCE
     - echo "Image ${IMAGE_NAME_SID_SOURCE} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE}"
-  # when: manual
+  when: manual
 
 build bullseye:
   stage: build:bullseye
@@ -73,7 +78,7 @@ build bullseye:
     - docker build -t $IMAGE_DESTINATION_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye .
     - docker push $IMAGE_DESTINATION_BULLSEYE
     - echo "Image ${IMAGE_NAME_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_BULLSEYE}"
-  # when: manual
+  when: manual
 
 build jammy:
   stage: build:jammy
@@ -88,7 +93,7 @@ build jammy:
     - docker build -t $IMAGE_DESTINATION_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy .
     - docker push $IMAGE_DESTINATION_JAMMY
     - echo "Image ${IMAGE_NAME_JAMMY} successfully pushed to ${IMAGE_DESTINATION_JAMMY}"
-  # when: manual
+  when: manual
 
 build impish:
   stage: build:impish
@@ -103,7 +108,7 @@ build impish:
     - docker build -t $IMAGE_DESTINATION_IMPISH -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Impish .
     - docker push $IMAGE_DESTINATION_IMPISH
     - echo "Image ${IMAGE_NAME_IMPISH} successfully pushed to ${IMAGE_DESTINATION_IMPISH}"
-  # when: manual
+  when: manual
 
 build focal:
   stage: build:focal
@@ -118,7 +123,7 @@ build focal:
     - docker build -t $IMAGE_DESTINATION_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal .
     - docker push $IMAGE_DESTINATION_FOCAL
     - echo "Image ${IMAGE_NAME_FOCAL} successfully pushed to ${IMAGE_DESTINATION_FOCAL}"
-  # when: manual
+  when: manual
 
 test sid:
   stage: test:sid
@@ -130,6 +135,7 @@ test sid:
   script:
     - docker run $IMAGE_DESTINATION_SID
     - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
+  when: manual
 
 test sid source:
   stage: test:sid_source
@@ -141,6 +147,7 @@ test sid source:
   script:
     - docker run $IMAGE_DESTINATION_SID_SOURCE
     - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
+  when: manual
 
 test bullseye:
   stage: test:bullseye
@@ -152,6 +159,7 @@ test bullseye:
   script:
     - docker run $IMAGE_DESTINATION_BULLSEYE
     - echo "Test successfully passed for image ${IMAGE_NAME_BULLSEYE} in ${IMAGE_DESTINATION_BULLSEYE}"
+  when: manual
 
 test jammy:
   stage: test:jammy
@@ -163,6 +171,7 @@ test jammy:
   script:
     - docker run $IMAGE_DESTINATION_JAMMY
     - echo "Test successfully passed for image ${IMAGE_NAME_JAMMY} in ${IMAGE_DESTINATION_JAMMY}"
+  when: manual
 
 test impish:
   stage: test:impish
@@ -174,6 +183,7 @@ test impish:
   script:
     - docker run $IMAGE_DESTINATION_IMPISH
     - echo "Test successfully passed for image ${IMAGE_NAME_IMPISH} in ${IMAGE_DESTINATION_IMPISH}"
+  when: manual
 
 test focal:
   stage: test:focal
@@ -185,6 +195,7 @@ test focal:
   script:
     - docker run $IMAGE_DESTINATION_FOCAL
     - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"
+  when: manual
 
 python coverage package:
   stage: coverage:package
@@ -198,7 +209,7 @@ python coverage package:
   - COVERAGE=$(python3 -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
   - pip install anybadge
   - anybadge --value=$COVERAGE --file=coverage.svg coverage
-  # when: manual
+  when: manual
   artifacts:
     when: on_success
     paths:
@@ -212,7 +223,8 @@ python coverage source json:
   image: docker:stable
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
-  when: on_success
+  # when: on_success
+  when: manual
   artifacts:
     when: on_success
     paths:
@@ -231,8 +243,33 @@ python coverage source badge:
   - echo -e "\e[1mCOVERAGE RESULT ${COVERAGE}%\e[0m"
   - pip install anybadge
   - anybadge --value=$COVERAGE --file=coverage.svg coverage
-  when: on_success
+  # when: on_success
+  when: manual
   artifacts:
     when: on_success
     paths:
       - coverage.svg
+
+spack:
+  stage: build:spack
+  before_script:
+    - git clone ${SPACK_REPO} --branch ${SPACK_REF}
+    - pushd ./spack && git checkout ${SPACK_REF} && popd
+    - . "./spack/share/spack/setup-env.sh"
+    - spack --version
+    - git clone ${PDI_SPACK_REPO} ./spack/var/spack/repos/pdi
+    - spack repo add ./spack/var/spack/repos/pdi
+    - git clone ${GYM_DSSAT_PDI_SPACK_REPO} spack/var/spack/repos/gym-dssat-pdi
+    - spack repo add spack/var/spack/repos/gym-dssat-pdi
+  script:
+    - spack install gym-dssat
+    - spack env create gym-dssat-pdi spack/var/spack/repos/gym-dssat-pdi/env/spack.yaml
+    - spack env activate gym-dssat-pdi
+    - spack concretize
+    - python $HOME/gymdssat_spackenv/lib/python3.10/site-packages/gym_dssat_pdi_samples/run_env.py
+  after_script:
+    - rm -rf "./spack"
+  image: { "name": "ghcr.io/scottwittenburg/ecpe4s-ubuntu18.04-runner-x86_64:2020-09-01", "entrypoint": [""] }
+  tags: 
+    - ci.inria.fr
+    - medium

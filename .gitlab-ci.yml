@@ -257,12 +257,11 @@ spack:
     - git clone ${SPACK_REPO} --branch ${SPACK_REF}
     - pushd ./spack && git checkout ${SPACK_REF} && popd
     - . "./spack/share/spack/setup-env.sh"
-    - spack --version
+    - spack --versionsssssssssssssssssssssssssssssss
     - git clone ${PDI_SPACK_REPO} ./spack/var/spack/repos/pdi
-      #    - spack repo add ./spack/var/spack/repos/pdi
+    - spack repo add ./spack/var/spack/repos/pdi
     - git clone ${GYM_DSSAT_PDI_SPACK_REPO} spack/var/spack/repos/gym-dssat-pdi
-      #    - spack repo add spack/var/spack/repos/gym-dssat-pdi
-    - spack repo list
+    - spack repo add spack/var/spack/repos/gym-dssat-pdi
   script:
     - spack install gym-dssat
     - spack env create gym-dssat-pdi spack/var/spack/repos/gym-dssat-pdi/env/spack.yaml

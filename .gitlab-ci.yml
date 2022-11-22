@@ -274,5 +274,5 @@ spack:
     - rm -rf "./spack" "./.spack"
   image: { "name": "ghcr.io/scottwittenburg/ecpe4s-ubuntu18.04-runner-x86_64:2020-09-01", "entrypoint": [""] }
   tags: 
-    - inria-ci
+    - spack-ubuntu-20.04.4
     # - large

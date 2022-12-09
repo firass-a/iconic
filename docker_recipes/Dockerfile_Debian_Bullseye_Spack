@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+FROM debian:bullseye as builder
 
 USER 0
 
@@ -43,13 +43,13 @@ RUN . spack/share/spack/setup-env.sh \
 CMD [". spack/share/spack/setup-env.sh && spack env activate gym-dssat-pdi && python spack/gym-dssat-pdi/samples/run_env.py"]
 
 ### Build the Docker image
-# docker build . -t "gym-dssat:cuda-spack" -f Dockerfile_CUDA_Spack
+# docker build . -t "gym-dssat:bullseye-spack" -f Dockerfile_Ubuntu_Bullseye_Spack
 #
 ### Run the default example in the Docker image:
-# docker run gym-dssat:cuda-spack
+# docker run gym-dssat:bullseye-spack
 #
 ### Interactively run the gym-dssat-pdi environment in the Docker image:
-# docker run -it gym-dssat:cuda-spack bash
+# docker run -it gym-dssat:bullseye-spack bash
 # ~$ source spack/share/spack/setup-env.sh
 # ~$ spack env activate gym-dssat-pdi
 # ~$ python spack/gym-dssat-pdi/samples/run_env.py

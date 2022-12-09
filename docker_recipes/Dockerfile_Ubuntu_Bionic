@@ -2,10 +2,12 @@ FROM ubuntu:bionic as builder
 
 USER 0
 
-RUN apt update -y
-RUN apt upgrade -y
-
-RUN apt install -y wget
+RUN apt-get update \
+&& DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get upgrade -y --no-install-recommends \
+&& DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+    wget \
+    ca-certificates \
+&& rm -rf /var/lib/apt/lists/*
 
 ### PDI package install
 RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu bionic main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
@@ -13,20 +15,24 @@ RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.github
 RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 
 # Temporary workaround to guarantee the updated tarball is downloaded
-# and we are using up-to-date debian packages
+# and we are using up-to-date ubuntu packages
 #
-# Calls for a random number to break the cahing of the following wget
+# Calls for a random number to break the caching of the following wget
 # (https://stackoverflow.com/questions/35134713/disable-cache-for-specific-run-commands/58801213#58801213)
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 
-RUN apt update -y
-RUN apt install -y pdidev-archive-keyring
+RUN apt-get update \
+&& DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+    pdidev-archive-keyring \
+&& rm -rf /var/lib/apt/lists/*
 
 ### Custom packages
 RUN wget https://gac.udc.es/~emilioj/bionic.tgz
 RUN tar -xf bionic.tgz
 WORKDIR /bionic
-RUN apt install -y `find . -name "*.deb"`
+RUN apt update && apt install -y --no-install-recommends \
+    `find . -name "*.deb"` \
+&& rm -rf /var/lib/apt/lists/*
 
 ### Image config
 ENV VIRTUAL_ENV /opt/gym_dssat_pdi
@@ -43,3 +49,13 @@ SHELL ["/bin/bash", "-c"]
 ENTRYPOINT ["/bin/bash", "-c"]
 
 CMD ["python /opt/gym_dssat_pdi/samples/run_env.py"]
+
+### Build the Docker image
+# docker build . -t "gym-dssat:ubuntu-bionic" -f Dockerfile_Debian_Bullseye
+#
+### Run the default example in the Docker image:
+# docker run gym-dssat:ubuntu-bionic
+#
+### Interactively run the gym-dssat-pdi environment in the Docker image:
+# docker run -it gym-dssat:ubuntu-bionic bash
+# ~$ python /opt/gym_dssat_pdi/samples/run_env.py

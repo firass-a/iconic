@@ -51,7 +51,7 @@ ENTRYPOINT ["/bin/bash", "-c"]
 CMD ["python /opt/gym_dssat_pdi/samples/run_env.py"]
 
 ### Build the Docker image
-# docker build . -t "gym-dssat:ubuntu-bionic" -f Dockerfile_Debian_Bullseye
+# docker build . -t "gym-dssat:ubuntu-bionic" -f Dockerfile_Ubuntu_Bionic
 #
 ### Run the default example in the Docker image:
 # docker run gym-dssat:ubuntu-bionic

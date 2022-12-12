@@ -5,7 +5,6 @@ import faulthandler
 
 faulthandler.enable()
 from gym_dssat_pdi.envs.utils import utils
-import os
 
 import numpy as np
 from copy import deepcopy

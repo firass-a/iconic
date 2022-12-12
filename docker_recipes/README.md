@@ -37,6 +37,7 @@ provided. This recipes do not use pre-compiled packages, so gym-DSSAT
 and all its dependencies are built from sources (see gym-DSSAT Spack
 packages in https://gitlab.inria.fr/rgautron/gym_dssat_pdi-spack):
 - [Debian11 (Bullseye)](https://www.debian.org/releases/bullseye): ```Dockerfile_Debian_Bullseye_Spack```
+- [Ubuntu 22.04 LTS (Jammy Jellyfish)](http://releases.ubuntu.com/jammy): ```Dockerfile_Ubuntu_Jammy_Spack```
 - [Ubuntu 20.04 LTS (Focal Fossa)](http://releases.ubuntu.com/focal): ```Dockerfile_Ubuntu_Focal_Spack```
 - [CUDA on Ubuntu 20.04 LTS (Focal Fossa)](http://releases.ubuntu.com/focal): ```Dockerfile_CUDA_Spack```
 - [CentOS (latest)](https://www.centos.org): ```Dockerfile_CentOS_Spack```

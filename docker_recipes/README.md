@@ -1,5 +1,5 @@
 # gym-DSSAT-PDI coupling docker image
-This repository contain Dockerfiles to build images under:
+This repository contain Dockerfiles to build images using pre-compiled gym-DSSAT packages under:
 - [Debian11 (Bullseye)](https://www.debian.org/releases/bullseye): ```Dockerfile_Debian_Bullseye```
 - [Debian Unstable (Sid)](https://www.debian.org/releases/sid): ```Dockerfile_Debian_Sid```
 - [Ubuntu 22.04 (Jammy Jellyfish)](http://releases.ubuntu.com/jammy): ```Dockerfile_Ubuntu_Jammy```
@@ -30,3 +30,14 @@ Or you can interactively run the Docker image with:
 ```bash
 docker run -it gym-dssat:debian-bullseye bash
 ```
+
+# Docker image with Spack installation
+Additionaly, these Dockerfiles to build docker images using Spack are
+provided. This recipes do not use pre-compiled packages, so gym-DSSAT
+and all its dependencies are built from sources (see gym-DSSAT Spack
+packages in https://gitlab.inria.fr/rgautron/gym_dssat_pdi-spack):
+- [Debian11 (Bullseye)](https://www.debian.org/releases/bullseye): ```Dockerfile_Debian_Bullseye_Spack```
+- [Ubuntu 22.04 LTS (Jammy Jellyfish)](http://releases.ubuntu.com/jammy): ```Dockerfile_Ubuntu_Jammy_Spack```
+- [Ubuntu 20.04 LTS (Focal Fossa)](http://releases.ubuntu.com/focal): ```Dockerfile_Ubuntu_Focal_Spack```
+- [CUDA on Ubuntu 20.04 LTS (Focal Fossa)](http://releases.ubuntu.com/focal): ```Dockerfile_CUDA_Spack```
+- [CentOS (latest)](https://www.centos.org): ```Dockerfile_CentOS_Spack```

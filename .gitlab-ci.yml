@@ -270,7 +270,7 @@ test sid source:
   script:
     - docker run $IMAGE_DESTINATION_SID_SOURCE
     - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
-  when: manual
+  # when: manual
 
 test bullseye:
   stage: test:bullseye
@@ -401,8 +401,8 @@ python coverage source json:
   image: docker:stable
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
-  # when: on_success
-  when: manual
+  when: on_success
+  # when: manual
   artifacts:
     when: on_success
     paths:
@@ -421,8 +421,8 @@ python coverage source badge:
   - echo -e "\e[1mCOVERAGE RESULT ${COVERAGE}%\e[0m"
   - pip install anybadge
   - anybadge --value=$COVERAGE --file=coverage.svg coverage
-  # when: on_success
-  when: manual
+  when: on_success
+  # when: manual
   artifacts:
     when: on_success
     paths:

@@ -5,13 +5,22 @@ stages:
   - build:jammy
   - build:impish
   - build:focal
-  - build:spack-ubuntu-20.04.4
   - test:sid
   - test:sid_source
   - test:bullseye
   - test:jammy
   - test:impish
   - test:focal
+  - build:spack-centos
+  - test:spack-centos
+  - build:spack-cuda
+  - test:spack-cuda
+  - build:spack-bullseye
+  - test:spack-bullseye
+  - build:spack-jammy
+  - test:spack-jammy
+  - build:spack-focal
+  - test:spack-focal
   - coverage:package
   - coverage-json:source
   - coverage-badge:source
@@ -30,10 +39,16 @@ variables:
   IMAGE_DESTINATION_IMPISH: $CI_REGISTRY_IMAGE/$IMAGE_NAME_IMPISH
   IMAGE_NAME_FOCAL: focal:latest
   IMAGE_DESTINATION_FOCAL: $CI_REGISTRY_IMAGE/$IMAGE_NAME_FOCAL
-  SPACK_REPO: https://github.com/spack/spack.git
-  SPACK_REF: v0.19.0
-  PDI_SPACK_REPO : https://github.com/pdidev/spack.git
-  GYM_DSSAT_PDI_SPACK_REPO : https://gitlab.inria.fr/rgautron/gym_dssat_pdi-spack.git
+  IMAGE_NAME_SPACK_CENTOS: spack-centos:latest
+  IMAGE_DESTINATION_SPACK_CENTOS: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SPACK_CENTOS
+  IMAGE_NAME_SPACK_CUDA: spack-cuda:latest
+  IMAGE_DESTINATION_SPACK_CUDA: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SPACK_CUDA
+  IMAGE_NAME_SPACK_BULLSEYE: spack-bullseye:latest
+  IMAGE_DESTINATION_SPACK_BULLSEYE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SPACK_BULLSEYE
+  IMAGE_NAME_SPACK_JAMMY: spack-jammy:latest
+  IMAGE_DESTINATION_SPACK_JAMMY: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SPACK_JAMMY
+  IMAGE_NAME_SPACK_FOCAL: spack-focal:latest
+  IMAGE_DESTINATION_SPACK_FOCAL: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SPACK_FOCAL
 
 build sid:
   stage: build:sid
@@ -42,10 +57,13 @@ build sid:
     - ci.inria.fr
     - medium
   image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_SID --force
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE_DESTINATION_SID -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid .
+    - docker build --force-rm -t $IMAGE_DESTINATION_SID -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid .
     - docker push $IMAGE_DESTINATION_SID
     - echo "Image ${IMAGE_NAME_SID} successfully pushed to ${IMAGE_DESTINATION_SID}"
   when: manual
@@ -57,10 +75,13 @@ build sid source:
     - ci.inria.fr
     - medium
   image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_SID_SOURCE --force
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build --no-cache -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
+    - docker build --no-cache --force-rm -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
     - docker push $IMAGE_DESTINATION_SID_SOURCE
     - echo "Image ${IMAGE_NAME_SID_SOURCE} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE}"
   when: manual
@@ -72,10 +93,13 @@ build bullseye:
     - ci.inria.fr
     - medium
   image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_BULLSEYE --force
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE_DESTINATION_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye .
+    - docker build --force-rm -t $IMAGE_DESTINATION_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye .
     - docker push $IMAGE_DESTINATION_BULLSEYE
     - echo "Image ${IMAGE_NAME_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_BULLSEYE}"
   when: manual
@@ -87,10 +111,13 @@ build jammy:
     - ci.inria.fr
     - medium
   image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_JAMMY --force
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE_DESTINATION_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy .
+    - docker build --force-rm -t $IMAGE_DESTINATION_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy .
     - docker push $IMAGE_DESTINATION_JAMMY
     - echo "Image ${IMAGE_NAME_JAMMY} successfully pushed to ${IMAGE_DESTINATION_JAMMY}"
   when: manual
@@ -102,10 +129,13 @@ build impish:
     - ci.inria.fr
     - medium
   image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_IMPISH --force
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE_DESTINATION_IMPISH -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Impish .
+    - docker build --force-rm -t $IMAGE_DESTINATION_IMPISH -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Impish .
     - docker push $IMAGE_DESTINATION_IMPISH
     - echo "Image ${IMAGE_NAME_IMPISH} successfully pushed to ${IMAGE_DESTINATION_IMPISH}"
   when: manual
@@ -117,12 +147,105 @@ build focal:
     - ci.inria.fr
     - medium
   image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_FOCAL --force
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE_DESTINATION_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal .
+    - docker build --force-rm -t $IMAGE_DESTINATION_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal .
     - docker push $IMAGE_DESTINATION_FOCAL
     - echo "Image ${IMAGE_NAME_FOCAL} successfully pushed to ${IMAGE_DESTINATION_FOCAL}"
+  when: manual
+
+build spack-centos:
+  stage: build:spack-centos
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  before_script:
+  # - docker image prune --filter="dangling=true" --force
+  # - docker rmi $IMAGE_DESTINATION_SPACK_CENTOS --force
+  - docker system prune --all --force --volumes
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_CENTOS -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_CentOS_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_CENTOS
+    - echo "Image ${IMAGE_NAME_SPACK_CENTOS} successfully pushed to ${IMAGE_DESTINATION_SPACK_CENTOS}"
+  when: manual
+
+build spack-cuda:
+  stage: build:spack-cuda
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_CUDA --force
+    - docker system prune --all --force --volumes
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_CUDA -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_CUDA_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_CUDA
+    - echo "Image ${IMAGE_NAME_SPACK_CUDA} successfully pushed to ${IMAGE_DESTINATION_SPACK_CUDA}"
+  when: manual
+
+build spack-bullseye:
+  stage: build:spack-bullseye
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_BULLSEYE --force
+     - docker system prune --all --force --volumes   
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_BULLSEYE
+    - echo "Image ${IMAGE_NAME_SPACK_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_SPACK_BULLSEYE}"
+  when: manual
+
+build spack-jammy:
+  stage: build:spack-jammy
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_JAMMY --force
+     - docker system prune --all --force --volumes   
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t -rm $IMAGE_DESTINATION_SPACK_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_JAMMY
+    - echo "Image ${IMAGE_NAME_SPACK_JAMMY} successfully pushed to ${IMAGE_DESTINATION_SPACK_JAMMY}"
+  when: manual
+
+build spack-focal:
+  stage: build:spack-focal
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_FOCAL --force
+     - docker system prune --all --force --volumes   
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_FOCAL
+    - echo "Image ${IMAGE_NAME_SPACK_FOCAL} successfully pushed to ${IMAGE_DESTINATION_SPACK_FOCAL}"
   when: manual
 
 test sid:
@@ -197,6 +320,61 @@ test focal:
     - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"
   when: manual
 
+test spack-centos:
+  stage: test:spack-centos
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_CENTOS
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_CENTOS} in ${IMAGE_DESTINATION_SPACK_CENTOS}"
+  when: manual
+
+test spack-cuda:
+  stage: test:spack-cuda
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_CUDA
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_CUDA} in ${IMAGE_DESTINATION_SPACK_CUDA}"
+  when: manual
+
+test spack-bullseye:
+  stage: test:spack-bullseye
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_BULLSEYE
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_BULLSEYE} in ${IMAGE_DESTINATION_SPACK_BULLSEYE}"
+  when: manual
+
+test spack-jammy:
+  stage: test:spack-jammy
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_JAMMY
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_JAMMY} in ${IMAGE_DESTINATION_SPACK_JAMMY}"
+  when: manual
+
+test spack-focal:
+  stage: test:spack-focal
+  allow_failure: true
+  tags:
+    - ubuntu2004
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_FOCAL
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_FOCAL} in ${IMAGE_DESTINATION_SPACK_FOCAL}"
+  when: manual
+
 python coverage package:
   stage: coverage:package
   tags:
@@ -249,25 +427,3 @@ python coverage source badge:
     when: on_success
     paths:
       - coverage.svg
-
-spack-ubuntu-20.04.4:
-  stage: build:spack-ubuntu-20.04.4
-  before_script:
-    - git clone -c feature.manyFiles=true ${SPACK_REPO} --branch ${SPACK_REF}
-    - pushd ./spack && git checkout ${SPACK_REF} && popd
-    - . "./spack/share/spack/setup-env.sh"
-    - git clone ${PDI_SPACK_REPO} ./spack/var/spack/repos/pdi
-    - spack repo add ./spack/var/spack/repos/pdi || true # allowing non zero
-    - git clone ${GYM_DSSAT_PDI_SPACK_REPO} spack/var/spack/repos/gym-dssat-pdi
-    - spack repo add spack/var/spack/repos/gym-dssat-pdi || true
-  script:
-    - spack install gym-dssat
-    - spack env create gym-dssat-pdi spack/var/spack/repos/gym-dssat-pdi/env/spack.yaml
-    - spack env activate gym-dssat-pdi
-    - spack concretize
-    - which python
-    - python spack/gym-dssat-pdi/samples/run_env.py
-  after_script:
-    - rm -rf "./spack" "./.spack"
-  tags: 
-    - spack-ubuntu-20.04.4

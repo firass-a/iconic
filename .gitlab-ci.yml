@@ -55,7 +55,7 @@ build sid:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   before_script:
@@ -74,7 +74,7 @@ build sid source:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   before_script:
@@ -93,7 +93,7 @@ build bullseye:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   before_script:
@@ -112,7 +112,7 @@ build jammy:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   before_script:
@@ -131,7 +131,7 @@ build impish:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   before_script:
@@ -150,7 +150,7 @@ build focal:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   before_script:
@@ -259,7 +259,7 @@ test sid:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -272,7 +272,7 @@ test sid source:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -285,7 +285,7 @@ test bullseye:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -298,7 +298,7 @@ test jammy:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -311,7 +311,7 @@ test impish:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -324,7 +324,7 @@ test focal:
   allow_failure: true
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -391,7 +391,7 @@ python coverage package:
   stage: coverage:package
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -410,7 +410,7 @@ python coverage source json:
   stage: coverage-json:source
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: docker:stable
   script:
@@ -426,7 +426,7 @@ python coverage source badge:
   stage: coverage-badge:source
   tags:
     - ci.inria.fr
-    - medium
+    # - medium
     - large
   image: python:3.9-bullseye
   dependencies:

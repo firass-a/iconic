@@ -56,6 +56,7 @@ build sid:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   before_script:
     - docker image prune --filter="dangling=true" --force
@@ -74,6 +75,7 @@ build sid source:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   before_script:
     - docker image prune --filter="dangling=true" --force
@@ -92,6 +94,7 @@ build bullseye:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   before_script:
     - docker image prune --filter="dangling=true" --force
@@ -110,6 +113,7 @@ build jammy:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   before_script:
     - docker image prune --filter="dangling=true" --force
@@ -128,6 +132,7 @@ build impish:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   before_script:
     - docker image prune --filter="dangling=true" --force
@@ -146,6 +151,7 @@ build focal:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   before_script:
     - docker image prune --filter="dangling=true" --force
@@ -254,6 +260,7 @@ test sid:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SID
@@ -266,6 +273,7 @@ test sid source:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SID_SOURCE
@@ -278,6 +286,7 @@ test bullseye:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_BULLSEYE
@@ -290,6 +299,7 @@ test jammy:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_JAMMY
@@ -302,6 +312,7 @@ test impish:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_IMPISH
@@ -314,6 +325,7 @@ test focal:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_FOCAL
@@ -380,6 +392,7 @@ python coverage package:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
@@ -398,6 +411,7 @@ python coverage source json:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: docker:stable
   script:
   - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
@@ -413,6 +427,7 @@ python coverage source badge:
   tags:
     - ci.inria.fr
     - medium
+    - large
   image: python:3.9-bullseye
   dependencies:
     - python coverage source json

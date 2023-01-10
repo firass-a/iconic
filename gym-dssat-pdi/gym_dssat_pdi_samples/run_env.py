@@ -149,7 +149,7 @@ if __name__ == '__main__':
                               ]):
         print(f'MODE: {mode}')
         env_args = {
-            'run_dssat_location': '/opt/dssat_pdi/run_dssat',
+            'run_dssat_location': 'run_dssat',
             'log_saving_path': './logs/dssat_pdi.log',
             'mode': mode,
             'seed': 123456,

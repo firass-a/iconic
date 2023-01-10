@@ -1,3 +1,4 @@
 sed -i '/deactivate ()/a unset GYM_DSSAT_PDI_PATH' /opt/gym_dssat_pdi/bin/activate
 PYTHON_VERSION=$(ls /opt/gym_dssat_pdi/lib)
 echo "export GYM_DSSAT_PDI_PATH=/opt/gym_dssat_pdi/lib/${PYTHON_VERSION}/site-packages/gym_dssat_pdi" >> /opt/gym_dssat_pdi/bin/activate
+echo "export PATH=/opt/dssat_pdi:${PATH}" >> /opt/gym_dssat_pdi/bin/activate

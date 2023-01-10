@@ -1,3 +1,22 @@
+gym-dssat-pdi (0.0.8-1) UNRELEASED; urgency=medium
+
+  * Update dssat-csm-os: 0.3.4.7 -> 4.8.0.24_2 (commit ef855b0, Dec 5 2022)
+    -> DSSAT 4.8
+  * Update dssat-csm-data: v4.8.0.2.8 (commit c1a31af16, Jul 29 2022)
+  * Remove absolute path for run_dssat (/opt/dssat_pdi/run_dssat) in
+    run_env.py and dssat_pdi.py
+    -> /opt/dssat_pdi is now included in PATH when pyenv is enabled
+  * Update dh_virtualenv deps:
+    -> pip: 21.3.1 -> 22.3.1
+    -> setuptools: 59.6.0 -> 65.6.3
+    -> wheel: 0.37.1 -> 0.38.4
+  * Update gym-dssat deps:
+    -> gym: 0.19.0 -> 0.21.0 (requires python >= 3.7)
+    -> numpy: 1.21.6 -> 1.24.1
+    -> pyzmq: 22.3.0 -> 25.0.0
+
+ -- Emilio J. Padron <emilioj@udc.gal>  Tue, 10 Jan 2023 22:08:13 +0100
+
 gym-dssat-pdi (0.0.7-1) UNRELEASED; urgency=medium
 
   * Update gym: 0.18.3 -> 0.19.0

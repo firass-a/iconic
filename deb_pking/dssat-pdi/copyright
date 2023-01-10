@@ -702,7 +702,7 @@ Files:     CMakeLists.txt
            cmake/Modules/SetFortranFlags.cmake
            distclean.cmake
            license.txt
-Copyright: 1998-2021, DSSAT Foundation
+Copyright: 1998-2022, DSSAT Foundation
 License:   BSD-3-Clause
  Redistribution and use in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:

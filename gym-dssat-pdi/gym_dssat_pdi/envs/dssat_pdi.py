@@ -31,7 +31,7 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 class DssatPdi(gym.Env):
 
-    def __init__(self, run_dssat_location='/opt/dssat_pdi/run_dssat', log_saving_path=None, mode='all',
+    def __init__(self, run_dssat_location='run_dssat', log_saving_path=None, mode='all',
                  auxiliary_file_paths=None, files_prefix='./', random_weather=True, seed=None, fileX_template_path=None,
                  experiment_number=None, evaluation=False):
         assert shutil.which(run_dssat_location) is not None, f'no DSSAT-PDI executable found at: {run_dssat_location}'
@@ -230,7 +230,7 @@ class DssatPdi(gym.Env):
         print('Automatic planting deactivated')
 
     def _launch_client(self):
-        pdi_command = f'sh {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
+        pdi_command = f'/usr/bin/env {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
         pdi_command = pdi_command.split(' ')
         if self.log_saving_path is not None:
             file_path = self.log_saving_path

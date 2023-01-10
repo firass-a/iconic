@@ -1,3 +1,9 @@
+dssat-csm-data (4.8.0.28~c1a31af-1) UNRELEASED; urgency=medium
+
+  * Updating dssat-csm-data to commit c1a31af16 (Jul 29, 2022)
+
+ -- Emilio J. Padron <emilioj@udc.gal>  Tue, 10 Jan 2023 22:25:18 +0100
+
 dssat-csm-data (4.8~528476f-1) UNRELEASED; urgency=medium
 
   * Updating dssat-csm-data to commit 528476ffa5 (Mar 5, 2022)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="4.8"
+VERSION="4.8.0.28"
 SUBMOD="dssat-csm-data"
 GITVER=$(echo $(git submodule status ../${SUBMOD} | head -c 8 | tail -c 7))
 UNVERSIONED="dssat-csm-data"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TODO: grab gym-dssat version from sources
-VERSION="0.0.7"
+VERSION="0.0.8"
 UNVERSIONED="gym-dssat-pdi"
 DIRNAME="${UNVERSIONED}-${VERSION}"
 TARBALL="${UNVERSIONED}_${VERSION}.orig.tar.gz"

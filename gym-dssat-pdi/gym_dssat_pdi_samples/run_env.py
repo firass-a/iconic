@@ -76,7 +76,7 @@ def multiprocess_trial(env_args, cwd, rep, save_log=False):
     rep_by_core = rep // n_cores
     for i in range(n_cores):
         env_args['log_saving_path'] = f'./logs/dssat-pdi-{i}.log'
-        env_args['seed'] = np.random.integers(1, 999999)
+        env_args['seed'] = np.random.random_integers(1, 999999)
         arguments.append((deepcopy(env_args), rep_by_core, save_log))
     with multiprocessing.Pool() as pool:
         raw_result = list(pool.imap_unordered(_multiprocess_trial_func, arguments))

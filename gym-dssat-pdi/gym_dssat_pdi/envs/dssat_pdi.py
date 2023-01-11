@@ -71,7 +71,7 @@ class DssatPdi(gym.Env):
         self.evaluation = evaluation
         self.rseed_args = None
         self._set_rseed_args()
-        self._rseed1 = self._random_generator.integers(**self.rseed_args)
+        self._rseed1 = self._random_generator.random_integers(**self.rseed_args)
         self.random_weather = random_weather
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
@@ -107,12 +107,12 @@ class DssatPdi(gym.Env):
     def set_evaluation(self):
         self.evaluation = True
         self._set_rseed_args()
-        self._rseed1 = self._random_generator.integers(**self.rseed_args)
+        self._rseed1 = self._random_generator.random_integers(**self.rseed_args)
 
     def set_training(self):
         self.evaluation = False
         self._set_rseed_args()
-        self._rseed1 = self._random_generator.integers(**self.rseed_args)
+        self._rseed1 = self._random_generator.random_integers(**self.rseed_args)
 
     def _load_config(self):
         config = yaml.load(self._env_yaml_config, Loader=yaml.FullLoader)
@@ -457,7 +457,7 @@ class DssatPdi(gym.Env):
             if seed is not None:
                 self.seed(seed)
             if self.random_weather:
-                self._rseed1 = self._random_generator.integers(**self.rseed_args)
+                self._rseed1 = self._random_generator.random_integers(**self.rseed_args)
             self._server.send(f'{self._rseed1}'.encode('utf-8'))
             self._last_is_send = True
             self.reset_counter += 1
@@ -474,7 +474,7 @@ class DssatPdi(gym.Env):
         if _new_tmp_folder:
             self._make_tmp_folder()
         if self.random_weather:
-            self._rseed1 = self._random_generator.integers(**self.rseed_args)
+            self._rseed1 = self._random_generator.random_integers(**self.rseed_args)
         self._write_fileX_template()
         self._reset_attributes()
         self._get_sockets_()

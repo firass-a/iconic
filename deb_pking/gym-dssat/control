@@ -19,7 +19,7 @@ Pre-Depends: dpkg (>= 1.16.1),
  ${misc:Pre-Depends}
 Depends: dssat-pdi, dssat-csm-data, ${misc:Depends},
  ${python3:Depends}
-Description: gym-DSSAT: an easy to manipulate crop environment for
+Description: gym-DSSAT, an easy to manipulate crop environment for
  Reinforcement Learning.
  .
  gym-DSSAT is a modification of the Decision Support System for

@@ -91,9 +91,9 @@ def _multiprocess_trial_func(args):
             env_args['log_saving_path'] = None
         env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
         for i in range(rep):
+            env.reset()
             interactions = interact_with_env(env, verbose=False)
             all_interactions.append(interactions)
-            env.reset()
         return all_interactions
     except Exception as e:
         logging.exception(e)
@@ -122,9 +122,9 @@ def _multiprocess_trial_func_hard_reset(args):
             env.log_saving_path = None
         env.reset_hard()
         for i in range(rep):
+            env.reset()
             interactions = interact_with_env(env, verbose=False)
             all_interactions.append(interactions)
-            env.reset()
         return all_interactions
     except Exception as e:
         logging.exception(e)
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         }
         try_interact = True
         try_multiproc = True
-        verbose = True
+        verbose = not True
         if try_interact:
             try:
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)

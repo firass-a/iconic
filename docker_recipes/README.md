@@ -14,7 +14,7 @@ We take the example of the ```Dockerfile_Debian_Bullseye``` Dockerfile. To build
 git clone https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git
 cd gym_dssat_pdi/docker_recipes
 ``` -->
-To build an image called ```gym-dssat:debian-bullseye``` form the Dockerfile named ```Dockerfile_Debian_Bullseye```, simply run:
+To build an image called ```gym-dssat:debian-bullseye``` from the Dockerfile named ```Dockerfile_Debian_Bullseye```, simply run:
 ```bash
 docker build https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git\#dev:docker_recipes -t "gym-dssat:debian-bullseye" -f Dockerfile_Debian_Bullseye 
 ```

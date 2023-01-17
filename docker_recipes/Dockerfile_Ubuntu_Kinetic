@@ -1,4 +1,4 @@
-FROM ubuntu:impish as builder
+FROM ubuntu:kinetic as builder
 
 USER 0
 
@@ -10,7 +10,7 @@ RUN apt-get update \
 && rm -rf /var/lib/apt/lists/*
 
 ### PDI package install
-RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu impish main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
+RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/ubuntu kinetic main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
 RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/ubuntu/pdidev-archive-keyring.gpg
 RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 
@@ -27,16 +27,17 @@ RUN apt-get update \
 && rm -rf /var/lib/apt/lists/*
 
 ### Custom packages
-RUN wget https://gac.udc.es/~emilioj/impish.tgz
-RUN tar -xf impish.tgz
-WORKDIR /impish
+RUN wget https://gac.udc.es/~emilioj/kinetic.tgz
+RUN tar -xf kinetic.tgz
+WORKDIR /kinetic
 RUN apt update && apt install -y --no-install-recommends \
     `find . -name "*.deb"` \
 && rm -rf /var/lib/apt/lists/*
 
 ### Image config
 ENV VIRTUAL_ENV /opt/gym_dssat_pdi
-ENV PATH "${VIRTUAL_ENV}/bin:${PATH}"
+ENV DSSAT_PATH /opt/dssat_pdi
+ENV PATH "${VIRTUAL_ENV}/bin:${DSSAT_PATH}:${PATH}"
 RUN echo "export PATH=${PATH}" >> /etc/profile
 
 RUN bash -l -c 'echo export GYM_DSSAT_PDI_PATH="/opt/gym_dssat_pdi/lib/$(python3 -V | tr -d '[:blank:]' | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//')/site-packages/gym_dssat_pdi" >> /etc/bash.bashrc'
@@ -51,11 +52,11 @@ ENTRYPOINT ["/bin/bash", "-c"]
 CMD ["python /opt/gym_dssat_pdi/samples/run_env.py"]
 
 ### Build the Docker image
-# docker build . -t "gym-dssat:ubuntu-impish" -f Dockerfile_Ubuntu_Impish
+# docker build . -t "gym-dssat:ubuntu-kinetic" -f Dockerfile_Ubuntu_Kinetic
 #
 ### Run the default example in the Docker image:
-# docker run gym-dssat:ubuntu-impish
+# docker run gym-dssat:ubuntu-kinetic
 #
 ### Interactively run the gym-dssat-pdi environment in the Docker image:
-# docker run -it gym-dssat:ubuntu-impish bash
+# docker run -it gym-dssat:ubuntu-kinetic bash
 # ~$ python /opt/gym_dssat_pdi/samples/run_env.py

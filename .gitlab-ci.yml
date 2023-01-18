@@ -86,7 +86,7 @@ build sid source:
     - docker build --no-cache --force-rm -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
     - docker push $IMAGE_DESTINATION_SID_SOURCE
     - echo "Image ${IMAGE_NAME_SID_SOURCE} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE}"
-  when: manual
+#  when: manual
 
 build bullseye:
   stage: build:bullseye

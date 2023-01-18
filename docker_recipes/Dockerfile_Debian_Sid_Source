@@ -43,8 +43,8 @@ WORKDIR /gym_dssat_pdi
 RUN mv dssat-csm-data/* /opt/dssat_pdi/
 RUN pip3 install -e ./gym-dssat-pdi
 
-ENV PATH /opt/dssat_pdi:${PATH}
-RUN echo "${PATH}" >> /etc/bash.bashrc
+ENV PATH='${PATH}:/opt/dssat_pdi'
+RUN echo '${PATH}' >> /etc/bash.bashrc
 
 WORKDIR /
 

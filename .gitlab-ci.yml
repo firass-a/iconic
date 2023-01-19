@@ -2,14 +2,14 @@ stages:
   - build:sid
   - build:sid_source
   - build:bullseye
+  - build:kinetic
   - build:jammy
-  - build:impish
   - build:focal
   - test:sid
   - test:sid_source
   - test:bullseye
+  - test:kinetic
   - test:jammy
-  - test:impish
   - test:focal
   - build:spack-centos
   - test:spack-centos
@@ -33,10 +33,10 @@ variables:
   IMAGE_DESTINATION_SID_SOURCE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID_SOURCE
   IMAGE_NAME_BULLSEYE: bullseye:latest
   IMAGE_DESTINATION_BULLSEYE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_BULLSEYE
+  IMAGE_NAME_KINETIC: kinetic:latest
+  IMAGE_DESTINATION_KINETIC: $CI_REGISTRY_IMAGE/$IMAGE_NAME_KINETIC
   IMAGE_NAME_JAMMY: jammy:latest
   IMAGE_DESTINATION_JAMMY: $CI_REGISTRY_IMAGE/$IMAGE_NAME_JAMMY
-  IMAGE_NAME_IMPISH: impish:latest
-  IMAGE_DESTINATION_IMPISH: $CI_REGISTRY_IMAGE/$IMAGE_NAME_IMPISH
   IMAGE_NAME_FOCAL: focal:latest
   IMAGE_DESTINATION_FOCAL: $CI_REGISTRY_IMAGE/$IMAGE_NAME_FOCAL
   IMAGE_NAME_SPACK_CENTOS: spack-centos:latest
@@ -107,6 +107,25 @@ build bullseye:
     - echo "Image ${IMAGE_NAME_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_BULLSEYE}"
   when: manual
 
+build kinetic:
+  stage: build:kinetic
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_KINETIC --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_KINETIC -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Kinetic .
+    - docker push $IMAGE_DESTINATION_KINETIC
+    - echo "Image ${IMAGE_NAME_KINETIC} successfully pushed to ${IMAGE_DESTINATION_KINETIC}"
+  when: manual
+
 build jammy:
   stage: build:jammy
   allow_failure: true
@@ -124,25 +143,6 @@ build jammy:
     - docker build --force-rm -t $IMAGE_DESTINATION_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy .
     - docker push $IMAGE_DESTINATION_JAMMY
     - echo "Image ${IMAGE_NAME_JAMMY} successfully pushed to ${IMAGE_DESTINATION_JAMMY}"
-  when: manual
-
-build impish:
-  stage: build:impish
-  allow_failure: true
-  tags:
-    - ci.inria.fr
-    # - medium
-    - large
-  image: docker:stable
-  before_script:
-    - docker image prune --filter="dangling=true" --force
-    - docker rmi $IMAGE_DESTINATION_IMPISH --force
-  script:
-    - docker info
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build --force-rm -t $IMAGE_DESTINATION_IMPISH -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Impish .
-    - docker push $IMAGE_DESTINATION_IMPISH
-    - echo "Image ${IMAGE_NAME_IMPISH} successfully pushed to ${IMAGE_DESTINATION_IMPISH}"
   when: manual
 
 build focal:
@@ -293,6 +293,19 @@ test bullseye:
     - echo "Test successfully passed for image ${IMAGE_NAME_BULLSEYE} in ${IMAGE_DESTINATION_BULLSEYE}"
   when: manual
 
+test kinetic:
+  stage: test:kinetic
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_KINETIC
+    - echo "Test successfully passed for image ${IMAGE_NAME_KINETIC} in ${IMAGE_DESTINATION_KINETIC}"
+  when: manual
+
 test jammy:
   stage: test:jammy
   allow_failure: true
@@ -304,19 +317,6 @@ test jammy:
   script:
     - docker run $IMAGE_DESTINATION_JAMMY
     - echo "Test successfully passed for image ${IMAGE_NAME_JAMMY} in ${IMAGE_DESTINATION_JAMMY}"
-  when: manual
-
-test impish:
-  stage: test:impish
-  allow_failure: true
-  tags:
-    - ci.inria.fr
-    # - medium
-    - large
-  image: docker:stable
-  script:
-    - docker run $IMAGE_DESTINATION_IMPISH
-    - echo "Test successfully passed for image ${IMAGE_NAME_IMPISH} in ${IMAGE_DESTINATION_IMPISH}"
   when: manual
 
 test focal:

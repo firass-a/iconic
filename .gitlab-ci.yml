@@ -420,7 +420,7 @@ python coverage source json:
   artifacts:
     when: on_success
     paths:
-      - $PWD/coverage/coverage.json
+      - coverage/coverage.json
 
 python coverage source badge:
   stage: coverage-badge:source

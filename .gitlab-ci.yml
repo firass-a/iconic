@@ -173,8 +173,7 @@ build spack-centos:
   before_script:
   # - docker image prune --filter="dangling=true" --force
   # - docker rmi $IMAGE_DESTINATION_SPACK_CENTOS --force
-  - docker rm -f $(docker ps -a -q)
-  - docker system prune --all --force --volumes
+  - docker system prune -af --volumes
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -192,8 +191,7 @@ build spack-cuda:
   before_script:
     # - docker image prune --filter="dangling=true" --force
     # - docker rmi $IMAGE_DESTINATION_SPACK_CUDA --force
-    - docker rm -f $(docker ps -a -q)
-    - docker system prune --all --force --volumes
+    - docker system prune -af --volumes
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -211,8 +209,7 @@ build spack-bullseye:
   before_script:
     # - docker image prune --filter="dangling=true" --force
     # - docker rmi $IMAGE_DESTINATION_SPACK_BULLSEYE --force
-     - docker rm -f $(docker ps -a -q)
-     - docker system prune --all --force --volumes   
+     - docker system prune -af --volumes
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -230,8 +227,7 @@ build spack-jammy:
   before_script:
     # - docker image prune --filter="dangling=true" --force
     # - docker rmi $IMAGE_DESTINATION_SPACK_JAMMY --force
-     - docker system prune --all --force --volumes
-     - docker rm -f $(docker ps -a -q)
+     - docker system prune -af --volumes
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
@@ -249,8 +245,7 @@ build spack-focal:
   before_script:
     # - docker image prune --filter="dangling=true" --force
     # - docker rmi $IMAGE_DESTINATION_SPACK_FOCAL --force
-     - docker system prune --all --force --volumes
-     - docker rm -f $(docker ps -a -q)
+     - docker system prune -af --volumes
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY

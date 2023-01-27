@@ -168,7 +168,7 @@ build spack-centos:
   stage: build:spack-centos
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   before_script:
   # - docker image prune --filter="dangling=true" --force
@@ -186,7 +186,7 @@ build spack-cuda:
   stage: build:spack-cuda
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   before_script:
     # - docker image prune --filter="dangling=true" --force
@@ -204,7 +204,7 @@ build spack-bullseye:
   stage: build:spack-bullseye
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   before_script:
     # - docker image prune --filter="dangling=true" --force
@@ -222,7 +222,7 @@ build spack-jammy:
   stage: build:spack-jammy
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   before_script:
     # - docker image prune --filter="dangling=true" --force
@@ -240,7 +240,7 @@ build spack-focal:
   stage: build:spack-focal
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   before_script:
     # - docker image prune --filter="dangling=true" --force
@@ -336,7 +336,7 @@ test spack-centos:
   stage: test:spack-centos
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SPACK_CENTOS
@@ -347,7 +347,7 @@ test spack-cuda:
   stage: test:spack-cuda
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SPACK_CUDA
@@ -358,7 +358,7 @@ test spack-bullseye:
   stage: test:spack-bullseye
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SPACK_BULLSEYE
@@ -369,7 +369,7 @@ test spack-jammy:
   stage: test:spack-jammy
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SPACK_JAMMY
@@ -380,7 +380,7 @@ test spack-focal:
   stage: test:spack-focal
   allow_failure: true
   tags:
-    - ubuntu2004
+    - spack
   image: docker:stable
   script:
     - docker run $IMAGE_DESTINATION_SPACK_FOCAL

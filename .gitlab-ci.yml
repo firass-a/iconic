@@ -231,7 +231,7 @@ build spack-jammy:
   script:
     - docker info
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t -rm $IMAGE_DESTINATION_SPACK_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy_Spack .
+    - docker build --force-rm  -t $IMAGE_DESTINATION_SPACK_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy_Spack .
     - docker push $IMAGE_DESTINATION_SPACK_JAMMY
     - echo "Image ${IMAGE_NAME_SPACK_JAMMY} successfully pushed to ${IMAGE_DESTINATION_SPACK_JAMMY}"
   when: manual

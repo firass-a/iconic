@@ -6,7 +6,7 @@
 ## What is gym-dssat?
 ```gym-dssat``` is a modification of the [Decision Support System for Agrotechnology Transfer (DSSAT)](https://dssat.net/) Fortran software into an easy to manipulate Python [Open AI gym](https://gym.openai.com/) environment for Reinforcement Learning (RL) researchers. ```gym-DSSAT``` allows daily based interactions during the growing season between an RL agent and the crop model with usual gym conventions.
 
-**Important: At the moment gym-DSSAT only supports common Linux distributions**
+**Important: At the moment gym-DSSAT only supports Linux distributions**
 
 ## Getting started
 | Link | Content |
@@ -67,17 +67,16 @@ school={Inria Lille}
 Any [new issue](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here) is welcomed! If you want to actively contribute, you can check issues the **wishlist** tag.
 
 #### Authors
-Romain Gautron and Emilio Padrón González
+Romain Gautron and Emilio Padrón González.
 
 **Principal contact**:
 
-- first name: romain
-- last name: gautron 
-- institute: cirad
+- software name: gym-dssat
+- institute: inria
 - country: france
 
 ```text
-f_n dot l_n at institute dot two_first_letters_of_country
+software_name at institute dot two_first_letters_of_country
 ```
 
 #### Acknowledgements

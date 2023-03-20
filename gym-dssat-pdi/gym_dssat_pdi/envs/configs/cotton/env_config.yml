@@ -49,6 +49,11 @@ state:
     low: 0
     high: 366
     info: days after planting
+  dbap:
+    type: int
+    low: -100
+    high: 366
+    info: days after planting
   dtt:
     type: float
     low: 0
@@ -299,22 +304,12 @@ setting:
     action:
       - anfer
     state:
-      - istage
-      - vstage
       - grnwt
-      - topwt
       - swfac
       - nstres
-      - xlai
-      - dtt
       - dap
-      - cumsumfert
-      - ep
     context:
       - sat
-      - dul
-      - ll
-      - dlayr
     experiment_number: 1
   irrigation:
     action:

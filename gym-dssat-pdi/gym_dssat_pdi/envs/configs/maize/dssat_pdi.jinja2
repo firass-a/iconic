@@ -1,0 +1,305 @@
+logging:
+{#  level: debug#}
+  level: error
+
+metadata:
+  NLAYR: int
+
+data:
+### early stopping
+  PDI_EARLY_STOPPING: logical
+### random seed
+  RSEED1: int
+### action
+  ANFER: float
+  AMIR: float
+### state
+  YRDOY: int
+  NSTRES: float
+  ISTAGE: int
+  VSTAGE: float
+  GRNWT: float
+  TOPWT: float
+  PLTPOP: float
+  SWFAC: float
+  PCNGRN: float
+  TLeachD: float
+  TNOXD: float
+  WTNUP: float
+  CLeach: float
+  CNOX: float
+  CumSumFert: float
+  XLAI: float
+  TRNU: float
+  RAIN: float
+  TMIN: float
+  TMAX: float
+  SRAD: float
+  DTT: float
+  DAP: int
+  ES: float
+  EO: float
+  EOP: float
+  EOS: float
+  EP: float
+  RUNOFF: float
+  WTDEP: float
+  RTDEP: float
+  TOTAML: float
+  TOTIR: float
+  LL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  DUL:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  DLAYR:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+    size: '$NLAYR'
+{#  SW_AVAIL:#}
+{#    type: array#}
+{#    subtype: float#}
+{#    size: '$NLAYR'#}
+  SW:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  DS:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+  SAT:
+    type: array
+    subtype: float
+    size: '$NLAYR'
+{#  SNO3:#}
+{#    type: array#}
+{#    subtype: float#}
+{#    size: '$NLAYR'#}
+{#  SNH4:#}
+{#    type: array#}
+{#    subtype: float#}
+{#    size: '$NLAYR'#}
+plugins:
+{#  trace: ~#}
+  pycall:
+    on_data:
+      YRDOY: |
+        yrdoy = YRDOY
+      NSTRES: |
+        nstres = NSTRES
+      ISTAGE: |
+        istage = ISTAGE
+      VSTAGE: |
+        vstage = VSTAGE
+      GRNWT: |
+        grnwt = GRNWT
+      TOPWT: |
+        topwt = TOPWT
+      PLTPOP: |
+        pltpop = PLTPOP
+      SWFAC: |
+        swfac = SWFAC
+      PCNGRN: |
+        pcngrn = PCNGRN
+      TLeachD: |
+        tleachd = TLeachD
+      TNOXD: |
+        tnoxd = TNOXD
+      WTNUP: |
+        wtnup = WTNUP
+      CLeach: |
+        cleach = CLeach
+      CNOX: |
+        cnox = CNOX
+      CumSumFert: |
+        cumsumfert = CumSumFert
+      XLAI: |
+        xlai = XLAI
+      TRNU: |
+        trnu = TRNU
+      RAIN: |
+        rain = RAIN
+      TMIN: |
+        tmin = TMIN
+      TMAX: |
+        tmax = TMAX
+      SRAD: |
+        srad = SRAD
+      DTT: |
+        dtt = DTT
+      DAP: |
+        dap = DAP
+      LL: |
+        ll = LL
+      DUL: |
+        dul = DUL
+      SW: |
+        sw = SW
+{#      SW_AVAIL: |#}
+{#        sw_avail = SW_AVAIL#}
+      ES: |
+        es = ES
+      EO: |
+        eo = EO
+      EOS: |
+        eos = EOS
+      EOP: |
+        eop = EOP
+      EP: |
+        ep = EP
+      RUNOFF: |
+        runoff = RUNOFF
+      WTDEP: |
+        wtdep = WTDEP
+      SAT: |
+        sat = SAT
+      DLAYR: |
+        dlayr = DLAYR
+      RTDEP: |
+        rtdep = RTDEP
+      TOTAML: |
+        totaml = TOTAML
+      TOTIR: |
+        totir = TOTIR
+{#      SNO3: |#}
+{#        sno3_ini = SNO3#}
+{#      SNH4: |#}
+{#        snh4_ini = SNH4#}
+    on_event:
+      start_client:
+        exec: |
+
+          # Activate venv if executing from package
+          import os
+          activate_this = "/opt/gym_dssat_pdi/bin/activate_this.py"
+          if os.path.exists(activate_this):
+            exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), dict(__file__=activate_this))
+
+          import sys
+          import zmq
+          import json
+          import logging
+          import numpy as np
+          import time
+          import faulthandler
+          faulthandler.enable()
+          class NumpyEncoder(json.JSONEncoder):
+            def default(self, obj):
+              if isinstance(obj, np.ndarray):
+                return obj.tolist()
+              elif hasattr(obj, 'dtype'):
+                return obj.item()
+              return json.JSONEncoder.default(self, obj)
+          context = zmq.Context()
+          client = context.socket(zmq.PAIR)
+{#          client.setsockopt(zmq.LINGER, 0)#}
+          try:
+            client.connect('tcp://localhost:{{ '{0:d}'.format(port) }}')
+          except Exception as e:
+            logging.exception(e)
+            time.sleep(1)
+          done = False
+          rseed1_ = {{ '{0:d}'.format(rseed1) }}
+          is_early_stopping = False
+          is_last_send = False
+          print('Client started')
+      flag_done:
+        exec: |
+          done = True
+          message = {'done': done, 'state': {}}
+          try:
+            client.send(json.dumps(message, cls=NumpyEncoder).encode('utf-8'))
+          except:
+            logging.exception(e)
+          is_last_send = True
+          rseed1_ = client.recv().decode('utf-8')
+          is_last_send = False
+      flag_undone:
+        exec: |
+          done = False
+      stop_client:
+        exec: |
+          client.close()
+          context.term()
+          print('Client closed')
+      set_rseed:
+        with: {rseed1: $RSEED1}
+        exec:
+          rseed1[()] = rseed1_
+      early_stopping:
+        with: {pdi_early_stopping: $PDI_EARLY_STOPPING}
+        exec:
+          pdi_early_stopping.itemset(is_early_stopping)
+      interact:
+        exec: |
+          state = {'yrdoy': yrdoy,
+          'nstres': nstres,
+          'istage': istage,
+          'vstage': vstage,
+          'grnwt': grnwt,
+          'topwt': topwt,
+          'pltpop': pltpop,
+          'swfac': swfac,
+          'pcngrn': pcngrn,
+          'tleachd': tleachd,
+          'tnoxd': tnoxd,
+          'wtnup': wtnup,
+          'cleach': cleach,
+          'cnox': cnox,
+          'cumsumfert': cumsumfert,
+          'xlai': xlai,
+          'trnu': trnu,
+          'rain': rain,
+          'tmin': tmin,
+          'tmax': tmax,
+          'srad': srad,
+          'dtt': dtt,
+          'dap': dap,
+          'll': ll,
+          'dul': dul,
+          'sw': sw,
+{#          'sw_avail': sw_avail,#}
+          'es': es,
+          'eo': eo,
+          'eop': eop,
+          'eos': eos,
+          'ep': ep,
+          'runoff': runoff,
+          'wtdep': wtdep,
+          'sat': sat,
+          'rtdep': rtdep,
+          'dlayr': dlayr,
+          'totaml': totaml,
+          'totir': totir,
+          }
+          message_to_client = {'done':done, 'state':state}
+          message_to_client_js = json.dumps(message_to_client, cls=NumpyEncoder)
+          message_to_client = {'done':None, 'state':None}
+          client.send(message_to_client_js.encode('utf-8'))
+          is_last_send = True
+          try:
+            message_from_client_js = client.recv().decode('utf-8')
+            is_last_send = False
+            message_from_client = json.loads(message_from_client_js)
+            action = message_from_client['action']
+            is_early_stopping = message_from_client['early_stopping']
+          except Exception as e:
+            state_keys = [*state]
+            for state_key in state_keys:
+              print('key ' , state_key, file=sys.stderr, flush=True)
+              print('value ', state[state_key], file=sys.stderr, flush=True)
+            logging.exception(e)
+            time.sleep(1)
+      fertilize:
+        with: {anfer: $ANFER}
+        exec:
+          anfer.itemset(action['anfer'])
+      irrigate:
+        with: {amir: $AMIR}
+        exec:
+          amir.itemset(action['amir'])

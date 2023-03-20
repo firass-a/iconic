@@ -1,0 +1,343 @@
+---
+###################################################################################################
+# DATA TYPES:
+# * float: 1D floating point in [$low, $high]
+# * int: integer in [[$low, $high]]
+# * discrete: set of discrete values which can take $size values
+# * array:
+#   $size: number of atomic elements
+#   $subtype == float: atomic values of type float in [$low, $high]
+#   $subtype == int: atomic values of type int in [[$low, $high]]
+#   $subtype == discrete: atomic values of type discrete which can take $subsize different values
+###################################################################################################
+
+##################
+# RAW ACTION SPACE
+##################
+action:
+  anfer:
+    type: float
+    low: 0
+    high: 200
+    info: nitrogen to fertilize for current day (kg/ha)
+  amir:
+    type: float
+    low: 0
+    high: 50
+    info: water depth to irrigate for current day (mm/m2 equivalent to L/m2)
+#################
+# RAW STATE SPACE
+#################
+state:
+  cleach:
+    type: float
+    low: 0
+    high: 200
+    info: cumulative nitrate leaching (kg/ha)
+  cnox:
+    type: float
+    low: 0
+    high: 1
+    info: cumulative nitrogen denitrification (kg/ha)
+  cumsumfert:
+    type: float
+    low: 0
+    high: 50000
+    info: cumulative nitrogen fertilizer applications (kg/ha)
+  dap:
+    type: int
+    low: 0
+    high: 366
+    info: days after planting
+  dtt:
+    type: float
+    low: 0
+    high: 100
+    info: growing degree days for current day (C/d)
+  grnwt:
+    type: float
+    low: 0
+    high: 50000
+    info: grain weight dry matter (kg/ha)
+  istage:
+    type: discrete
+    info: DSSAT maize growing stage (index in order 7, 8, 9, 1, 2, 3, 4, 5 ,6)
+    size: 9
+# 1 = End of Juvenil Phase
+# 2 = Floral Initiation
+# 3 = 75% of Silking
+# 4 = Beginning of Grain Filling
+# 5 = End of Grrain Filling
+# 6 = Maturity
+# 7 = Sowing
+# 8 = Germinate
+# 9 = Emergence
+  vstage:
+    type: float
+    low: 0
+    high: 30
+    info: vegetative growth stage (number of leaves)
+  nstres:
+    type: float
+    low: 0
+    high: 1
+    info: index of plant nitrogen stress (unitless)
+  pcngrn:
+    type: float
+    low: 0
+    high: 1
+    info: massic fraction of nitrogen in grains (unitless)
+  pltpop:
+    type: float
+    low: 0
+    high: 100
+    info: plant population density (plant/m2)
+  rain:
+    type: float
+    low: 0
+    high: 500
+    info: rainfall for the current day (mm/d)
+  srad:
+    type: float
+    low: 50
+    high: .inf
+    info: solar radiation during the current day (MJ/m2/d)
+  swfac:
+    type: float
+    low: 0
+    high: 1
+    info: index of plant water stress (unitless)
+  tleachd:
+    type: float
+    low: 0
+    high: 100
+    info: daily nitrate leaching (kg/ha)
+  tmax:
+    type: float
+    low: -60
+    high: 60
+    info: maximum temperature for current day (C)
+  tmin:
+    type: float
+    low: -60
+    high: 60
+    info: minimum temparature for current day (C)
+  tnoxd:
+    type: float
+    low: 0
+    high: 1
+    info: daily nitrogen denitrification (kg/ha)
+  trnu:
+    type: float
+    low: 0
+    high: 10
+    info: daily nitrogen plant population uptake (kg/ha)
+  wtnup:
+    type: float
+    low: 0
+    high: 500
+    info: cumulative plant population  nitrogen uptake (kg/ha)
+  xlai:
+    type: float
+    low: 0
+    high: 10
+    info: plant population leaf area index (m2_leaf/m2_soil)
+  yrdoy:
+    type: discrete
+    info: simulation date (YYYYDDD)
+    size: 366
+  topwt:
+    type: float
+    low: 0
+    high: 50000
+    info: above the ground population biomass (kg/ha)
+  es:
+    type: float
+    low: 0
+    high: 50
+    info: actual soil evaporation rate (mm/d)
+  eo:
+    type: float
+    low: 0
+    high: 50
+    info: potential evapotranspiration rate (mm/d)
+  ep:
+    type: float
+    low: 0
+    high: 50
+    info: actual plant transpiration rate (mm/d)
+  eop:
+    type: float
+    low: 0
+    high: 50
+    info: potential plant transpiration rate (mm/d)
+  eos:
+    type: float
+    low: 0
+    high: 50
+    info: potential rate of soil evaporation (mm/d)
+  runoff:
+    type: float
+    low: 0
+    high: 100
+    info: calculated runoff (mm/d)
+  wtdep:
+    type: float
+    low: 0
+    high: 1000
+    info: depth to water table (cm)
+  rtdep:
+    type: float
+    low: 0
+    high: 300
+    info: root depth (cm)
+  totaml:
+    type: float
+    low: 0
+    high: 5000
+    info: cumulative ammonia volatilization (kgN/ha)
+  totir:
+    type: float
+    low: 0
+    high: 15000
+    info: total irrigated water (mm)
+  ll:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at lower limit (cm3 [water] / cm3 [soil])
+  dul:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at drained upper limit (cm3 [water] / cm3 [soil])
+  sat:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at saturation (cm3 [water] / cm3 [soil])
+  sw:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers (cm3 [water] / cm3 [soil])
+  dlayr:
+    type: array
+    subtype: float
+    low: 0
+    high: 1000
+    size: 9
+    info: thickness of for soil layers (cm)
+
+# OTHER ARRAY DELCARATION EXAMPLES
+#  array_example1:
+#    type: array
+#    subtype: int
+#    low: 0
+#    high: 1
+#    size: 9
+#    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
+#  array_example2:
+#    type: array
+#    subtype: discrete
+#    subsize: 4
+#    size: 9
+#    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
+
+#######################################################
+# ACTION AND STATE SPACES RESTRICTIONS FOR ENV SETTINGS
+#######################################################
+# setting: -> defines the learning tasks
+#   all: -> name of the learning task which must coincide with the name associated with the reward function in 'reward_func_dic'
+#     action: -> defines the action space
+#       - anfer
+#       - amir
+#     state: -> defines the state space
+#       - nstres
+#       - istage
+#     context: -> defines the 'info' output in the env.step() method of the gym environment
+#       - sat
+#     experiment_number: 3 -> number of the experiment of the learning task in DSSAT fileX
+setting:
+  all:
+    action:
+      - anfer
+      - amir
+    state:
+      - istage
+      - vstage
+      - grnwt
+      - topwt
+      - swfac
+      - nstres
+      - xlai
+      - tmax
+      - srad
+      - dtt
+      - dap
+      - cumsumfert
+      - totir
+      - sw
+      - ep
+      - wtdep
+      - rtdep
+    context:
+      - sat
+      - dul
+      - ll
+      - dlayr
+    experiment_number: 3
+  fertilization:
+    action:
+      - anfer
+    state:
+      # - istage
+      # - vstage
+      # - grnwt
+      # - topwt
+      # - swfac
+      # - nstres
+      # - xlai
+      # - dtt
+      - dap
+      - cumsumfert
+      # - ep
+    context:
+      - sat
+      # - dul
+      # - ll
+      # - dlayr
+    experiment_number: 1
+  irrigation:
+    action:
+      - amir
+    state:
+      # - istage
+      # - vstage
+      # - grnwt
+      # - topwt
+      # - xlai
+      # - tmax
+      # - srad
+      # - dtt
+      - dap
+      - cumsumfert
+      # - sw
+      # - ep
+      # - wtdep
+      # - rtdep
+      # - totir
+    context:
+      - sat
+      # - dul
+      # - ll
+      # - dlayr
+    experiment_number: 2

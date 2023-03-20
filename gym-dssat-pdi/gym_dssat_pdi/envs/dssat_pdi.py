@@ -33,7 +33,7 @@ class DssatPdi(gym.Env):
 
     def __init__(self, run_dssat_location='run_dssat', log_saving_path=None, mode='all',
                  auxiliary_file_paths=None, files_prefix='./', random_weather=True, seed=None, fileX_template_path=None,
-                 experiment_number=None, evaluation=False):
+                 experiment_number=None, evaluation=False, cultivar = "maize"):
         assert shutil.which(run_dssat_location) is not None, f'no DSSAT-PDI executable found at: {run_dssat_location}'
         self._run_dssat_location = run_dssat_location
         self.experiment_number = experiment_number
@@ -41,14 +41,28 @@ class DssatPdi(gym.Env):
         self.action_variables = None
         self.observation_variables = None
         self.context_variables = None
+        
+        ## Assert cultivar name exists else defaults to maize
+        self.cultivar = cultivar
+        self.cultivars_fileX = {
+            "maize"  : 'UFGA8201',
+            "cotton" : 'AZMC8901'
+            }
+        if cultivar not in self.cultivars_fileX.keys():
+            cultivar = "maize"
+            print("Cultivar not recognized, switched to default: maize ..")
+        
+        self.cultivar = cultivar    
+        cultivar_filename = self.cultivars_fileX[cultivar]
+
         if fileX_template_path is None:
-            self._fileX_template = pkgutil.get_data(__name__, f'configs/UFGA8201.jinja2').decode('utf-8')
+            self._fileX_template = pkgutil.get_data(__name__, f'configs/{cultivar}/{cultivar_filename}.jinja2').decode('utf-8')
         else:
             self._fileX_template = utils._load_fileX_template(fileX_template_path)
         self._fileX = None
-        self._pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
+        self._pdi_yaml_template = pkgutil.get_data(__name__, f'configs/{cultivar}/dssat_pdi.jinja2').decode('utf-8')
         self._pdi_yaml = None
-        self._env_yaml_config = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
+        self._env_yaml_config = pkgutil.get_data(__name__, f'configs/{cultivar}/env_config.yml').decode('utf-8')
         self._config = None
         self._load_config()
         self.observation_space = None
@@ -77,6 +91,10 @@ class DssatPdi(gym.Env):
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.irrig = 'L' if mode in ['all', 'irrigation'] else 'R'
         self.plant = 'A' if mode == 'fertilization' else 'R'
+        ### Fixed ferti and plant to test default results, To be restored later
+        self.ferti = 'R'
+        self.plant = 'R'
+        ###
         self._is_early_stopping = False
         self._early_stopped = False
         self.done = False
@@ -216,6 +234,8 @@ class DssatPdi(gym.Env):
                                                        template_string=self._fileX_template)
 
     def _write_fileX_template(self):
+        ### Not sure if extension changes dssat run, should 
+        ### cotton temp file be change to COX or not
         utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
     def _deactivate_automatic_planting(self):

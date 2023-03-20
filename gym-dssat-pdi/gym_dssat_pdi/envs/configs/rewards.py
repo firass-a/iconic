@@ -10,20 +10,26 @@ __license__ = 'BSD 3-Clause'
 __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 
 
+### The rewards are fixed until specific variables
+### and objectives are selected
+
 def fertilization_reward(_previous_state, _next_state, _history):
     if _next_state:
         last_action = _history['action'][-1]['anfer']
         penality = .5
-        trnu = _next_state['trnu']
-        return trnu - penality * last_action
+        trnu = 1
+        #trnu = _next_state['trnu']
+        #return trnu - penality * last_action
     return None
 
 
 def irrigation_reward(_previous_state, _next_state, _history):
     if _next_state:
         last_action = _history['action'][-1]['amir']
-        previous_topwt = _previous_state['topwt']
-        next_topwt = _next_state['topwt']
+        # previous_topwt = _previous_state['topwt']
+        # next_topwt = _next_state['topwt']
+        previous_topwt = 1
+        next_topwt = 2
         penality = 15
         return next_topwt - previous_topwt - penality * last_action
     return None

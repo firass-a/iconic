@@ -30,40 +30,46 @@ def test_default_env():
     
     with open('test_output.log', 'w') as f:
         with redirect_stdout(f):
-            for i, mode in enumerate(['fertilization']):
-                print(f'MODE: {mode}')
-                env_args = {
-                    'run_dssat_location': 'run_dssat',
-                    'log_saving_path': './logs/dssat_pdi.log',
-                    'mode': mode,
-                    'seed': 123456,
-                    'random_weather': False,
-                    'cultivar' : "cotton"            ### Can be changed to maize
-                }
-                try_interact = True
-                verbose = not True
-                if try_interact:
-                    try:
-                        env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-                        if i == 0:
-                            env.get_env_info(user_input=False)
-                        env.seed(123)
-                        n_rep = 1
-                        yields = []
-                        for j in range(n_rep):
-                            env.reset()
-                            interactions = interact_with_env(env, verbose=verbose)
-                            #yields.append(interactions[-1]['grnwt'])
-                            yields.append(1)
-                            if (j + 1) % 10 == 0:
-                                print(f'{j + 1}/{n_rep}')
-                        print(f'mean of yields: {np.mean(yields)} kg/ha')
-                        print(f'variance of yields: {np.var(yields)} kg/ha')
-                        env.reset_hard()
-                    except Exception as e:
-                        logging.exception(e)
-                    finally:
-                        env.close()
+            for i, mode in enumerate([
+                                    'fertilization',
+                                    'irrigation',
+                                    'all'
+                                    ]):
+                for j, cultivar in enumerate(['maize','cotton']):
+                    print(f'MODE: {mode}, CULTIVAR: {cultivar}')
+                    ## Random weather for cotton is currently using maize WGEN,
+                    ## AZMC.CLI is a copy of UFGA.CLI inside dssat-cm-data/Weather/Climate
+                    env_args = {
+                        'run_dssat_location': 'run_dssat',
+                        'log_saving_path': './logs/dssat_pdi.log',
+                        'mode': mode,
+                        'seed': 123456,
+                        'random_weather': True,
+                        'cultivar' : cultivar          
+                    }
+                    try_interact = True
+                    verbose = not True
+                    if try_interact:
+                        try:
+                            env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
+                            if i == 0:
+                                env.get_env_info(user_input=False)
+                            env.seed(123)
+                            n_rep = 8
+                            yields = []
+                            for j in range(n_rep):
+                                env.reset()
+                                interactions = interact_with_env(env, verbose=verbose)
+                                yields.append(interactions[-1]['grnwt'])
+                                if (j + 1) % 10 == 0:
+                                    print(f'{j + 1}/{n_rep}')
+                            print(f'mean of yields: {np.mean(yields)} kg/ha')
+                            print(f'variance of yields: {np.var(yields)} kg/ha')
+                            env.reset_hard()
+                        except Exception as e:
+                            logging.exception(e)
+                        finally:
+                            env.close()
     
     #compare = filecmp.cmp(cwd+'/test_env_expected.log','test_output.log')
     #assert compare == True

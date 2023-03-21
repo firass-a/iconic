@@ -299,45 +299,44 @@ setting:
     action:
       - anfer
     state:
-      # - istage
-      # - vstage
-      # - grnwt
-      # - topwt
-      # - swfac
-      # - nstres
-      # - xlai
-      # - dtt
+      - istage
+      - vstage
+      - grnwt
+      - topwt
+      - swfac
+      - nstres
+      - xlai
+      - dtt
       - dap
       - cumsumfert
-      # - ep
+      - ep
     context:
       - sat
-      # - dul
-      # - ll
-      # - dlayr
+      - dul
+      - ll
+      - dlayr
     experiment_number: 1
   irrigation:
     action:
       - amir
     state:
-      # - istage
-      # - vstage
-      # - grnwt
-      # - topwt
-      # - xlai
-      # - tmax
-      # - srad
-      # - dtt
+      - istage
+      - vstage
+      - grnwt
+      - topwt
+      - xlai
+      - tmax
+      - srad
+      - dtt
       - dap
-      - cumsumfert
-      # - sw
-      # - ep
-      # - wtdep
-      # - rtdep
-      # - totir
+      - sw
+      - ep
+      - wtdep
+      - rtdep
+      - totir
     context:
       - sat
-      # - dul
-      # - ll
-      # - dlayr
-    experiment_number: 2
+      - dul
+      - ll
+      - dlayr
+    experiment_number: 3

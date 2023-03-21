@@ -42,8 +42,7 @@ class DssatPdi(gym.Env):
         self.observation_variables = None
         self.context_variables = None
         
-        ## Assert cultivar name exists else defaults to maize
-        self.cultivar = cultivar
+        # Assert cultivar name exists else defaults to maize
         self.cultivars_fileX = {
             "maize"  : 'UFGA8201',
             "cotton" : 'AZMC8901'
@@ -91,10 +90,6 @@ class DssatPdi(gym.Env):
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.irrig = 'L' if mode in ['all', 'irrigation'] else 'R'
         self.plant = 'A' if mode == 'fertilization' else 'R'
-        ### Fixed ferti and plant to test default results, To be restored later
-        self.ferti = 'R'
-        self.plant = 'R'
-        ###
         self._is_early_stopping = False
         self._early_stopped = False
         self.done = False
@@ -301,7 +296,7 @@ class DssatPdi(gym.Env):
         done = message['done']
         _state = message['state']
         if _state:
-            _state = utils._post_treat_state(_state)
+            _state = utils._post_treat_state(_state, self.cultivar)
             observation = utils._filter_state(full_state=_state,
                                               observation_variables=self.observation_variables)
             context = utils._filter_state(full_state=_state,

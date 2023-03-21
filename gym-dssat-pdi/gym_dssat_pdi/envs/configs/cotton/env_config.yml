@@ -241,6 +241,27 @@ state:
     high: 1000
     size: 9
     info: thickness of for soil layers (cm)
+  ### Not Sure about the low and high of these values
+  pcnl:
+    type: float
+    low: 0
+    high: 100
+    info: Percentage of N in leaf tissue (100 g[N] / g[leaf])
+  laimx:
+    type: float
+    low: 0
+    high: 100
+    info: Maximum leaf area index this season (m2[leaf] / m2[ground])
+  cannaa:
+    type: float
+    low: 0
+    high: 100
+    info: Weight of N in total plant at flowering (g[N] / m2)
+  clw:
+    type: float
+    low: 0
+    high: 1000
+    info: Cumulative leaf growth (g[leaf]/m2)
 
 # OTHER ARRAY DELCARATION EXAMPLES
 #  array_example1:
@@ -277,61 +298,81 @@ setting:
       - anfer
       - amir
     state:
-      - istage
+      - vstage
+      - grnwt
+      - topwt
+      - xlai
+      - swfac
+      - nstres
+      - tmax
+      - srad
+      - dap
+      - sw
+      - wtdep
+      - rtdep
+      - totir
+      - pltpop
+      - wtnup
+
+      - pcnl
+      - laimx
+      - cannaa
+      - clw
+    context:
+      - sat
+      - dul
+      - ll
+      - dlayr
+    experiment_number: 2
+  fertilization:
+    action:
+      - anfer
+    state:
       - vstage
       - grnwt
       - topwt
       - swfac
       - nstres
       - xlai
-      - tmax
-      - srad
-      - dtt
       - dap
-      - cumsumfert
-      - totir
-      - sw
-      - ep
-      - wtdep
-      - rtdep
+      - pltpop
+      - wtnup
+
+      - pcnl
+      - laimx
+      - cannaa
+      - clw
     context:
       - sat
       - dul
       - ll
       - dlayr
-    experiment_number: 3
-  fertilization:
-    action:
-      - anfer
-    state:
-      - grnwt
-      - swfac
-      - nstres
-      - dap
-    context:
-      - sat
     experiment_number: 1
   irrigation:
     action:
       - amir
     state:
-      - istage
       - vstage
       - grnwt
       - topwt
       - xlai
       - tmax
       - srad
-      - dtt
       - dap
       - sw
-      - ep
       - wtdep
       - rtdep
       - totir
+      - pltpop
+      - wtnup
+
+      - pcnl
+      - laimx
+      - cannaa
+      - clw
     context:
       - sat
       - dul
       - ll
       - dlayr
-    experiment_number: 3
+    experiment_number: 2

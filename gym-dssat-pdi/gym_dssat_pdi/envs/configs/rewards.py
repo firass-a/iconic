@@ -17,19 +17,16 @@ def fertilization_reward(_previous_state, _next_state, _history):
     if _next_state:
         last_action = _history['action'][-1]['anfer']
         penality = .5
-        trnu = 1
-        #trnu = _next_state['trnu']
-        #return trnu - penality * last_action
+        trnu = _next_state['trnu']
+        return trnu - penality * last_action
     return None
 
 
 def irrigation_reward(_previous_state, _next_state, _history):
     if _next_state:
         last_action = _history['action'][-1]['amir']
-        # previous_topwt = _previous_state['topwt']
-        # next_topwt = _next_state['topwt']
-        previous_topwt = 1
-        next_topwt = 2
+        previous_topwt = _previous_state['topwt']
+        next_topwt = _next_state['topwt']
         penality = 15
         return next_topwt - previous_topwt - penality * last_action
     return None

@@ -49,8 +49,7 @@ class DssatPdi(gym.Env):
             }
         if cultivar not in self.cultivars_fileX.keys():
             cultivar = "maize"
-            print("Cultivar not recognized, switched to default: maize ..")
-        
+            print("Cultivar not recognized, switched to default: maize ..")   
         self.cultivar = cultivar    
         cultivar_filename = self.cultivars_fileX[cultivar]
 
@@ -86,6 +85,9 @@ class DssatPdi(gym.Env):
         self._set_rseed_args()
         self._rseed1 = self._random_generator.randint(**self.rseed_args)
         self.random_weather = random_weather
+        if cultivar == "cotton" and self.random_weather:
+            print("WGEN file for cotton not found : dssat-csm-data/Weather/Climate/AZMC.CLI")
+            self.random_weather=False
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.irrig = 'L' if mode in ['all', 'irrigation'] else 'R'

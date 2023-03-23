@@ -23,7 +23,7 @@ action:
   amir:
     type: float
     low: 0
-    high: 50
+    high: 100
     info: water depth to irrigate for current day (mm/m2 equivalent to L/m2)
 #################
 # RAW STATE SPACE
@@ -64,19 +64,6 @@ state:
     low: 0
     high: 50000
     info: grain weight dry matter (kg/ha)
-  istage:
-    type: discrete
-    info: DSSAT maize growing stage (index in order 7, 8, 9, 1, 2, 3, 4, 5 ,6)
-    size: 9
-# 1 = End of Juvenil Phase
-# 2 = Floral Initiation
-# 3 = 75% of Silking
-# 4 = Beginning of Grain Filling
-# 5 = End of Grrain Filling
-# 6 = Maturity
-# 7 = Sowing
-# 8 = Germinate
-# 9 = Emergence
   vstage:
     type: float
     low: 0

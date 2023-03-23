@@ -85,9 +85,10 @@ class DssatPdi(gym.Env):
         self._set_rseed_args()
         self._rseed1 = self._random_generator.randint(**self.rseed_args)
         self.random_weather = random_weather
-        if cultivar == "cotton" and self.random_weather:
+        if cultivar == "cotton" and random_weather:
             print("WGEN file for cotton not found : dssat-csm-data/Weather/Climate/AZMC.CLI")
             self.random_weather=False
+            random_weather=False
         self.wther = 'W' if random_weather else 'M'
         self.ferti = 'L' if mode in ['all', 'fertilization'] else 'R'
         self.irrig = 'L' if mode in ['all', 'irrigation'] else 'R'

@@ -395,7 +395,7 @@ python coverage package:
     - large
   image: docker:stable
   script:
-  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage && coverage run --source=/opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
+  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage --break-system-packages && coverage run --source=/opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
   - apk add --no-cache python3 py3-pip
   - COVERAGE=$(python3 -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
   - pip install anybadge
@@ -414,7 +414,7 @@ python coverage source json:
     - large
   image: docker:stable
   script:
-  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
+  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage --break-system-packages && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
   when: on_success
   # when: manual
   artifacts:

@@ -249,6 +249,51 @@ state:
     low: 0
     high: 1000
     info: Cumulative leaf growth (g[leaf]/m2)
+  wtntot:
+    type: float
+    low: 0
+    high: 1000
+    info: Total plant N content (g[N] / m2[ground])
+  turfac:
+    type: float
+    low: 0
+    high: 1
+    info: Water stress factor for expansion (0 - 1)
+  totwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Total weight of crop (g[tissue] / m2)
+  shelwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Total mass of all shells (g / m2)
+  sdwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Dry mass of seed tissue, including C and N (g[seed] / m2[ground])
+  podwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Dry mass of seeds plus shells, including C and N (g[pods] / m2[ground])
+  sdlip:
+    type: float
+    low: 0
+    high: 1000
+    info: Maximum lipid composition in seed (fraction)
+  pcnsd:
+    type: float
+    low: 0
+    high: 100
+    info: Percentage of N in seed tissue (100 g[N] / g[seed])
+  nfixn:
+    type: float
+    low: 0
+    high: 1000
+    info: Amount of N fixed during the day (g[N] / m2 / d)
 
 # OTHER ARRAY DELCARATION EXAMPLES
 #  array_example1:
@@ -305,6 +350,16 @@ setting:
       - laimx
       - cannaa
       - clw
+
+      - wtntot
+      - turfac
+      - totwt
+      - shelwt
+      - sdwt
+      - podwt
+      - sdlip
+      - pcnsd
+      - nfixn
     context:
       - sat
       - dul
@@ -326,9 +381,19 @@ setting:
       - wtnup
 
       - pcnl
-      - laimx
-      - cannaa
-      - clw
+      # - laimx
+      # - cannaa
+      # - clw
+
+      - wtntot
+      - turfac
+      - totwt
+      - shelwt
+      - sdwt
+      - podwt
+      - sdlip
+      - pcnsd
+      - nfixn
     context:
       - sat
       - dul
@@ -354,9 +419,19 @@ setting:
       - wtnup
 
       - pcnl
-      - laimx
-      - cannaa
-      - clw
+      # - laimx
+      # - cannaa
+      # - clw
+
+      - wtntot
+      - turfac
+      - totwt
+      - shelwt
+      - sdwt
+      - podwt
+      - sdlip
+      - pcnsd
+      - nfixn
     context:
       - sat
       - dul

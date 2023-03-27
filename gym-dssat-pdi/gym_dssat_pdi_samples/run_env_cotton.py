@@ -81,7 +81,6 @@ def interact_with_env(env, verbose=True):
         res = env.step(action)
         new_state, reward, done, info = res
         if verbose:
-            # pprint(f'observation: {observation}')
             pprint(f'dap : {dap} -> fertilizing {action["anfer"]} kg N/ha ; reward {reward}')
         if new_state is not None:
             interactions.append(new_state)

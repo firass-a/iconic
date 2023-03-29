@@ -68,6 +68,9 @@ class DssatPdi(gym.Env):
         self.action_space = None
         for key in ['observation', 'context', 'action']:
             self._make_gym_spaces(key=key)
+        if cultivar == "cotton":
+            dirname = os.path.dirname(__file__)
+            auxiliary_file_paths = [os.path.join(dirname, 'configs/cotton/AZMC.CLI')]
         if auxiliary_file_paths is not None:
             self.auxiliary_file_paths = auxiliary_file_paths
         else:

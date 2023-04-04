@@ -18,7 +18,7 @@ action:
   anfer:
     type: float
     low: 0
-    high: 200
+    high: 150
     info: nitrogen to fertilize for current day (kg/ha)
   amir:
     type: float
@@ -384,6 +384,7 @@ setting:
       # - laimx
       # - cannaa
       # - clw
+      - cumsumfert
 
       - wtntot
       - turfac

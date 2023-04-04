@@ -311,7 +311,8 @@ class DssatPdi(gym.Env):
     def _get_reward(self, _next_state):
         _previous_state = self._state
         _history = self._history
-        reward = self._reward_func(_previous_state, _next_state, _history)
+        _cultivar = self.cultivar
+        reward = self._reward_func(_previous_state, _next_state, _history, _cultivar)
         return reward
 
     def _get_sockets_(self):

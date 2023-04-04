@@ -13,12 +13,17 @@ __author__ = 'Romain Gautron <romain.gautron@cirad.fr>'
 ### The rewards are fixed until specific variables
 ### and objectives are selected
 
-def fertilization_reward(_previous_state, _next_state, _history):
+def fertilization_reward(_previous_state, _next_state, _history, _cultivar):
+    weights = {
+            "maize"  : {"coef":1.0, "penality":0.5},
+            "cotton" : {"coef":1.0, "penality":0.75},
+    }   
     if _next_state:
         last_action = _history['action'][-1]['anfer']
-        penality = .5
+        penality = weights[_cultivar]["penality"]
+        coef = weights[_cultivar]["coef"]
         trnu = _next_state['trnu']
-        return trnu - penality * last_action
+        return trnu * coef - penality * last_action
     return None
 
 

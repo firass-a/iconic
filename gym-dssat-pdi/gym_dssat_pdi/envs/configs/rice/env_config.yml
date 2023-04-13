@@ -18,7 +18,7 @@ action:
   anfer:
     type: float
     low: 0
-    high: 150
+    high: 200
     info: nitrogen to fertilize for current day (kg/ha)
   amir:
     type: float
@@ -294,6 +294,81 @@ state:
     low: 0
     high: 1000
     info: Amount of N fixed during the day (g[N] / m2 / d)
+  chtd:
+    type: float
+    low: 0
+    high: 1000
+    info: Canopy height (M)
+  cwad:
+    type: float
+    low: 0
+    high: 1000
+    info: Total crop dry weight (Kg/ha)
+  pcnveg:
+    type: float
+    low: 0
+    high: 100
+    info: Veg (stem+leaf) N concentration (%)    
+  andem:
+    type: float
+    low: 0
+    high: 1000
+    info: Total crop N demand (kg[N]/ha)
+  unh4:
+    type: float
+    low: 0
+    high: 1000
+    info: Plant uptake of ammonium from layer (kg N/ha/day)
+  uno3:
+    type: float
+    low: 0
+    high: 1000
+    info: Plant uptake of nitrate from a layer (kg N/ha/day)
+  nuf:
+    type: float
+    low: 0
+    high: 1000
+    info: Plant N supply to demand used to modify N uptake
+  xgnp:
+    type: float
+    low: 0
+    high: 1000
+    info: Nitrogen content of grain, %
+  grainn:
+    type: float
+    low: 0
+    high: 1000
+    info: Grain nitrogen content, g N/plant
+  xanc:
+    type: float
+    low: 0
+    high: 1000
+    info: Nitrogen concentration in above ground biomass %
+  lai:
+    type: float
+    low: 0
+    high: 1000
+    info: Leaf area index (m2 leaf/m2 ground)
+  tilno:
+    type: float
+    low: 0
+    high: 1000
+    info: tilno
+  gpp:
+    type: float
+    low: 0
+    high: 1000
+    info: Grain number per plant, grains/plant
+  dyield:
+    type: float
+    low: 0
+    high: 1000
+    info: dry yield
+  istage:
+    type: discrete
+    info: istage
+    size: 9
+
 
 # OTHER ARRAY DELCARATION EXAMPLES
 #  array_example1:
@@ -330,70 +405,61 @@ setting:
       - anfer
       - amir
     state:
-      - vstage
       - grnwt
-      - topwt
-      - xlai
-      - swfac
       - nstres
-      - tmax
-      - srad
       - dap
-      - sw
-      - wtdep
-      - rtdep
-      - totir
       - pltpop
-      - wtnup
-
-      - pcnl
-      - laimx
-      - cannaa
-      - clw
-
-      - wtntot
-      - turfac
-      - totwt
-      - shelwt
-      - sdwt
-      - podwt
-      - sdlip
-      - pcnsd
-      - nfixn
+      - chtd
+      - cwad
+      - pcnveg
+      - andem
+      - nuf
+      - uno3
+      - unh4
+      - xgnp
+      - grainn
+      - xanc
+      - topwt
+      - lai
+      - tilno
+      - gpp
+      - dyield
+      - dtt
+      - cumsumfert
+      - istage
+      - swfac
     context:
       - sat
       - dul
       - ll
       - dlayr
-    experiment_number: 2
+    experiment_number: 1
   fertilization:
     action:
       - anfer
     state:
-      - vstage
       - grnwt
-      - topwt
-      - swfac
       - nstres
-      - xlai
       - dap
       - pltpop
-      - wtnup
-
-      - pcnl
+      - chtd
+      - cwad
+      - pcnveg
+      - andem
+      - nuf
+      - uno3
+      - unh4
+      - xgnp
+      - grainn
+      - xanc
+      - topwt
+      - lai
+      - tilno
+      - gpp
+      - dyield
+      - dtt
       - cumsumfert
-      # - laimx
-      # - cannaa
-      # - clw
-      - wtntot
-      - turfac
-      - totwt
-      - shelwt
-      - sdwt
-      - podwt
-      - sdlip
-      - pcnsd
-      - nfixn
+      - istage
     context:
       - sat
       - dul
@@ -404,37 +470,32 @@ setting:
     action:
       - amir
     state:
-      - vstage
       - grnwt
-      - topwt
-      - xlai
-      - tmax
-      - srad
+      - nstres
       - dap
-      - sw
-      - wtdep
-      - rtdep
-      - totir
       - pltpop
-      - wtnup
-
-      - pcnl
-      # - laimx
-      # - cannaa
-      # - clw
-
-      - wtntot
-      - turfac
-      - totwt
-      - shelwt
-      - sdwt
-      - podwt
-      - sdlip
-      - pcnsd
-      - nfixn
+      - chtd
+      - cwad
+      - pcnveg
+      - andem
+      - nuf
+      - uno3
+      - unh4
+      - xgnp
+      - grainn
+      - xanc
+      - topwt
+      - lai
+      - tilno
+      - gpp
+      - dyield
+      - dtt
+      - cumsumfert
+      - istage
+      - swfac
     context:
       - sat
       - dul
       - ll
       - dlayr
-    experiment_number: 2
+    experiment_number: 1

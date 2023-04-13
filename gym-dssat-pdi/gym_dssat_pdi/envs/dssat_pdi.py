@@ -45,7 +45,8 @@ class DssatPdi(gym.Env):
         # Assert cultivar name exists else defaults to maize
         self.cultivars_fileX = {
             "maize"  : 'UFGA8201',
-            "cotton" : 'AZMC8901'
+            "cotton" : 'AZMC8901',
+            "rice"   : 'IRPI8001'
             }
         if cultivar not in self.cultivars_fileX.keys():
             cultivar = "maize"

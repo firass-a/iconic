@@ -12,50 +12,47 @@ from pprint import pprint
 
 import os
 
+dirname = os.path.dirname(__file__)
+
 
 def default_policy(dap):
     fertilization_dic = {
-        1: 67,
-        39: 22,
-        66: 22,
-        100: 22
+        1: 120,
     }
     irrigation_dic = {
-        1:10,
-        7:43,
-        11:43,
-        14:34,
-        18:47,
-        22:43,
-        24:30,
-        32:73,
-        38:30,
-        49:52,
-        56:43,
-        71:60,
+        7:27,
+        10:26,
+        14:26,
+        20:25,
+        27:28,
+        31:27,
+        38:31,
+        42:14,
+        45:11,
+        49:28,
+        52:23,
+        57:8,
+        60:17,
+        63:18,
+        65:11,
+        67:10,
+        69:8,
+        71:15,
         73:13,
-        75:47,
-        78:26,
-        81:26,
-        85:34,
-        89:60,
-        92:56,
-        93:13,
-        94:34,
-        101:26,
-        103:17,
-        105:34,
-        107:17,
-        109:30,
-        111:22,
-        113:17,
-        115:9,
-        117:22,
-        119:13,
-        121:22,
-        123:17,
-        125:30,
-        127:26
+        76:27,
+        78:16,
+        81:19,
+        90:23,
+        94:22,
+        99:24,
+        101:15,
+        103:14,
+        105:11,
+        108:19,
+        111:5,
+        112:14,
+        115:20,
+        121:15,
     }
     if dap in fertilization_dic:
         anfer = fertilization_dic[dap]
@@ -74,6 +71,7 @@ def interact_with_env(env, verbose=True):
     while not env.done:
         observation = env.observation
         observation_list = env.observation_dict_to_array(observation)
+        #print(observation)
         dap = observation['dap']
         action = default_policy(dap)
         res = env.step(action)
@@ -161,7 +159,7 @@ if __name__ == '__main__':
     for i, mode in enumerate([
                               'fertilization',
                               'irrigation',
-                              'all'
+                              #'all'
                               ]):
         print(f'MODE: {mode}')
         env_args = {
@@ -169,36 +167,35 @@ if __name__ == '__main__':
             'log_saving_path': './logs/dssat_pdi.log',
             'mode': mode,
             'seed': 123456,
-            'random_weather': True,
-            'cultivar': "cotton",
+            'random_weather': False,
+            'cultivar': "rice",
         }
         try_interact = True
-        try_multiproc = True
-        verbose = not True
+        try_multiproc = False
+        verbose = False
         if try_interact:
             try:
                 env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
                 #if i == 0:
                     #env.get_env_info(user_input=False)
+                n_rep = 1
                 env.seed(123)
-                n_rep = 8
                 yields = []
+                env.reset_hard()
+
+                # FOR DEBUG
+                # initial_observation = env.observation  # Save the initial observation
+                # print("Initial observation:", initial_observation)
+
                 for j in range(n_rep):
                     env.reset()
                     interactions = interact_with_env(env, verbose=verbose)
+                    #print(interactions[-1])
                     yields.append(interactions[-1]['grnwt'])
                     if (j + 1) % 10 == 0:
                         print(f'{j + 1}/{n_rep}')
                 print(f'mean of yields: {np.mean(yields)} kg/ha')
                 print(f'variance of yields: {np.var(yields)} kg/ha')
-                if mode == 'mode':
-                    env.render(type='ts',
-                               feature_name_1='cleach',
-                               feature_name_2='totaml')
-                    env.render(type='reward',
-                               cumsum=True)
-                    env.render(type='reward',
-                               cumsum=False)
                 env.reset_hard()
             except Exception as e:
                 logging.exception(e)

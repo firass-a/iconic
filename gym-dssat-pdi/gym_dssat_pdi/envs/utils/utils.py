@@ -121,10 +121,22 @@ def _post_treat_state(state, cultivar="maize"):
             state['nstres'] = 1 - state['nstres']
             state['swfac'] = 1 - state['swfac']
             state['wtnup'] *= 10
-            state['trnu'] = state['pltpop']
+            state['trnu'] *= state['pltpop']
             state['topwt'] *= 10
         except Exception as e:
             print(e)
+        return state
+    elif cultivar == "rice":
+        try:
+            state['grnwt'] *= 10 * state['pltpop']  # 'grnwt' now corresponds to 'SDWT', g of grain/m^2
+            #state['nstres'] = 1 - state['nstres']
+            #state['swfac'] = 1 - state['swfac']
+            #state['wtnup'] *= 10
+            state['trnu'] *= 10 
+            #state['topwt'] *= 10
+        except Exception as e:
+            print(e)
+            #pass
         return state
 
 

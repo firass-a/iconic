@@ -1,15 +1,15 @@
 stages:
-  # - build:sid
-  # - build:sid_source
+  - build:sid
+  - build:sid_source
   # - build:bullseye
   # - build:kinetic
-  - build:jammy
+  # build:jammy
   # - build:focal
-  # - test:sid
-  # - test:sid_source
+  - test:sid
+  - test:sid_source
   # - test:bullseye
   # - test:kinetic
-  - test:jammy
+  # test:jammy
   # - test:focal
   # - build:spack-centos
   # - test:spack-centos

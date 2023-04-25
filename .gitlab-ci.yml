@@ -1,29 +1,30 @@
 stages:
-  - build:sid
-  - build:sid_source
-  - build:bullseye
-  - build:kinetic
+  # - build:sid
+  # - build:sid_source
+  # - build:bullseye
+  # - build:kinetic
   - build:jammy
-  - build:focal
-  - test:sid
-  - test:sid_source
-  - test:bullseye
-  - test:kinetic
+  # - build:focal
+  # - test:sid
+  # - test:sid_source
+  # - test:bullseye
+  # - test:kinetic
   - test:jammy
-  - test:focal
-  - build:spack-centos
-  - test:spack-centos
-  - build:spack-cuda
-  - test:spack-cuda
-  - build:spack-bullseye
-  - test:spack-bullseye
-  - build:spack-jammy
-  - test:spack-jammy
-  - build:spack-focal
-  - test:spack-focal
-  - coverage:package
-  - coverage-json:source
-  - coverage-badge:source
+  # - test:focal
+  # - build:spack-centos
+  # - test:spack-centos
+  # - build:spack-cuda
+  # - test:spack-cuda
+  # - build:spack-bullseye
+  # - test:spack-bullseye
+  # - build:spack-jammy
+  # - test:spack-jammy
+  # - build:spack-focal
+  # - test:spack-focal
+  # - coverage:package
+  # - coverage-json:source
+  # - coverage-badge:source
+  - test:sid_pytest
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
@@ -442,3 +443,14 @@ python coverage source badge:
     when: on_success
     paths:
       - coverage.svg
+
+test sid_pytest:
+  stage: test:sid_pytest
+  tags:
+    - ci.inria.fr
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SID_SOURCE
+    - docker run -v /gym_dssat_pdi/gym-dssat-pdi:/tests $IMAGE_DESTINATION_SID_SOURCE pytest /tests
+

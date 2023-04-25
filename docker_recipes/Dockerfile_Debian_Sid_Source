@@ -59,6 +59,7 @@ RUN mv dssat-csm-data/* /opt/dssat_pdi/
 #                            matplotlib==3.3.4 numpy==1.24.1 pyzmq==25.0.0 \
 #                            gym==0.21.0
 RUN python3 -m pip install -e ./gym-dssat-pdi --break-system-packages
+RUN python3 -m pip install pytest
 
 ### Image config
 ENV VIRTUAL_ENV /opt/gym_dssat_pdi

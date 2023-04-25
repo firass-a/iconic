@@ -232,11 +232,9 @@ class DssatPdi(gym.Env):
                                                        template_string=self._fileX_template)
 
     def _write_fileX_template(self):
-        ### Not sure if extension changes dssat run, should 
-        ### cotton temp file be change to COX or not
         utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
-    def _deactivate_automatic_planting(self):
+    def deactivate_automatic_planting(self):
         """
         utility function for debugging
         :return:
@@ -246,6 +244,16 @@ class DssatPdi(gym.Env):
         self._make_fileX_template()
         self._write_fileX_template()
         print('Automatic planting deactivated')
+    
+    def activate_automatic_fertilization(self):
+        """
+        utility function for debugging
+        :return:
+        :rtype:
+        """
+        self.ferti = 'R'
+        self._make_fileX_template()
+        self._write_fileX_template()
 
     def _launch_client(self):
         pdi_command = f'/usr/bin/env {self._run_dssat_location} C fileX.MZX {self.experiment_number}'

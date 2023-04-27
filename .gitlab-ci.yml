@@ -48,7 +48,7 @@ build sid source_pytest:
 
 test sid source_pytest:
   stage: test:sid_source_pytest
-  allow_failure: true
+  allow_failure: false
   tags:
     - ci.inria.fr
     - large

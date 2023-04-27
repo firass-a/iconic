@@ -1,6 +1,31 @@
 stages:
+  - build:sid
+  - build:sid_source
   - build:sid_source_pytest
+  - build:bullseye
+  - build:kinetic
+  - build:jammy
+  - build:focal
+  - test:sid
+  - test:sid_source
   - test:sid_source_pytest
+  - test:bullseye
+  - test:kinetic
+  - test:jammy
+  - test:focal
+  - build:spack-centos
+  - test:spack-centos
+  - build:spack-cuda
+  - test:spack-cuda
+  - build:spack-bullseye
+  - test:spack-bullseye
+  - build:spack-jammy
+  - test:spack-jammy
+  - build:spack-focal
+  - test:spack-focal
+  - coverage:package
+  - coverage-json:source
+  - coverage-badge:source
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
@@ -29,6 +54,43 @@ variables:
   IMAGE_NAME_SPACK_FOCAL: spack-focal:latest
   IMAGE_DESTINATION_SPACK_FOCAL: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SPACK_FOCAL
 
+build sid:
+  stage: build:sid
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_SID --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SID -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid .
+    - docker push $IMAGE_DESTINATION_SID
+    - echo "Image ${IMAGE_NAME_SID} successfully pushed to ${IMAGE_DESTINATION_SID}"
+  when: manual
+
+build sid source:
+  stage: build:sid_source
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_SID_SOURCE --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --no-cache --force-rm -t $IMAGE_DESTINATION_SID_SOURCE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source .
+    - docker push $IMAGE_DESTINATION_SID_SOURCE
+    - echo "Image ${IMAGE_NAME_SID_SOURCE} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE}"
+#  when: manual
 build sid source_pytest:
   stage: build:sid_source_pytest
   allow_failure: false
@@ -46,6 +108,198 @@ build sid source_pytest:
     - docker push $IMAGE_DESTINATION_SID_SOURCE_PYTEST
     - echo "Image ${IMAGE_NAME_SID_SOURCE_PYTEST} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE_PYTEST}"
 
+build bullseye:
+  stage: build:bullseye
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_BULLSEYE --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye .
+    - docker push $IMAGE_DESTINATION_BULLSEYE
+    - echo "Image ${IMAGE_NAME_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_BULLSEYE}"
+  when: manual
+
+build kinetic:
+  stage: build:kinetic
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_KINETIC --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_KINETIC -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Kinetic .
+    - docker push $IMAGE_DESTINATION_KINETIC
+    - echo "Image ${IMAGE_NAME_KINETIC} successfully pushed to ${IMAGE_DESTINATION_KINETIC}"
+  when: manual
+
+build jammy:
+  stage: build:jammy
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_JAMMY --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy .
+    - docker push $IMAGE_DESTINATION_JAMMY
+    - echo "Image ${IMAGE_NAME_JAMMY} successfully pushed to ${IMAGE_DESTINATION_JAMMY}"
+  when: manual
+
+build focal:
+  stage: build:focal
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_FOCAL --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal .
+    - docker push $IMAGE_DESTINATION_FOCAL
+    - echo "Image ${IMAGE_NAME_FOCAL} successfully pushed to ${IMAGE_DESTINATION_FOCAL}"
+  when: manual
+
+build spack-centos:
+  stage: build:spack-centos
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  before_script:
+  # - docker image prune --filter="dangling=true" --force
+  # - docker rmi $IMAGE_DESTINATION_SPACK_CENTOS --force
+  - docker system prune -af --volumes
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_CENTOS -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_CentOS_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_CENTOS
+    - echo "Image ${IMAGE_NAME_SPACK_CENTOS} successfully pushed to ${IMAGE_DESTINATION_SPACK_CENTOS}"
+  when: manual
+
+build spack-cuda:
+  stage: build:spack-cuda
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_CUDA --force
+    - docker system prune -af --volumes
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_CUDA -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_CUDA_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_CUDA
+    - echo "Image ${IMAGE_NAME_SPACK_CUDA} successfully pushed to ${IMAGE_DESTINATION_SPACK_CUDA}"
+  when: manual
+
+build spack-bullseye:
+  stage: build:spack-bullseye
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_BULLSEYE --force
+     - docker system prune -af --volumes
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_BULLSEYE -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Bullseye_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_BULLSEYE
+    - echo "Image ${IMAGE_NAME_SPACK_BULLSEYE} successfully pushed to ${IMAGE_DESTINATION_SPACK_BULLSEYE}"
+  when: manual
+
+build spack-jammy:
+  stage: build:spack-jammy
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_JAMMY --force
+     - docker system prune -af --volumes
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm  -t $IMAGE_DESTINATION_SPACK_JAMMY -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Jammy_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_JAMMY
+    - echo "Image ${IMAGE_NAME_SPACK_JAMMY} successfully pushed to ${IMAGE_DESTINATION_SPACK_JAMMY}"
+  when: manual
+
+build spack-focal:
+  stage: build:spack-focal
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  before_script:
+    # - docker image prune --filter="dangling=true" --force
+    # - docker rmi $IMAGE_DESTINATION_SPACK_FOCAL --force
+     - docker system prune -af --volumes
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --force-rm -t $IMAGE_DESTINATION_SPACK_FOCAL -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Ubuntu_Focal_Spack .
+    - docker push $IMAGE_DESTINATION_SPACK_FOCAL
+    - echo "Image ${IMAGE_NAME_SPACK_FOCAL} successfully pushed to ${IMAGE_DESTINATION_SPACK_FOCAL}"
+  when: manual
+
+test sid:
+  stage: test:sid
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SID
+    - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
+  when: manual
+
+test sid source:
+  stage: test:sid_source
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SID_SOURCE
+    - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
+  # when: manual
+
 test sid source_pytest:
   stage: test:sid_source_pytest
   allow_failure: false
@@ -56,3 +310,166 @@ test sid source_pytest:
   script:
     - docker run $IMAGE_DESTINATION_SID_SOURCE_PYTEST
     - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE_PYTEST} in ${IMAGE_DESTINATION_SID_SOURCE_PYTEST}"
+
+test bullseye:
+  stage: test:bullseye
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_BULLSEYE
+    - echo "Test successfully passed for image ${IMAGE_NAME_BULLSEYE} in ${IMAGE_DESTINATION_BULLSEYE}"
+  when: manual
+
+test kinetic:
+  stage: test:kinetic
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_KINETIC
+    - echo "Test successfully passed for image ${IMAGE_NAME_KINETIC} in ${IMAGE_DESTINATION_KINETIC}"
+  when: manual
+
+test jammy:
+  stage: test:jammy
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_JAMMY
+    - echo "Test successfully passed for image ${IMAGE_NAME_JAMMY} in ${IMAGE_DESTINATION_JAMMY}"
+  when: manual
+
+test focal:
+  stage: test:focal
+  allow_failure: true
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_FOCAL
+    - echo "Test successfully passed for image ${IMAGE_NAME_FOCAL} in ${IMAGE_DESTINATION_FOCAL}"
+  when: manual
+
+test spack-centos:
+  stage: test:spack-centos
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_CENTOS
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_CENTOS} in ${IMAGE_DESTINATION_SPACK_CENTOS}"
+  when: manual
+
+test spack-cuda:
+  stage: test:spack-cuda
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_CUDA
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_CUDA} in ${IMAGE_DESTINATION_SPACK_CUDA}"
+  when: manual
+
+test spack-bullseye:
+  stage: test:spack-bullseye
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_BULLSEYE
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_BULLSEYE} in ${IMAGE_DESTINATION_SPACK_BULLSEYE}"
+  when: manual
+
+test spack-jammy:
+  stage: test:spack-jammy
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_JAMMY
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_JAMMY} in ${IMAGE_DESTINATION_SPACK_JAMMY}"
+  when: manual
+
+test spack-focal:
+  stage: test:spack-focal
+  allow_failure: true
+  tags:
+    - spack
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SPACK_FOCAL
+    - echo "Test successfully passed for image ${IMAGE_NAME_SPACK_FOCAL} in ${IMAGE_DESTINATION_SPACK_FOCAL}"
+  when: manual
+
+python coverage package:
+  stage: coverage:package
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID "pip install coverage --break-system-packages && coverage run --source=/opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi  /opt/gym_dssat_pdi/lib/python3.10/site-packages/gym_dssat_pdi_samples/run_env.py && coverage json -o /root/coverage/coverage.json"
+  - apk add --no-cache python3 py3-pip
+  - COVERAGE=$(python3 -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < coverage/coverage.json)
+  - pip install anybadge
+  - anybadge --value=$COVERAGE --file=coverage.svg coverage
+  when: manual
+  artifacts:
+    when: on_success
+    paths:
+      - coverage.svg
+
+python coverage source json:
+  stage: coverage-json:source
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: docker:stable
+  script:
+  - docker run -u 0 -i -v $PWD/coverage:/root/coverage $IMAGE_DESTINATION_SID_SOURCE "pip install coverage --break-system-packages && cd /gym_dssat_pdi/gym-dssat-pdi/gym_dssat_pdi_samples && git checkout ${CI_COMMIT_BRANCH} && coverage run --source=../gym_dssat_pdi  ./run_env.py && coverage json -o /root/coverage/coverage.json"
+  when: on_success
+  # when: manual
+  artifacts:
+    when: on_success
+    paths:
+      - coverage/coverage.json
+
+python coverage source badge:
+  stage: coverage-badge:source
+  tags:
+    - ci.inria.fr
+    # - medium
+    - large
+  image: python:3.9-bullseye
+  dependencies:
+    - python coverage source json
+  script:
+  - COVERAGE=$(python -c 'import sys, json; print(json.load(sys.stdin)["totals"]["percent_covered_display"])' < ${PWD}/coverage/coverage.json)
+  - echo -e "\e[1mCOVERAGE RESULT ${COVERAGE}%\e[0m"
+  - pip install anybadge
+  - anybadge --value=$COVERAGE --file=coverage.svg coverage
+  when: on_success
+  # when: manual
+  artifacts:
+    when: on_success
+    paths:
+      - coverage.svg

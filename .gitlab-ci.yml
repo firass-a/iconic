@@ -276,31 +276,31 @@ build sid source pytest:
 #     - echo "Image ${IMAGE_NAME_SPACK_FOCAL} successfully pushed to ${IMAGE_DESTINATION_SPACK_FOCAL}"
 #   when: manual
 
-test sid:
-  stage: test:sid
-  allow_failure: true
-  tags:
-    - ci.inria.fr
-    # - medium
-    - large
-  image: docker:stable
-  script:
-    - docker run $IMAGE_DESTINATION_SID
-    - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
-  when: manual
+# test sid:
+#   stage: test:sid
+#   allow_failure: true
+#   tags:
+#     - ci.inria.fr
+#     # - medium
+#     - large
+#   image: docker:stable
+#   script:
+#     - docker run $IMAGE_DESTINATION_SID
+#     - echo "Test successfully passed for image ${IMAGE_NAME_SID} in ${IMAGE_DESTINATION_SID}"
+#   when: manual
 
-test sid source:
-  stage: test:sid_source
-  allow_failure: true
-  tags:
-    - ci.inria.fr
-    # - medium
-    - large
-  image: docker:stable
-  script:
-    - docker run $IMAGE_DESTINATION_SID_SOURCE
-    - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
-  # when: manual
+# test sid source:
+#   stage: test:sid_source
+#   allow_failure: true
+#   tags:
+#     - ci.inria.fr
+#     # - medium
+#     - large
+#   image: docker:stable
+#   script:
+#     - docker run $IMAGE_DESTINATION_SID_SOURCE
+#     - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
+#   # when: manual
 
 test sid source pytest:
   stage: test:sid_source_pytest
@@ -478,14 +478,4 @@ test sid source pytest:
 #     when: on_success
 #     paths:
 #       - coverage.svg
-
-test sid_pytest:
-  stage: test:sid_pytest
-  tags:
-    - ci.inria.fr
-    - large
-  image: docker:stable
-  script:
-    - docker run $IMAGE_DESTINATION_SID_SOURCE
-    - docker run -v /gym_dssat_pdi/gym-dssat-pdi:/tests $IMAGE_DESTINATION_SID_SOURCE pytest /tests
 

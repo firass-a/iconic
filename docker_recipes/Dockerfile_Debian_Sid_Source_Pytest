@@ -43,7 +43,7 @@ RUN apt-get update \
 && rm -rf /var/lib/apt/lists/*
 
 # DSSAT_PDI INSTALLATION
-RUN git clone --recurse-submodules https://gitlab.inria.fr/bdriss/gym_dssat_pdi.git
+RUN git clone --recurse-submodules https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git
 RUN mkdir /gym_dssat_pdi/dssat-csm-os/build
 WORKDIR /gym_dssat_pdi/dssat-csm-os/build
 RUN cmake -DCMAKE_INSTALL_PREFIX='/opt/dssat_pdi' \

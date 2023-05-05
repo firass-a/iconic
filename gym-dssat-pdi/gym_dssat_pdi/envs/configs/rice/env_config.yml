@@ -1,0 +1,501 @@
+---
+###################################################################################################
+# DATA TYPES:
+# * float: 1D floating point in [$low, $high]
+# * int: integer in [[$low, $high]]
+# * discrete: set of discrete values which can take $size values
+# * array:
+#   $size: number of atomic elements
+#   $subtype == float: atomic values of type float in [$low, $high]
+#   $subtype == int: atomic values of type int in [[$low, $high]]
+#   $subtype == discrete: atomic values of type discrete which can take $subsize different values
+###################################################################################################
+
+##################
+# RAW ACTION SPACE
+##################
+action:
+  anfer:
+    type: float
+    low: 0
+    high: 200
+    info: nitrogen to fertilize for current day (kg/ha)
+  amir:
+    type: float
+    low: 0
+    high: 100
+    info: water depth to irrigate for current day (mm/m2 equivalent to L/m2)
+#################
+# RAW STATE SPACE
+#################
+state:
+  cleach:
+    type: float
+    low: 0
+    high: 200
+    info: cumulative nitrate leaching (kg/ha)
+  cnox:
+    type: float
+    low: 0
+    high: 1
+    info: cumulative nitrogen denitrification (kg/ha)
+  cumsumfert:
+    type: float
+    low: 0
+    high: 50000
+    info: cumulative nitrogen fertilizer applications (kg/ha)
+  dap:
+    type: int
+    low: 0
+    high: 366
+    info: days after planting
+  dbap:
+    type: int
+    low: -100
+    high: 366
+    info: days after planting
+  dtt:
+    type: float
+    low: 0
+    high: 100
+    info: growing degree days for current day (C/d)
+  grnwt:
+    type: float
+    low: 0
+    high: 50000
+    info: grain weight dry matter (kg/ha)
+  vstage:
+    type: float
+    low: 0
+    high: 30
+    info: vegetative growth stage (number of leaves)
+  nstres:
+    type: float
+    low: 0
+    high: 1
+    info: index of plant nitrogen stress (unitless)
+  pcngrn:
+    type: float
+    low: 0
+    high: 1
+    info: massic fraction of nitrogen in grains (unitless)
+  pltpop:
+    type: float
+    low: 0
+    high: 100
+    info: plant population density (plant/m2)
+  rain:
+    type: float
+    low: 0
+    high: 500
+    info: rainfall for the current day (mm/d)
+  srad:
+    type: float
+    low: 50
+    high: .inf
+    info: solar radiation during the current day (MJ/m2/d)
+  swfac:
+    type: float
+    low: 0
+    high: 1
+    info: index of plant water stress (unitless)
+  tleachd:
+    type: float
+    low: 0
+    high: 100
+    info: daily nitrate leaching (kg/ha)
+  tmax:
+    type: float
+    low: -60
+    high: 60
+    info: maximum temperature for current day (C)
+  tmin:
+    type: float
+    low: -60
+    high: 60
+    info: minimum temparature for current day (C)
+  tnoxd:
+    type: float
+    low: 0
+    high: 1
+    info: daily nitrogen denitrification (kg/ha)
+  trnu:
+    type: float
+    low: 0
+    high: 10
+    info: daily nitrogen plant population uptake (kg/ha)
+  wtnup:
+    type: float
+    low: 0
+    high: 500
+    info: cumulative plant population  nitrogen uptake (kg/ha)
+  xlai:
+    type: float
+    low: 0
+    high: 10
+    info: plant population leaf area index (m2_leaf/m2_soil)
+  yrdoy:
+    type: discrete
+    info: simulation date (YYYYDDD)
+    size: 366
+  topwt:
+    type: float
+    low: 0
+    high: 50000
+    info: above the ground population biomass (kg/ha)
+  es:
+    type: float
+    low: 0
+    high: 50
+    info: actual soil evaporation rate (mm/d)
+  eo:
+    type: float
+    low: 0
+    high: 50
+    info: potential evapotranspiration rate (mm/d)
+  ep:
+    type: float
+    low: 0
+    high: 50
+    info: actual plant transpiration rate (mm/d)
+  eop:
+    type: float
+    low: 0
+    high: 50
+    info: potential plant transpiration rate (mm/d)
+  eos:
+    type: float
+    low: 0
+    high: 50
+    info: potential rate of soil evaporation (mm/d)
+  runoff:
+    type: float
+    low: 0
+    high: 100
+    info: calculated runoff (mm/d)
+  wtdep:
+    type: float
+    low: 0
+    high: 1000
+    info: depth to water table (cm)
+  rtdep:
+    type: float
+    low: 0
+    high: 300
+    info: root depth (cm)
+  totaml:
+    type: float
+    low: 0
+    high: 5000
+    info: cumulative ammonia volatilization (kgN/ha)
+  totir:
+    type: float
+    low: 0
+    high: 15000
+    info: total irrigated water (mm)
+  ll:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at lower limit (cm3 [water] / cm3 [soil])
+  dul:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at drained upper limit (cm3 [water] / cm3 [soil])
+  sat:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers at saturation (cm3 [water] / cm3 [soil])
+  sw:
+    type: array
+    subtype: float
+    low: 0
+    high: 1
+    size: 9
+    info: volumetric soil water content in soil layers (cm3 [water] / cm3 [soil])
+  dlayr:
+    type: array
+    subtype: float
+    low: 0
+    high: 1000
+    size: 9
+    info: thickness of for soil layers (cm)
+  ### Not Sure about the low and high of these values
+  pcnl:
+    type: float
+    low: 0
+    high: 100
+    info: Percentage of N in leaf tissue (100 g[N] / g[leaf])
+  laimx:
+    type: float
+    low: 0
+    high: 100
+    info: Maximum leaf area index this season (m2[leaf] / m2[ground])
+  cannaa:
+    type: float
+    low: 0
+    high: 100
+    info: Weight of N in total plant at flowering (g[N] / m2)
+  clw:
+    type: float
+    low: 0
+    high: 1000
+    info: Cumulative leaf growth (g[leaf]/m2)
+  wtntot:
+    type: float
+    low: 0
+    high: 1000
+    info: Total plant N content (g[N] / m2[ground])
+  turfac:
+    type: float
+    low: 0
+    high: 1
+    info: Water stress factor for expansion (0 - 1)
+  totwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Total weight of crop (g[tissue] / m2)
+  shelwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Total mass of all shells (g / m2)
+  sdwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Dry mass of seed tissue, including C and N (g[seed] / m2[ground])
+  podwt:
+    type: float
+    low: 0
+    high: 1000
+    info: Dry mass of seeds plus shells, including C and N (g[pods] / m2[ground])
+  sdlip:
+    type: float
+    low: 0
+    high: 1000
+    info: Maximum lipid composition in seed (fraction)
+  pcnsd:
+    type: float
+    low: 0
+    high: 100
+    info: Percentage of N in seed tissue (100 g[N] / g[seed])
+  nfixn:
+    type: float
+    low: 0
+    high: 1000
+    info: Amount of N fixed during the day (g[N] / m2 / d)
+  chtd:
+    type: float
+    low: 0
+    high: 1000
+    info: Canopy height (M)
+  cwad:
+    type: float
+    low: 0
+    high: 1000
+    info: Total crop dry weight (Kg/ha)
+  pcnveg:
+    type: float
+    low: 0
+    high: 100
+    info: Veg (stem+leaf) N concentration (%)    
+  andem:
+    type: float
+    low: 0
+    high: 1000
+    info: Total crop N demand (kg[N]/ha)
+  unh4:
+    type: float
+    low: 0
+    high: 1000
+    info: Plant uptake of ammonium from layer (kg N/ha/day)
+  uno3:
+    type: float
+    low: 0
+    high: 1000
+    info: Plant uptake of nitrate from a layer (kg N/ha/day)
+  nuf:
+    type: float
+    low: 0
+    high: 1000
+    info: Plant N supply to demand used to modify N uptake
+  xgnp:
+    type: float
+    low: 0
+    high: 1000
+    info: Nitrogen content of grain, %
+  grainn:
+    type: float
+    low: 0
+    high: 1000
+    info: Grain nitrogen content, g N/plant
+  xanc:
+    type: float
+    low: 0
+    high: 1000
+    info: Nitrogen concentration in above ground biomass %
+  lai:
+    type: float
+    low: 0
+    high: 1000
+    info: Leaf area index (m2 leaf/m2 ground)
+  tilno:
+    type: float
+    low: 0
+    high: 1000
+    info: tilno
+  gpp:
+    type: float
+    low: 0
+    high: 1000
+    info: Grain number per plant, grains/plant
+  dyield:
+    type: float
+    low: 0
+    high: 1000
+    info: dry yield
+  istage:
+    type: discrete
+    info: istage
+    size: 9
+
+
+# OTHER ARRAY DELCARATION EXAMPLES
+#  array_example1:
+#    type: array
+#    subtype: int
+#    low: 0
+#    high: 1
+#    size: 9
+#    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
+#  array_example2:
+#    type: array
+#    subtype: discrete
+#    subsize: 4
+#    size: 9
+#    info: volumetric soil water content in soil layer L at lower limit (cm3 [water] / cm3 [soil])
+
+#######################################################
+# ACTION AND STATE SPACES RESTRICTIONS FOR ENV SETTINGS
+#######################################################
+# setting: -> defines the learning tasks
+#   all: -> name of the learning task which must coincide with the name associated with the reward function in 'reward_func_dic'
+#     action: -> defines the action space
+#       - anfer
+#       - amir
+#     state: -> defines the state space
+#       - nstres
+#       - istage
+#     context: -> defines the 'info' output in the env.step() method of the gym environment
+#       - sat
+#     experiment_number: 3 -> number of the experiment of the learning task in DSSAT fileX
+setting:
+  all:
+    action:
+      - anfer
+      - amir
+    state:
+      - grnwt
+      - nstres
+      - dap
+      - pltpop
+      - chtd
+      - cwad
+      - pcnveg
+      - andem
+      - nuf
+      - uno3
+      - unh4
+      - xgnp
+      - grainn
+      - xanc
+      - topwt
+      - lai
+      - tilno
+      - gpp
+      - dyield
+      - dtt
+      - cumsumfert
+      - istage
+      - swfac
+    context:
+      - sat
+      - dul
+      - ll
+      - dlayr
+    experiment_number: 1
+  fertilization:
+    action:
+      - anfer
+    state:
+      - grnwt
+      - nstres
+      - dap
+      - pltpop
+      - chtd
+      - cwad
+      - pcnveg
+      - andem
+      - nuf
+      - uno3
+      - unh4
+      - xgnp
+      - grainn
+      - xanc
+      - topwt
+      - lai
+      - tilno
+      - gpp
+      - dyield
+      - dtt
+      - cumsumfert
+      - istage
+    context:
+      - sat
+      - dul
+      - ll
+      - dlayr
+    experiment_number: 1
+  irrigation:
+    action:
+      - amir
+    state:
+      - grnwt
+      - nstres
+      - dap
+      - pltpop
+      - chtd
+      - cwad
+      - pcnveg
+      - andem
+      - nuf
+      - uno3
+      - unh4
+      - xgnp
+      - grainn
+      - xanc
+      - topwt
+      - lai
+      - tilno
+      - gpp
+      - dyield
+      - dtt
+      - cumsumfert
+      - istage
+      - swfac
+    context:
+      - sat
+      - dul
+      - ll
+      - dlayr
+    experiment_number: 1

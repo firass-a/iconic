@@ -33,7 +33,7 @@ class DssatPdi(gym.Env):
 
     def __init__(self, run_dssat_location='run_dssat', log_saving_path=None, mode='all',
                  auxiliary_file_paths=None, files_prefix='./', random_weather=True, seed=None, fileX_template_path=None,
-                 experiment_number=None, evaluation=False):
+                 experiment_number=None, evaluation=False, cultivar = "maize"):
         assert shutil.which(run_dssat_location) is not None, f'no DSSAT-PDI executable found at: {run_dssat_location}'
         self._run_dssat_location = run_dssat_location
         self.experiment_number = experiment_number
@@ -41,14 +41,27 @@ class DssatPdi(gym.Env):
         self.action_variables = None
         self.observation_variables = None
         self.context_variables = None
+        
+        # Assert cultivar name exists else defaults to maize
+        self.cultivars_fileX = {
+            "maize"  : 'UFGA8201',
+            "cotton" : 'AZMC8901',
+            "rice"   : 'IRPI8001'
+            }
+        if cultivar not in self.cultivars_fileX.keys():
+            cultivar = "maize"
+            print("Cultivar not recognized, switched to default: maize ..")   
+        self.cultivar = cultivar    
+        cultivar_filename = self.cultivars_fileX[cultivar]
+
         if fileX_template_path is None:
-            self._fileX_template = pkgutil.get_data(__name__, f'configs/UFGA8201.jinja2').decode('utf-8')
+            self._fileX_template = pkgutil.get_data(__name__, f'configs/{cultivar}/{cultivar_filename}.jinja2').decode('utf-8')
         else:
             self._fileX_template = utils._load_fileX_template(fileX_template_path)
         self._fileX = None
-        self._pdi_yaml_template = pkgutil.get_data(__name__, f'configs/dssat_pdi.jinja2').decode('utf-8')
+        self._pdi_yaml_template = pkgutil.get_data(__name__, f'configs/{cultivar}/dssat_pdi.jinja2').decode('utf-8')
         self._pdi_yaml = None
-        self._env_yaml_config = pkgutil.get_data(__name__, f'configs/env_config.yml').decode('utf-8')
+        self._env_yaml_config = pkgutil.get_data(__name__, f'configs/{cultivar}/env_config.yml').decode('utf-8')
         self._config = None
         self._load_config()
         self.observation_space = None
@@ -56,6 +69,9 @@ class DssatPdi(gym.Env):
         self.action_space = None
         for key in ['observation', 'context', 'action']:
             self._make_gym_spaces(key=key)
+        if cultivar == "cotton":
+            dirname = os.path.dirname(__file__)
+            auxiliary_file_paths = [os.path.join(dirname, 'configs/cotton/AZMC.CLI')]
         if auxiliary_file_paths is not None:
             self.auxiliary_file_paths = auxiliary_file_paths
         else:
@@ -218,7 +234,7 @@ class DssatPdi(gym.Env):
     def _write_fileX_template(self):
         utils.save_file(saving_path=f'{self._tmp_folder}/fileX.MZX', content=self._fileX)
 
-    def _deactivate_automatic_planting(self):
+    def deactivate_automatic_planting(self):
         """
         utility function for debugging
         :return:
@@ -228,6 +244,16 @@ class DssatPdi(gym.Env):
         self._make_fileX_template()
         self._write_fileX_template()
         print('Automatic planting deactivated')
+    
+    def activate_automatic_fertilization(self):
+        """
+        utility function for debugging
+        :return:
+        :rtype:
+        """
+        self.ferti = 'R'
+        self._make_fileX_template()
+        self._write_fileX_template()
 
     def _launch_client(self):
         pdi_command = f'/usr/bin/env {self._run_dssat_location} C fileX.MZX {self.experiment_number}'
@@ -281,7 +307,7 @@ class DssatPdi(gym.Env):
         done = message['done']
         _state = message['state']
         if _state:
-            _state = utils._post_treat_state(_state)
+            _state = utils._post_treat_state(_state, self.cultivar)
             observation = utils._filter_state(full_state=_state,
                                               observation_variables=self.observation_variables)
             context = utils._filter_state(full_state=_state,
@@ -294,7 +320,8 @@ class DssatPdi(gym.Env):
     def _get_reward(self, _next_state):
         _previous_state = self._state
         _history = self._history
-        reward = self._reward_func(_previous_state, _next_state, _history)
+        _cultivar = self.cultivar
+        reward = self._reward_func(_previous_state, _next_state, _history, _cultivar)
         return reward
 
     def _get_sockets_(self):

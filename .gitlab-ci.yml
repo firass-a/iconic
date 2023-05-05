@@ -1,12 +1,14 @@
 stages:
   - build:sid
   - build:sid_source
+  - build:sid_source_pytest
   - build:bullseye
   - build:kinetic
   - build:jammy
   - build:focal
   - test:sid
   - test:sid_source
+  - test:sid_source_pytest
   - test:bullseye
   - test:kinetic
   - test:jammy
@@ -31,6 +33,8 @@ variables:
   IMAGE_DESTINATION_SID: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID
   IMAGE_NAME_SID_SOURCE: sid_source:latest
   IMAGE_DESTINATION_SID_SOURCE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID_SOURCE
+  IMAGE_NAME_SID_SOURCE_PYTEST: sid_source_pytest:latest
+  IMAGE_DESTINATION_SID_SOURCE_PYTEST: $CI_REGISTRY_IMAGE/$IMAGE_NAME_SID_SOURCE_PYTEST
   IMAGE_NAME_BULLSEYE: bullseye:latest
   IMAGE_DESTINATION_BULLSEYE: $CI_REGISTRY_IMAGE/$IMAGE_NAME_BULLSEYE
   IMAGE_NAME_KINETIC: kinetic:latest
@@ -87,6 +91,22 @@ build sid source:
     - docker push $IMAGE_DESTINATION_SID_SOURCE
     - echo "Image ${IMAGE_NAME_SID_SOURCE} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE}"
 #  when: manual
+build sid source_pytest:
+  stage: build:sid_source_pytest
+  allow_failure: false
+  tags:
+    - ci.inria.fr
+    - large
+  image: docker:stable
+  before_script:
+    - docker image prune --filter="dangling=true" --force
+    - docker rmi $IMAGE_DESTINATION_SID_SOURCE_PYTEST --force
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --no-cache --force-rm -t $IMAGE_DESTINATION_SID_SOURCE_PYTEST -f ${CI_PROJECT_DIR}/docker_recipes/Dockerfile_Debian_Sid_Source_Pytest .
+    - docker push $IMAGE_DESTINATION_SID_SOURCE_PYTEST
+    - echo "Image ${IMAGE_NAME_SID_SOURCE_PYTEST} successfully pushed to ${IMAGE_DESTINATION_SID_SOURCE_PYTEST}"
 
 build bullseye:
   stage: build:bullseye
@@ -279,6 +299,17 @@ test sid source:
     - docker run $IMAGE_DESTINATION_SID_SOURCE
     - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE} in ${IMAGE_DESTINATION_SID_SOURCE}"
   # when: manual
+
+test sid source_pytest:
+  stage: test:sid_source_pytest
+  allow_failure: false
+  tags:
+    - ci.inria.fr
+    - large
+  image: docker:stable
+  script:
+    - docker run $IMAGE_DESTINATION_SID_SOURCE_PYTEST
+    - echo "Test successfully passed for image ${IMAGE_NAME_SID_SOURCE_PYTEST} in ${IMAGE_DESTINATION_SID_SOURCE_PYTEST}"
 
 test bullseye:
   stage: test:bullseye

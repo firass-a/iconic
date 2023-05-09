@@ -28,7 +28,7 @@ def fertilization_reward(_previous_state, _next_state, _history, _cultivar):
     return None
 
 
-def irrigation_reward(_previous_state, _next_state, _history):
+def irrigation_reward(_previous_state, _next_state, _history, _cultivar):
     if _next_state:
         last_action = _history['action'][-1]['amir']
         previous_topwt = _previous_state['topwt']
@@ -39,9 +39,9 @@ def irrigation_reward(_previous_state, _next_state, _history):
 
 
 
-def all_reward(_previous_state, _next_state, _history):
-    ferti_reward_value = fertilization_reward(_previous_state, _next_state, _history)
-    irrig_reward_value = irrigation_reward(_previous_state, _next_state, _history)
+def all_reward(_previous_state, _next_state, _history, _cultivar):
+    ferti_reward_value = fertilization_reward(_previous_state, _next_state, _history, _cultivar)
+    irrig_reward_value = irrigation_reward(_previous_state, _next_state, _history, _cultivar)
     return [ferti_reward_value, irrig_reward_value]
 
 

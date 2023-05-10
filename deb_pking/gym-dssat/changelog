@@ -1,3 +1,11 @@
+gym-dssat-pdi (0.0.9-1) UNRELEASED; urgency=medium
+
+  * Add cotton cultivar (tested and tried in a ppo baseline)
+    -> only fertilization tested so far
+  * Add rice cultivar (work in progress)
+
+ -- Emilio J. Padron <emilioj@udc.gal>  Fri, 05 May 2023 23:45:00 +0100
+
 gym-dssat-pdi (0.0.8-1) UNRELEASED; urgency=medium
 
   * Update dssat-csm-os: 0.3.4.7 -> 4.8.0.24_2 (commit ef855b0, Dec 5 2022)

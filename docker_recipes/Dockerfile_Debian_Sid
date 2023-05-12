@@ -7,6 +7,7 @@ RUN apt-get update \
 && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
     wget \
     ca-certificates \
+    lsb-release \
 && rm -rf /var/lib/apt/lists/*
 
 ### PDI package install
@@ -49,7 +50,7 @@ ENV BASH_ENV=/etc/profile
 SHELL ["/bin/bash", "-c"]
 ENTRYPOINT ["/bin/bash", "-c"]
 
-CMD ["python /opt/gym_dssat_pdi/samples/run_env.py"]
+CMD ["echo '---'; echo `lsb_release -a 2> /dev/null | grep Description | cut -f2`; dpkg -l '*dssat*' | grep dssat | awk ' { print $2 \"\t\" $3 } '; dpkg -l libpdi1 | grep pdi | awk ' { print $2 \"\t\t\" $3 } '; echo '---'; echo; python /opt/gym_dssat_pdi/samples/run_env.py"]
 
 ### Build the Docker image
 # docker build . -t "gym-dssat:debian-sid" -f Dockerfile_Debian_Bullseye

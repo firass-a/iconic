@@ -29,8 +29,8 @@ RUN apt-get update \
 
 ### GYM-DSSAT package install
 RUN mkdir -p /usr/local/share/keyrings \
-&& wget -O- http://gac.udc.es/gym-dssat/gym-dssat-archive-keyring.gpg | tee /usr/local/share/keyrings/gym-dssat-archive-keyring.gpg > /dev/null
-RUN echo "deb [signed-by=/usr/local/share/keyrings/gym-dssat-archive-keyring.gpg] http://gac.udc.es/gym-dssat sid main" | tee /etc/apt/sources.list.d/gym-dssat.list > /dev/null
+&& wget -O- https://gac.udc.es/gym-dssat/gym-dssat-archive-keyring.gpg | tee /usr/local/share/keyrings/gym-dssat-archive-keyring.gpg > /dev/null
+RUN echo "deb [signed-by=/usr/local/share/keyrings/gym-dssat-archive-keyring.gpg] https://gac.udc.es/gym-dssat sid main" | tee /etc/apt/sources.list.d/gym-dssat.list > /dev/null
 RUN chmod a+r /usr/local/share/keyrings/gym-dssat-archive-keyring.gpg
 RUN apt update && apt install -y --no-install-recommends gym-dssat-pdi \
 && rm -rf /var/lib/apt/lists/*

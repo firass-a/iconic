@@ -11,8 +11,8 @@ RUN apt-get update \
 && rm -rf /var/lib/apt/lists/*
 
 ### PDI package install
-RUN echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/debian bullseye main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
-RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/debian/pdidev-archive-keyring.gpg
+RUN echo "deb [ arch=amd64 ] https://repo.pdi.dev/debian bullseye main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
+RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://repo.pdi.dev/debian/pdidev-archive-keyring.gpg
 RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 
 # Temporary workaround to guarantee the updated tarball is downloaded

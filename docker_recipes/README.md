@@ -1,6 +1,6 @@
 # gym-DSSAT-PDI coupling docker image
 This repository contain Dockerfiles to build images using pre-compiled gym-DSSAT packages under:
-- [Debian11 (Bullseye)](https://www.debian.org/releases/bullseye): ```Dockerfile_Debian_Bullseye```
+- [Debian12 (Bullseye)](https://www.debian.org/releases/bookworm): ```Dockerfile_Debian_Bookworm```
 - [Debian Unstable (Sid)](https://www.debian.org/releases/sid): ```Dockerfile_Debian_Sid```
 - [Ubuntu 22.10 (Kinetic Kudu)](http://releases.ubuntu.com/kinetic): ```Dockerfile_Ubuntu_Kinetic```
 - [Ubuntu 22.04 (Jammy Jellyfish)](http://releases.ubuntu.com/jammy): ```Dockerfile_Ubuntu_Jammy```
@@ -8,27 +8,27 @@ This repository contain Dockerfiles to build images using pre-compiled gym-DSSAT
 - [Ubuntu 18.04 LTS (Bionic Beaver)](http://releases.ubuntu.com/bionic): ```Dockerfile_Ubuntu_Bionic``` (Python3.7-based version of gym-DSSAT-PDI, useful for Google Colab)
 
 ## Building an image
-We take the example of the ```Dockerfile_Debian_Bullseye``` Dockerfile. To build a different Dockerfile, you just need to substitute the Dockerfile name as [referred above](#gym-dssat-pdi-coupling-docker-image).
+We take the example of the ```Dockerfile_Debian_Bookworm``` Dockerfile. To build a different Dockerfile, you just need to substitute the Dockerfile name as [referred above](#gym-dssat-pdi-coupling-docker-image).
 
 <!-- ```bash
 git clone https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git
 cd gym_dssat_pdi/docker_recipes
 ``` -->
-To build an image called ```gym-dssat:debian-bullseye``` from the Dockerfile named ```Dockerfile_Debian_Bullseye```, simply run:
+To build an image called ```gym-dssat:debian-bookworm``` from the Dockerfile named ```Dockerfile_Debian_Bookworm```, simply run:
 ```bash
-docker build https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git\#dev:docker_recipes -t "gym-dssat:debian-bullseye" -f Dockerfile_Debian_Bullseye 
+docker build https://gitlab.inria.fr/rgautron/gym_dssat_pdi.git\#dev:docker_recipes -t "gym-dssat:debian-bookworm" -f Dockerfile_Debian_Bookworm
 ```
 ## Run the container
-To check the ```gym-dssat:debian-bullseye``` image previously built, you can run the default example just with:
+To check the ```gym-dssat:debian-bookworm``` image previously built, you can run the default example just with:
 
 ```bash
-docker run gym-dssat:debian-bullseye
+docker run gym-dssat:debian-bookworm
 ```
 
 Or you can interactively run the Docker image with:
 
 ```bash
-docker run -it gym-dssat:debian-bullseye bash
+docker run -it gym-dssat:debian-bookworm bash
 ```
 
 # Docker image with Spack installation

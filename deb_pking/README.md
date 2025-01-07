@@ -48,8 +48,8 @@ apt update && apt install wget, ca-certificates
 ```
 To add the PDI official repository to our _apt_ sources:
 ```
-echo "deb [ arch=amd64 ] https://raw.githubusercontent.com/pdidev/repo/debian sid main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
-wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://raw.githubusercontent.com/pdidev/repo/debian/pdidev-archive-keyring.gpg
+echo "deb [ arch=amd64 ] https://repo.pdi.dev/debian bookworm main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
+wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://repo.pdi.dev/debian/pdidev-archive-keyring.gpg
 chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
 apt-get update -y
 apt-get install -y pdidev-archive-keyring

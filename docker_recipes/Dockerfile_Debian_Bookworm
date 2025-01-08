@@ -1,0 +1,63 @@
+FROM debian:bookworm as builder
+
+USER 0
+
+RUN apt-get update \
+&& DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get upgrade -y --no-install-recommends \
+&& DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+    wget \
+    ca-certificates \
+    lsb-release \
+&& rm -rf /var/lib/apt/lists/*
+
+### PDI package install
+RUN echo "deb [ arch=amd64 ] https://repo.pdi.dev/debian bookworm main" | tee /etc/apt/sources.list.d/pdi.list > /dev/null
+RUN wget -O /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg https://repo.pdi.dev/debian/pdidev-archive-keyring.gpg
+RUN chmod a+r /etc/apt/trusted.gpg.d/pdidev-archive-keyring.gpg /etc/apt/sources.list.d/pdi.list
+
+# Temporary workaround to guarantee the updated tarball is downloaded
+# and we are using up-to-date debian packages
+#
+# Calls for a random number to break the caching of the following wget
+# (https://stackoverflow.com/questions/35134713/disable-cache-for-specific-run-commands/58801213#58801213)
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+
+RUN apt-get update \
+&& DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends \
+    pdidev-archive-keyring \
+&& rm -rf /var/lib/apt/lists/*
+
+### GYM-DSSAT package install
+RUN mkdir -p /usr/local/share/keyrings \
+&& wget -O- https://gac.udc.es/gym-dssat/gym-dssat-archive-keyring.gpg | tee /usr/local/share/keyrings/gym-dssat-archive-keyring.gpg > /dev/null
+RUN echo "deb [signed-by=/usr/local/share/keyrings/gym-dssat-archive-keyring.gpg] https://gac.udc.es/gym-dssat bookworm main" | tee /etc/apt/sources.list.d/gym-dssat.list > /dev/null
+RUN chmod a+r /usr/local/share/keyrings/gym-dssat-archive-keyring.gpg
+RUN apt update && apt install -y --no-install-recommends gym-dssat-pdi \
+&& rm -rf /var/lib/apt/lists/*
+
+### Image config
+ENV VIRTUAL_ENV /opt/gym_dssat_pdi
+ENV DSSAT_PATH /opt/dssat_pdi
+ENV PATH "${VIRTUAL_ENV}/bin:${DSSAT_PATH}:${PATH}"
+RUN echo "export PATH=${PATH}" >> /etc/profile
+
+RUN bash -l -c 'echo export GYM_DSSAT_PDI_PATH="/opt/gym_dssat_pdi/lib/$(python3 -V | tr -d '[:blank:]' | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//')/site-packages/gym_dssat_pdi" >> /etc/bash.bashrc'
+
+RUN useradd -ms /bin/bash gymusr
+USER gymusr
+WORKDIR /home/gymusr
+ENV BASH_ENV=/etc/profile
+SHELL ["/bin/bash", "-c"]
+ENTRYPOINT ["/bin/bash", "-c"]
+
+CMD ["echo '---'; echo `lsb_release -a 2> /dev/null | grep Description | cut -f2`; dpkg -l '*dssat*' | grep dssat | awk ' { print $2 \"\t\" $3 } '; dpkg -l libpdi1 | grep pdi | awk ' { print $2 \"\t\t\" $3 } '; echo '---'; echo; python /opt/gym_dssat_pdi/samples/run_env.py"]
+
+### Build the Docker image
+# docker build . -t "gym-dssat:debian-bookworm" -f Dockerfile_Debian_Bookworm
+#
+### Run the default example in the Docker image:
+# docker run gym-dssat:debian-bookworm
+#
+### Interactively run the gym-dssat-pdi environment in the Docker image:
+# docker run -it gym-dssat:debian-bookworm bash
+# ~$ python /opt/gym_dssat_pdi/samples/run_env.py

@@ -1,6 +1,6 @@
 # gym-DSSAT-PDI coupling docker image
 This repository contain Dockerfiles to build images using pre-compiled gym-DSSAT packages under:
-- [Debian12 (Bullseye)](https://www.debian.org/releases/bookworm): ```Dockerfile_Debian_Bookworm```
+- [Debian12 (Bookworm)](https://www.debian.org/releases/bookworm): ```Dockerfile_Debian_Bookworm```
 - [Debian Unstable (Sid)](https://www.debian.org/releases/sid): ```Dockerfile_Debian_Sid```
 - [Ubuntu 22.10 (Kinetic Kudu)](http://releases.ubuntu.com/kinetic): ```Dockerfile_Ubuntu_Kinetic```
 - [Ubuntu 22.04 (Jammy Jellyfish)](http://releases.ubuntu.com/jammy): ```Dockerfile_Ubuntu_Jammy```

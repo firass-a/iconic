@@ -16,6 +16,10 @@
 | <a href="https://rgautron.gitlabpages.inria.fr/gym-dssat-docs/Tutorials/index.html"><img alt="Tutorials" src="./readme_figures/tutorials_button.png" style="height:30px"></a> | Learn to use by practice in Google Colab (to come soon) |
 | <a href="https://hal.inria.fr/hal-03711132/"><img alt="Companion paper" src="./readme_figures/companion_button.png" style="height:30px"></a> | More information about how gym-DSSAT works, and provides use cases |
 
+## Try a **gym-dssat** Docker image
+
+https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/tree/stable/docker_recipes?ref_type=heads
+
 ## How is gym-dssat tested?
 
 Before deploying any new version, **gym-dssat** is built from scratch in a custom Docker image, and the environment tested in a container using [Gitlab CI/CD](https://docs.gitlab.com/ee/ci/), for all supported platforms. If you experience any problem, please create [an issue](https://gitlab.inria.fr/rgautron/gym_dssat_pdi/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here).

@@ -1,11 +1,11 @@
 # gym-DSSAT-PDI coupling docker image
 This repository contain Dockerfiles to build images using pre-compiled gym-DSSAT packages under:
 - [Debian 12 (Bookworm)](https://www.debian.org/releases/bookworm): ```Dockerfile_Debian_Bookworm```
-- [Debian Unstable (Sid)](https://www.debian.org/releases/sid): ```Dockerfile_Debian_Sid```
-- [Ubuntu 22.10 (Kinetic Kudu)](http://releases.ubuntu.com/kinetic): ```Dockerfile_Ubuntu_Kinetic```
+<!-- - [Debian Unstable (Sid)](https://www.debian.org/releases/sid): ```Dockerfile_Debian_Sid``` -->
+<!-- - [Ubuntu 22.10 (Kinetic Kudu)](http://releases.ubuntu.com/kinetic): ```Dockerfile_Ubuntu_Kinetic``` -->
 - [Ubuntu 22.04 (Jammy Jellyfish)](http://releases.ubuntu.com/jammy): ```Dockerfile_Ubuntu_Jammy```
 - [Ubuntu 20.04 LTS (Focal Fossa)](http://releases.ubuntu.com/focal): ```Dockerfile_Ubuntu_Focal```
-- [Ubuntu 18.04 LTS (Bionic Beaver)](http://releases.ubuntu.com/bionic): ```Dockerfile_Ubuntu_Bionic``` (Python3.7-based version of gym-DSSAT-PDI, useful for Google Colab)
+<!-- - [Ubuntu 18.04 LTS (Bionic Beaver)](http://releases.ubuntu.com/bionic): ```Dockerfile_Ubuntu_Bionic``` (Python3.7-based version of gym-DSSAT-PDI, useful for Google Colab) -->
 
 ## Building an image
 We take the example of the ```Dockerfile_Debian_Bookworm``` Dockerfile. To build a different Dockerfile, you just need to substitute the Dockerfile name as [referred above](#gym-dssat-pdi-coupling-docker-image).

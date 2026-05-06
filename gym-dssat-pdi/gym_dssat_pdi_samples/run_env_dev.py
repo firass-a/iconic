@@ -173,7 +173,11 @@ if __name__ == '__main__':
                     env.get_env_info(user_input=False)
                 env.seed(123)
                 if not automatic_planting:
-                    env._deactivate_automatic_planting()
+                    deactivate_automatic_planting = getattr(
+                        env, '_deactivate_automatic_planting', None
+                    )
+                    if callable(deactivate_automatic_planting):
+                        deactivate_automatic_planting()
                 n_rep = 8
                 yields = []
                 for j in range(n_rep):

@@ -316,7 +316,7 @@ if __name__ == '__main__':
     
     total_rewards = np.zeros(4)
     for day in range(10):
-        # Fertilize on days 3 and 7
+        # Fertilize on days 3 and 7)
         if day in [3, 7]:
             action = {'anfer': 40}
         else:

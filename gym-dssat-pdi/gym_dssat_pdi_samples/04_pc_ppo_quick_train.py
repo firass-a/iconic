@@ -1,7 +1,8 @@
 """
 Step 3: PC-PPO quick training and preference-differentiation test.
 
-Trains PC-PPO for 50,000 timesteps (~8 minutes at ~100 fps), saves the
+Trains PC-PPO for 500,000 timesteps (~1.5 hours at ~100 fps) with SoS-style
+faults enabled, saves the
 model, then evaluates the same model under FOUR extreme preferences:
 
     w = [1, 0, 0, 0]   pure yield maximization
@@ -46,10 +47,11 @@ PCSmartFarmEnv = import_module('pc_env').PCSmartFarmEnv
 # ============================================================
 # Config
 # ============================================================
-TOTAL_TIMESTEPS = 50_000
-MODEL_PATH      = '/tmp/pc_ppo_50k.zip'
+TOTAL_TIMESTEPS = 500_000
+MODEL_PATH      = '/tmp/pc_ppo_500k.zip'
 EVAL_EPISODES   = 3   # episodes per fixed preference (averaged)
 DSSAT_SEED      = 123
+ENABLE_FAULTS   = True   # SmartFarmSoS fault injection during train + eval
 
 
 # ============================================================
@@ -61,7 +63,7 @@ def train():
     print("=" * 78)
 
     env = PCSmartFarmEnv(mode='all', dssat_seed=DSSAT_SEED,
-                         enable_faults=False, rng_seed=0)
+                         enable_faults=ENABLE_FAULTS, rng_seed=0)
 
     # n_steps=2048 is SB3's default for PPO — collects ~12 episodes per
     # rollout, enough preference variety for the network to see and learn
@@ -107,7 +109,7 @@ def rollout_under_preference(model, preference, n_episodes=EVAL_EPISODES,
         env = PCSmartFarmEnv(
             mode='all',
             dssat_seed=DSSAT_SEED,
-            enable_faults=False,
+            enable_faults=ENABLE_FAULTS,
             preference=preference,
             rng_seed=eval_seed_base + ep,
         )
@@ -202,9 +204,9 @@ def differentiation_test(model_path):
         print("        PC-PPO is conditioning on the preference dimension.")
         print("        You can proceed to Step 4 (full training).")
     else:
-        print("⚠ INCONCLUSIVE: 50k steps is short; the network may not have")
+        print("⚠ INCONCLUSIVE: Even at 500k steps the network may not have")
         print("                yet learned to differentiate. Consider:")
-        print("                - Re-run with 100k–200k steps to confirm")
+        print("                - Re-run with more timesteps or different seeds")
         print("                - Increase ent_coef to 0.02 for more exploration")
         print("                - Verify pc_env.py concatenates w into the obs")
 

@@ -3,16 +3,16 @@ PC-PPO adapter for SmartFarmSoSEnv.
 
 This file does NOT modify your existing wrapper. It adds a Gymnasium-
 compatible layer on top so that Stable-Baselines3's PPO can train on your
-4-objective SoS environment with preference conditioning.
+3-objective SoS environment with preference conditioning.
 
 Architecture:
     SB3 PPO
        ↓                                 ↑
-       action (Box, 2)                   obs (Box, 15) + scalar reward
+       action (Box, 2)                   obs (Box, 14) + scalar reward
        ↓                                 ↑
     PCSmartFarmEnv  (this file)
        ↓                                 ↑
-       {'anfer', 'amir'}                 dict obs + 4-vector reward
+       {'anfer', 'amir'}                 dict obs + 3-vector reward
        ↓                                 ↑
     SmartFarmSoSEnv  (your wrapper)
        ↓                                 ↑
@@ -29,9 +29,9 @@ Action space:
                   typical 8-20 mm event)
 
 Observation space:
-    Box(shape=(15,), float32) — concatenation of:
+    Box(shape=(14,), float32) — concatenation of:
         11 state features (normalized to roughly [0, 1] or [-1, 1])
-         4 preference dims (the current episode's w, sums to 1)
+         3 preference dims (the current episode's w, sums to 1)
 
 State features (in order):
     0  topwt              biomass (kg/ha)        / 20000
@@ -46,23 +46,16 @@ State features (in order):
     9  comm_quality       link quality 0-1
    10  sensors_alive_frac fraction up 0-1
 
-Preference dims (indices 11-14):
+Preference dims (indices 11-13):
    11  w_yield
    12  w_wue
    13  w_energy
-   14  w_resilience
 
 Reward:
     Scalar = w · R⃗   (linear scalarization, the canonical PC-PPO form)
 
-Dependencies (often missing in gym-dssat image; install once in container):
-    pip install --no-cache-dir gymnasium numpy
-
-Run smoke test inside Docker (mount repo root that contains gym-dssat-pdi):
-    docker run --rm --entrypoint /bin/bash -v "$PWD:/workspace" \\
-      gym-dssat:debian-bookworm -lc \\
-      "pip install -q gymnasium numpy && python3 -u \\
-       /workspace/gym-dssat-pdi/gym_dssat_pdi_samples/pc_env.py"
+Run smoke test inside Docker (from gym_dssat_pdi_samples):
+    python3 pc_env.py
 """
 import sys
 import numpy as np
@@ -70,7 +63,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-# Import the existing SoS wrapper from the sibling module (same directory)
+# Import the existing SoS wrapper from the sibling file
 from importlib import import_module
 SmartFarmSoSEnv = import_module('02_smart_farm_env').SmartFarmSoSEnv
 
@@ -92,8 +85,8 @@ NORM = {
 }
 
 N_STATE_FEATURES   = 11
-N_PREFERENCE_DIMS  = 4
-OBS_DIM            = N_STATE_FEATURES + N_PREFERENCE_DIMS   # 15
+N_PREFERENCE_DIMS  = 3      # resilience dropped (uncontrollable) — see 02_smart_farm_env
+OBS_DIM            = N_STATE_FEATURES + N_PREFERENCE_DIMS   # 14
 
 # Action bounds
 ACTION_LOW  = np.array([0.0,   0.0], dtype=np.float32)
@@ -118,10 +111,10 @@ class PCSmartFarmEnv(gym.Env):
             dssat_seed:     seed forwarded to gym-DSSAT
             enable_faults:  whether the wrapper injects sensor/comm faults
             fault_rate:     daily probability of a sensor failure
-            preference:     if given (np.array of shape (4,)), the env uses
+            preference:     if given (np.array of shape (3,)), the env uses
                             this FIXED preference every episode. If None,
                             a fresh preference is sampled each reset(). Use
-                            fixed=preference at evaluation, None at training.
+                            fixed preference at evaluation, None at training.
             rng_seed:       seed for the adapter's own RNG (preference sampler)
         """
         super().__init__()
@@ -211,12 +204,12 @@ class PCSmartFarmEnv(gym.Env):
     # Helpers
     # ----------------------------------------------------------
     def _sample_preference(self):
-        """Sample w ~ Dirichlet([1,1,1,1]) — uniform over the 4-simplex."""
+        """Sample w ~ Dirichlet([1,1,1]) — uniform over the 3-simplex."""
         w = self.rng.dirichlet(alpha=np.ones(N_PREFERENCE_DIMS))
         return w.astype(np.float32)
 
     def _encode_observation(self, sos_obs):
-        """Turn the wrapper's dict obs into a flat 15-dim float32 vector."""
+        """Turn the wrapper's dict obs into a flat 14-dim float32 vector."""
         # --- state features ---
         topwt           = float(sos_obs.get('crop_topwt', 0.0) or 0.0)
         grnwt           = float(sos_obs.get('crop_grnwt', 0.0) or 0.0)
@@ -278,7 +271,7 @@ def _smoke_test():
     print(f"    action_space      = {env.action_space}")
     print(f"    observation_space = {env.observation_space}")
     assert env.action_space.shape == (2,),  "action_space wrong shape"
-    assert env.observation_space.shape == (15,), "observation_space wrong shape"
+    assert env.observation_space.shape == (14,), "observation_space wrong shape"
     print("    ✓ spaces OK")
 
     # ---- 2. Reset ----
@@ -287,9 +280,9 @@ def _smoke_test():
     print(f"    obs shape      = {obs.shape}")
     print(f"    obs dtype      = {obs.dtype}")
     print(f"    obs[:11]       = {obs[:11].round(3)}   (state features)")
-    print(f"    obs[11:15]     = {obs[11:].round(3)}   (preference w)")
+    print(f"    obs[11:14]     = {obs[11:].round(3)}   (preference w)")
     print(f"    w sums to      = {obs[11:].sum():.4f}   (should be ~1.0)")
-    assert obs.shape == (15,), "obs shape wrong"
+    assert obs.shape == (14,), "obs shape wrong"
     assert obs.dtype == np.float32, "obs dtype wrong"
     assert abs(obs[11:].sum() - 1.0) < 1e-3, "preference doesn't sum to 1"
     print("    ✓ reset OK")
@@ -302,7 +295,7 @@ def _smoke_test():
     print(f"    reward_vector  = {info['reward_vector'].round(4)}")
     print(f"    terminated     = {term}, truncated = {trunc}")
     print(f"    preference     = {info['preference'].round(3)}")
-    assert obs.shape == (15,), "obs shape wrong after step"
+    assert obs.shape == (14,), "obs shape wrong after step"
     assert isinstance(r, float), "reward must be scalar float"
     print("    ✓ step OK")
 
@@ -310,7 +303,7 @@ def _smoke_test():
     print("\n[4] Full random episode...")
     obs, info = env.reset(seed=1)
     fixed_w = info['preference']
-    cum_vector = np.zeros(4)
+    cum_vector = np.zeros(3)
     cum_scalar = 0.0
     steps = 0
     while True:
@@ -344,7 +337,7 @@ def _smoke_test():
     eval_env = PCSmartFarmEnv(
         mode='all',
         dssat_seed=123,
-        preference=np.array([0.7, 0.1, 0.1, 0.1], dtype=np.float32),
+        preference=np.array([0.7, 0.2, 0.1], dtype=np.float32),
         rng_seed=0,
     )
     _, info1 = eval_env.reset(seed=20)
@@ -358,7 +351,7 @@ def _smoke_test():
     env.close()
     print("\n" + "=" * 70)
     print("ALL SMOKE TESTS PASSED.")
-    print("Next: run a 512-step SB3 sanity check, then 50k quick training.")
+    print("Next: run a 512-step SB3 sanity check, then PC-PPO training.")
     print("=" * 70)
 
 

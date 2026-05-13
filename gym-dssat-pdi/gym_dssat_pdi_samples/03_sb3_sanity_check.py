@@ -7,7 +7,7 @@ the plumbing end-to-end.
 
 What this script verifies:
     1. check_env() passes — SB3's built-in Gymnasium API validator
-    2. PPO can instantiate with MlpPolicy on our (15,) obs / Box(2,) action
+    2. PPO can instantiate with MlpPolicy on our (14,) obs / Box(2,) action
     3. learn(total_timesteps=512) completes
     4. predict() works on a fresh obs
     5. save() / load() roundtrip works

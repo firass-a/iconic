@@ -16,6 +16,10 @@
 | <a href="https://rgautron.gitlabpages.inria.fr/gym-dssat-docs/Tutorials/index.html"><img alt="Tutorials" src="./readme_figures/tutorials_button.png" style="height:30px"></a> | Learn to use by practice in Google Colab (to come soon) |
 | <a href="https://hal.inria.fr/hal-03711132/"><img alt="Companion paper" src="./readme_figures/companion_button.png" style="height:30px"></a> | More information about how gym-DSSAT works, and provides use cases |
 
+## Collaborators (clone, Docker, SmartFarm / SB3 samples)
+
+Command checklist for cloning this fork and running the RL sample scripts lives in **`COLLABORATOR_SETUP.md`**.
+
 ## Try a **gym-dssat** Docker image
 
 https://gitlab.inria.fr/rgautron/gym_dssat_pdi/-/tree/stable/docker_recipes?ref_type=heads

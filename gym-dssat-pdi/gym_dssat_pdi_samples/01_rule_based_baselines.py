@@ -2,9 +2,10 @@
 Rule-based baselines for the SmartFarmSoSEnv multi-objective wrapper.
 
 Every baseline runs through the SAME wrapper that MORL agents will use, so
-the 4-component reward vector — [R_yield, R_wue, R_energy, R_resilience] —
-is computed identically across all methods. This is what makes the eventual
-Pareto-front comparison apples-to-apples.
+the 3-component reward vector — [R_yield, R_wue, R_energy] — is computed
+identically across all methods. This is what makes the eventual Pareto-front
+comparison apples-to-apples. (Resilience is no longer a reward component;
+faults remain observable via SoS state when enable_faults=True.)
 
 Baselines included:
     1. Random            — random fertilization and irrigation each day
@@ -70,7 +71,6 @@ def fresh_results():
         'R_yield':      0.0,
         'R_wue':        0.0,
         'R_energy':     0.0,
-        'R_resilience': 0.0,
         'yield':    0.0,
         'water':    0.0,
         'nitrogen': 0.0,
@@ -114,7 +114,6 @@ def random_agent(env, n_episodes=50, seed=0):
             rec['R_yield']      += float(R[0])
             rec['R_wue']        += float(R[1])
             rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
         finalize_episode(rec, obs, info)
         all_results.append(rec)
         if (ep + 1) % 10 == 0:
@@ -143,7 +142,6 @@ def fixed_schedule_agent(env, n_episodes=50):
             rec['R_yield']      += float(R[0])
             rec['R_wue']        += float(R[1])
             rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
         finalize_episode(rec, obs, info)
         all_results.append(rec)
         if (ep + 1) % 10 == 0:
@@ -204,7 +202,6 @@ def stage_based_agent(env, n_episodes=50):
             rec['R_yield']      += float(R[0])
             rec['R_wue']        += float(R[1])
             rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
         finalize_episode(rec, obs, info)
         all_results.append(rec)
         if (ep + 1) % 10 == 0:
@@ -271,7 +268,6 @@ def fao56_agent(env, n_episodes=50,
             rec['R_yield']      += float(R[0])
             rec['R_wue']        += float(R[1])
             rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
 
         finalize_episode(rec, obs, info)
         rec['irrig_events'] = n_irrig_events
@@ -288,7 +284,7 @@ def fao56_agent(env, n_episodes=50,
 # ============================================================
 def summarize(name, results):
     """Print mean ± std of all reward components and physical metrics."""
-    keys_reward = ['R_yield', 'R_wue', 'R_energy', 'R_resilience']
+    keys_reward = ['R_yield', 'R_wue', 'R_energy']
     keys_phys   = ['yield', 'water', 'nitrogen']
     means_r = {k: np.mean([r[k] for r in results]) for k in keys_reward}
     stds_r  = {k: np.std ([r[k] for r in results]) for k in keys_reward}
@@ -299,8 +295,7 @@ def summarize(name, results):
     print(f"    rewards (cumulative): "
           f"yield={means_r['R_yield']:+6.2f}±{stds_r['R_yield']:5.2f}  "
           f"wue={means_r['R_wue']:+6.2f}±{stds_r['R_wue']:5.2f}  "
-          f"energy={means_r['R_energy']:+6.2f}±{stds_r['R_energy']:5.2f}  "
-          f"resil={means_r['R_resilience']:+6.2f}±{stds_r['R_resilience']:5.2f}")
+          f"energy={means_r['R_energy']:+6.2f}±{stds_r['R_energy']:5.2f}")
     print(f"    physical:             "
           f"yield={means_p['yield']:6.0f}±{stds_p['yield']:5.0f} kg/ha  "
           f"water={means_p['water']:5.0f}±{stds_p['water']:4.0f} mm  "
@@ -315,7 +310,7 @@ if __name__ == '__main__':
 
     print("=" * 80)
     print("RULE-BASED BASELINES — running through SmartFarmSoSEnv (mode='all')")
-    print("4-objective reward: [R_yield, R_wue, R_energy, R_resilience]")
+    print("3-objective reward: [R_yield, R_wue, R_energy]")
     print("=" * 80)
 
     print("\n[1/4] Random agent")

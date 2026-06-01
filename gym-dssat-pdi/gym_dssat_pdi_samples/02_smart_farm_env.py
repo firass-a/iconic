@@ -1,382 +1,207 @@
 """
-Step 2: SmartFarmSoSEnv - Multi-Objective SoS Wrapper for gym-DSSAT
-This is the CORE of your thesis. It wraps gym-DSSAT and adds:
-  - Multi-reward vector (4 objectives instead of 1 scalar)
-  - SoS state variables (sensor health, energy, comm quality)
-  - Fault injection (sensor dropout, comm delay)
-  - Energy model
+SmartFarmSoSEnv — Multi-objective wrapper for gym-DSSAT.
 
-Run inside Docker: python3 /workspace/02_smart_farm_env.py
+Implements the thesis reward design:
+  - Daily shaping (water, N, resources, losses)
+  - Seasonal harvest bonus (yield, HI, ANE)
+  - 3-objective vector for PC-PPO: [yield, water, fertilizer]
+
+Run inside Docker:
+    python3 02_smart_farm_env.py
 """
 import gym
 import numpy as np
 from collections import OrderedDict
 
+from smart_farm_rewards import compute_reward_vector, moisture_ratio
+
+# Farmer-realistic observation keys (no hidden biochemical state)
+FARMER_OBS_KEYS = (
+    'dap', 'vstage', 'xlai', 'istage',
+    'swfac', 'nstres',
+    'rain', 'tmax', 'srad',
+    'cumsumfert', 'totir',
+    'grnwt', 'topwt',
+)
+
 
 class SmartFarmSoSEnv:
     """
-    Wraps gym-DSSAT with System-of-Systems modeling.
-    
-    Key changes from default gym-DSSAT:
-    1. Reward is a VECTOR [R_yield, R_water, R_energy, R_resilience]
-    2. Observation includes SoS state (sensor health, energy, etc.)
-    3. Faults can be injected (sensor dropout, comm delay)
-    4. Energy model tracks power consumption
+    Wraps gym-DSSAT for multi-objective smart-farm control.
+
+    Returns:
+        obs: dict with crop_* keys + moisture_ratio
+        reward_vector: np.array shape (3,) — [R_yield, R_water, R_fert]
+        done: bool
+        info: dict
     """
-    
-    def __init__(self, mode='fertilization', seed=None,
-                 enable_faults=False, fault_rate=0.02,
+
+    N_OBJECTIVES = 3
+    OBJECTIVE_NAMES = ('yield', 'water', 'fertilizer')
+
+    def __init__(self, mode='all', seed=None, run_dssat_location='run_dssat',
+                 random_weather=False, enable_faults=False, fault_rate=0.02,
                  n_sensors=5, initial_energy=100.0):
-        
-        # Create the underlying gym-DSSAT environment
-        env_args = {'mode': mode}
+        env_args = {
+            'mode': mode,
+            'run_dssat_location': run_dssat_location,
+            'random_weather': random_weather,
+            'log_saving_path': None,
+        }
         if seed is not None:
             env_args['seed'] = seed
         self.env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
-        
-        # SoS parameters
-        self.n_sensors = n_sensors
-        self.initial_energy = initial_energy
+
+        self.mode = mode
         self.enable_faults = enable_faults
         self.fault_rate = fault_rate
-        
-        # SoS state (initialized in reset)
+        self.n_sensors = n_sensors
+        self.initial_energy = initial_energy
+
         self.sensor_health = None
         self.energy_budget = None
         self.comm_quality = None
-        self.prev_biomass = None
-        self.total_water = None
-        self.total_nitrogen = None
-        self.day = None
+        self.total_water = 0.0
+        self.total_nitrogen = 0.0
+        self.prev_cnox = 0.0
+        self._last_crop_obs = {}
+        self._last_context = {}
+        self._last_moisture = 0.5
         self.done = False
-        
+
     def reset(self):
-        """Reset environment and SoS state."""
         obs = self.env.reset()
         if obs is None:
             obs = {}
         self._last_crop_obs = obs
+        self._last_context = {}
 
-        # Reset SoS state
         self.sensor_health = np.ones(self.n_sensors)
         self.energy_budget = self.initial_energy
         self.comm_quality = 1.0
-        self.prev_biomass = obs.get('topwt', 0.0)
-        self.total_water = 0.0           # cumulative irrigation (mm)
-        self.total_rain = 0.0            # cumulative rainfall (mm), for WUE denominator
+        self.total_water = 0.0
         self.total_nitrogen = 0.0
-        self.day = 0
+        self.prev_cnox = float(obs.get('cnox', 0.0) or 0.0)
         self.done = False
-        
-        return self._build_observation(obs)
-    
+
+        return self._build_observation(obs, self._last_context)
+
     def step(self, action_dict):
-        """
-        Execute one day step.
-        
-        Args:
-            action_dict: dict with keys depending on mode
-                fertilization: {'anfer': float}
-                irrigation: {'amir': float}
-                all: {'anfer': float, 'amir': float}
-        
-        Returns:
-            obs: merged observation (crop state + SoS state)
-            reward_vector: np.array of shape (4,) 
-                [R_yield, R_wue, R_energy, R_resilience]
-            done: bool
-            info: dict with extra information
-        """
-        # ---- Step 1: Run DSSAT ----
-        crop_obs, default_reward, done, info = self.env.step(action_dict)
-        if info is None:
-            info = {}
-        # gym-DSSAT returns None on the terminal step — normalize to {} so
-        # every subsequent .get() falls through to its default. Also keep
-        # the last non-empty observation around so the terminal yield bonus
-        # can still read final grain weight.
+        crop_obs, _default_reward, done, context = self.env.step(action_dict)
+        if context is None:
+            context = {}
+
         if crop_obs is None or len(crop_obs) == 0:
             crop_obs = {}
-            crop_obs_for_reward = self._last_crop_obs
+            state_for_reward = dict(self._last_crop_obs)
         else:
             self._last_crop_obs = crop_obs
-            crop_obs_for_reward = crop_obs
+            state_for_reward = dict(crop_obs)
+
+        # Full state has runoff, trnu, tleachd, etc.
+        full_state = getattr(self.env, '_state', None)
+        if full_state:
+            state_for_reward.update(full_state)
+
         self.done = done
-        self.day += 1
-        
-        # ---- Step 2: Track resource usage ----
-        nitrogen_applied = action_dict.get('anfer', 0.0)
-        water_applied = action_dict.get('amir', 0.0)
-        rain_today = float(crop_obs.get('rain', 0.0) or 0.0)  # mm; some scenarios don't expose rain
+        nitrogen_applied = float(action_dict.get('anfer', 0.0) or 0.0)
+        water_applied = float(action_dict.get('amir', 0.0) or 0.0)
         self.total_nitrogen += nitrogen_applied
         self.total_water += water_applied
-        self.total_rain += max(rain_today, 0.0)
-        
-        # ---- Step 3: Update energy model ----
-        sensor_drain = np.sum(self.sensor_health) * 0.1   # active sensors cost energy
-        pump_cost = water_applied * 0.3                    # irrigation pumping
-        fert_cost = nitrogen_applied * 0.05                # fertilizer application
-        total_cost = sensor_drain + pump_cost + fert_cost
-        
-        solar_recharge = 2.0  # daily solar recharge
-        self.energy_budget = max(0, min(100, 
-            self.energy_budget - total_cost + solar_recharge))
-        
-        # ---- Step 4: Inject faults (if enabled) ----
+
         if self.enable_faults:
-            self._inject_faults(crop_obs)
-        
-        # ---- Step 5: Compute reward vector ----
-        reward_vector = self._compute_rewards(
-            crop_obs=crop_obs_for_reward,
-            nitrogen_applied=nitrogen_applied,
-            water_applied=water_applied,
-            rain_today=rain_today,
-            energy_cost=total_cost,
+            self._inject_faults()
+
+        totals = {'water': self.total_water, 'nitrogen': self.total_nitrogen}
+        reward_vector, moisture = compute_reward_vector(
+            state=state_for_reward,
+            context=context,
+            action=action_dict,
+            totals=totals,
+            prev_cnox=self.prev_cnox,
             done=done,
         )
-        
-        # ---- Step 6: Build merged observation ----
-        merged_obs = self._build_observation(crop_obs)
-        
-        # ---- Step 7: Build info dict ----
-        info['reward_components'] = {
-            'R_yield':      reward_vector[0],
-            'R_wue':        reward_vector[1],
-            'R_energy':     reward_vector[2],
-            'R_resilience': reward_vector[3],
+        self.prev_cnox = float(state_for_reward.get('cnox', self.prev_cnox) or self.prev_cnox)
+        self._last_context = context
+        self._last_moisture = moisture
+
+        merged_obs = self._build_observation(crop_obs, context)
+        info = {
+            'reward_components': {
+                'R_yield': float(reward_vector[0]),
+                'R_water': float(reward_vector[1]),
+                'R_fert': float(reward_vector[2]),
+            },
+            'moisture_ratio': moisture,
+            'totals': totals.copy(),
+            'full_state': state_for_reward,
         }
-        info['sos_state'] = {
-            'sensor_health':  self.sensor_health.copy(),
-            'energy_budget':  self.energy_budget,
-            'comm_quality':   self.comm_quality,
-            'total_nitrogen': self.total_nitrogen,
-            'total_water':    self.total_water,
-            'total_rain':     self.total_rain,
-            # final-grain weight from the most recent valid observation
-            'grnwt':          float(crop_obs_for_reward.get('grnwt', 0.0) or 0.0),
-        }
-        info['default_scalar_reward'] = default_reward
-        
         return merged_obs, reward_vector, done, info
-    
-    def _compute_rewards(self, crop_obs, nitrogen_applied, water_applied,
-                         rain_today, energy_cost, done):
-        """
-        Compute the 4-component reward vector that operationalizes the four
-        thesis objectives:
 
-            R[0] = R_yield        — crop yield optimization
-            R[1] = R_wue          — water-use efficiency (kg biomass per mm water)
-            R[2] = R_energy       — energy consumption minimization
-            R[3] = R_resilience   — system-of-systems health
+    def _build_observation(self, crop_obs, context):
+        """Farmer-realistic observations only."""
+        merged = OrderedDict()
+        for key in FARMER_OBS_KEYS:
+            if key in crop_obs:
+                merged[f'crop_{key}'] = crop_obs[key]
 
-        All components are normalized to approximately [-1, 1] so that
-        scalarization weights are meaningful and Pareto-front geometry is
-        sensible. Final grain weight is added as a terminal bonus on R_yield
-        to combat reward hacking on daily biomass gain.
-        """
-        # ---- R1: Yield ----
-        # Per-step: today's above-ground biomass gain (kg/ha), normalized.
-        # Terminal:  one-shot bonus from final grain weight (kg/ha), normalized
-        #            so a strong harvest of ~10 t/ha yields +1.0.
-        current_biomass = float(crop_obs.get('topwt', 0.0) or 0.0)
-        biomass_gain = current_biomass - self.prev_biomass
-        self.prev_biomass = current_biomass
-        R_yield = np.clip(biomass_gain / 150.0, -1.0, 1.0)
-        if done:
-            grain_weight = float(crop_obs.get('grnwt', 0.0) or 0.0)
-            R_yield += np.clip(grain_weight / 10000.0, 0.0, 1.0)
-
-        # ---- R2: Water-Use Efficiency ----
-        # Per-step "marginal WUE" proxy: biomass produced today per unit of
-        # water available today (irrigation + rainfall). Normalization factor
-        # 50.0 calibrated so a typical productive day (biomass_gain ≈ 100,
-        # water ≈ 4 mm) yields R_wue ≈ +0.5.
-        # When no water moves through the system, give zero (neutral) instead
-        # of dividing by zero.
-        water_today = float(water_applied) + max(rain_today, 0.0)
-        if water_today > 0.1:
-            R_wue = np.clip((biomass_gain / water_today) / 50.0, -1.0, 1.0)
+        sw = crop_obs.get('sw')
+        dul = context.get('dul') if context else None
+        ll = context.get('ll') if context else None
+        if sw is not None and dul is not None:
+            merged['moisture_ratio'] = moisture_ratio(sw, dul, ll)
         else:
-            R_wue = 0.0
+            merged['moisture_ratio'] = self._last_moisture
 
-        # ---- R3: Energy ----
-        # Negative reward proportional to today's energy cost.
-        # 15.0 ≈ peak feasible daily cost when irrigating heavily on a day
-        # where many sensors are active.
-        R_energy = -np.clip(energy_cost / 15.0, 0.0, 1.0)
+        if self.enable_faults:
+            for i in range(self.n_sensors):
+                merged[f'sensor_{i}'] = self.sensor_health[i]
+            merged['comm_quality'] = self.comm_quality
 
-        # ---- R4: Resilience ----
-        # Fraction of SoS still operational, re-centered to [-1, 1] so it sits
-        # on the same scale as the other rewards. Full health = +1, total
-        # failure = -1, and a "neutral" middle state (~half the system up)
-        # contributes 0 — this prevents resilience from acting as a free
-        # baseline reward that the agent can ignore.
-        sensors_up = float(np.mean(self.sensor_health))
-        energy_ok = 1.0 if self.energy_budget > 10 else 0.0
-        health_avg = (sensors_up + energy_ok + self.comm_quality) / 3.0
-        R_resilience = 2.0 * health_avg - 1.0
+        return merged
 
-        return np.array(
-            [R_yield, R_wue, R_energy, R_resilience], dtype=np.float32
-        )
-    
-    def _inject_faults(self, crop_obs):
-        """Randomly inject sensor failures and communication delays."""
-        # Sensor dropout: each sensor has fault_rate chance of failing per day
+    def _inject_faults(self):
         for i in range(self.n_sensors):
             if self.sensor_health[i] == 1.0 and np.random.random() < self.fault_rate:
                 self.sensor_health[i] = 0.0
-        
-        # Sensor recovery: small chance of coming back online
-        for i in range(self.n_sensors):
             if self.sensor_health[i] == 0.0 and np.random.random() < 0.01:
                 self.sensor_health[i] = 1.0
-        
-        # Communication quality: random fluctuation
-        comm_noise = np.random.normal(0, 0.05)
-        self.comm_quality = np.clip(self.comm_quality + comm_noise, 0.3, 1.0)
-        
-        # Extreme event: rare communication failure
-        if np.random.random() < 0.005:
-            self.comm_quality = 0.3
-    
-    def _build_observation(self, crop_obs):
-        """Merge crop observation with SoS state into a single dict."""
-        merged = OrderedDict()
-        
-        # Crop state from DSSAT
-        for key, value in crop_obs.items():
-            merged[f'crop_{key}'] = value
-        
-        # SoS state
-        for i in range(self.n_sensors):
-            merged[f'sensor_{i}'] = self.sensor_health[i]
-        merged['energy_budget'] = self.energy_budget / 100.0  # normalize
-        merged['comm_quality'] = self.comm_quality
-        
-        return merged
-    
+        self.comm_quality = np.clip(
+            self.comm_quality + np.random.normal(0, 0.05), 0.3, 1.0
+        )
+
     def scalarize_reward(self, reward_vector, weights=None):
-        """
-        Convert reward vector to scalar using linear scalarization.
-
-        Reward vector ordering: [R_yield, R_wue, R_energy, R_resilience].
-
-        Default weights reflect a yield-dominant trade-off where WUE is the
-        main efficiency constraint and energy / resilience are smaller
-        penalties. Tune per experiment.
-
-        Args:
-            reward_vector: np.array of shape (4,)
-            weights: np.array of shape (4,), default=[0.45, 0.30, 0.10, 0.15]
-
-        Returns:
-            scalar reward (float)
-        """
         if weights is None:
-            weights = np.array([0.45, 0.30, 0.10, 0.15])
+            weights = np.array([0.5, 0.25, 0.25], dtype=np.float32)
         return float(np.dot(weights, reward_vector))
 
-    def chebyshev_scalarize(self, reward_vector, weights=None, ideal=None):
-        """
-        Chebyshev scalarization (can find non-convex Pareto solutions).
-
-        R = -max_i(w_i * |r_i - ideal_i|)
-
-        Ideal point per objective: yield maxed (+1), WUE maxed (+1),
-        energy fully neutral (0), resilience fully healthy (+1).
-        """
-        if weights is None:
-            weights = np.array([0.45, 0.30, 0.10, 0.15])
-        if ideal is None:
-            ideal = np.array([1.0, 1.0, 0.0, 1.0])
-
-        weighted_dist = weights * np.abs(reward_vector - ideal)
-        return -float(np.max(weighted_dist))
-    
     def close(self):
-        """Close the underlying gym-DSSAT environment."""
         self.env.close()
 
 
-# ============================================================
-# DEMO: Run the wrapper and see multi-objective rewards
-# ============================================================
 if __name__ == '__main__':
-    print("=" * 70)
-    print("SmartFarmSoSEnv DEMO - Multi-Objective Rewards")
-    print("=" * 70)
-    
-    # --- Run WITHOUT faults ---
-    print("\n--- Scenario 1: Normal operation (no faults) ---")
-    env = SmartFarmSoSEnv(mode='fertilization', seed=42, enable_faults=False)
+    print('=' * 70)
+    print('SmartFarmSoSEnv — 3-objective reward demo')
+    print('=' * 70)
+
+    env = SmartFarmSoSEnv(mode='all', seed=42, random_weather=False)
     obs = env.reset()
-    
-    total_rewards = np.zeros(4)
-    for day in range(10):
-        # Fertilize on days 3 and 7)
-        if day in [3, 7]:
-            action = {'anfer': 40}
-        else:
-            action = {'anfer': 0}
-        
-        obs, reward_vec, done, info = env.step(action)
-        total_rewards += reward_vec
-        
-        # Show the reward breakdown
+    print(f'Initial obs keys: {list(obs.keys())}')
+    print(f'moisture_ratio = {obs["moisture_ratio"]:.3f}')
+
+    cum = np.zeros(3)
+    step = 0
+    while not env.done and step < 15:
+        action = {'anfer': 10.0 if step in (5, 10) else 0.0, 'amir': 8.0 if step == 7 else 0.0}
+        obs, r_vec, done, info = env.step(action)
+        cum += r_vec
         rc = info['reward_components']
-        print(f"  Day {day+1:3d}: "
-              f"R_yield={rc['R_yield']:+.3f}  "
-              f"R_wue={rc['R_wue']:+.3f}  "
-              f"R_energy={rc['R_energy']:+.3f}  "
-              f"R_resil={rc['R_resilience']:+.3f}  "
-              f"| scalar(linear)={env.scalarize_reward(reward_vec):+.3f}  "
-              f"| scalar(cheby)={env.chebyshev_scalarize(reward_vec):+.3f}")
-    
+        print(
+            f'  day {step+1:2d}: moisture={info["moisture_ratio"]:.2f} '
+            f'R_y={rc["R_yield"]:+.3f} R_w={rc["R_water"]:+.3f} R_f={rc["R_fert"]:+.3f}'
+        )
+        step += 1
+
     env.close()
-    print(f"\n  Cumulative rewards (10 days): {total_rewards}")
-    
-    # --- Run WITH faults ---
-    print("\n--- Scenario 2: With sensor faults ---")
-    env = SmartFarmSoSEnv(mode='fertilization', seed=42, 
-                           enable_faults=True, fault_rate=0.10)  # 10% failure rate for demo
-    obs = env.reset()
-    
-    total_rewards_fault = np.zeros(4)
-    for day in range(10):
-        if day in [3, 7]:
-            action = {'anfer': 40}
-        else:
-            action = {'anfer': 0}
-        
-        obs, reward_vec, done, info = env.step(action)
-        total_rewards_fault += reward_vec
-        
-        sos = info['sos_state']
-        sensors_up = int(np.sum(sos['sensor_health']))
-        rc = info['reward_components']
-        print(f"  Day {day+1:3d}: "
-              f"R_yield={rc['R_yield']:+.3f}  "
-              f"R_resil={rc['R_resilience']:+.3f}  "
-              f"| sensors={sensors_up}/5  "
-              f"energy={sos['energy_budget']:.1f}%  "
-              f"comm={sos['comm_quality']:.2f}")
-    
-    env.close()
-    
-    # --- Compare ---
-    print("\n" + "=" * 70)
-    print("COMPARISON: Normal vs Faults")
-    print("=" * 70)
-    labels = ['R_yield', 'R_wue', 'R_energy', 'R_resilience']
-    for i, label in enumerate(labels):
-        diff = total_rewards_fault[i] - total_rewards[i]
-        print(f"  {label:15s}: normal={total_rewards[i]:+.3f}  "
-              f"faults={total_rewards_fault[i]:+.3f}  "
-              f"diff={diff:+.3f}")
-    
-    print("\nNotice how resilience drops when sensors fail.")
-    print("Your RL agent will learn to handle these failures.")
-    print("\nNext step: run 03_train_morl.py to train multi-objective agents.")
+    print(f'\nCumulative R⃗ (partial season): {cum.round(3)}')
+    print('Next: python3 pc_env.py  →  then 03_sb3_sanity_check.py  →  04_pc_ppo_quick_train.py')

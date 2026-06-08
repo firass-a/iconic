@@ -1,26 +1,24 @@
 """
-Rule-based baselines for the SmartFarmSoSEnv multi-objective wrapper.
+Rule-based baselines for SmartFarmSoSEnv — hierarchical scalar reward design.
 
-Every baseline runs through the SAME wrapper that MORL agents will use, so
-the 4-component reward vector — [R_yield, R_wue, R_energy, R_resilience] —
-is computed identically across all methods. This is what makes the eventual
-Pareto-front comparison apples-to-apples.
+Every baseline runs through the SAME wrapper that PPO/PC-PPO agents will use,
+so the scalar reward and its components are computed identically. This gives a
+directly comparable baseline for evaluating trained agents.
+
+Reward returned per step is a scalar float (hierarchical daily + seasonal).
+Components are exposed via info['reward_components'] every step.
 
 Baselines included:
     1. Random            — random fertilization and irrigation each day
     2. Fixed Schedule    — textbook 3-split N + periodic irrigation
-    3. Stress Threshold  — react to nstres / swfac signals
+    3. Stage-based       — V-stage-triggered N + developmentally-gated irrig
     4. FAO-56            — soil-water-balance irrigation + 3-split N
 
-Note: FAO-56 logic is for irrigation only; the fertilization sub-rule is a
-standard 3-split schedule per common extension recommendations for maize.
-
-Run inside Docker: python3 /workspace/01_rule_based_baselines.py
+Run inside Docker:
+    python3 /workspace/gym-dssat-pdi/gym_dssat_pdi_samples/01_rule_based_baselines.py
 """
-import gym
 import numpy as np
 
-# Import the wrapper (assumed to live next to this file)
 from importlib import import_module
 SmartFarmSoSEnv = import_module('02_smart_farm_env').SmartFarmSoSEnv
 
@@ -28,9 +26,9 @@ SmartFarmSoSEnv = import_module('02_smart_farm_env').SmartFarmSoSEnv
 # ============================================================
 # FAO-56 helper functions
 # ============================================================
-TAW_MAIZE      = 150.0   # Total Available Water in root zone (mm), FAO-56 §57
-P_DEPLETION    = 0.50    # Allowable depletion fraction, FAO-56 Table 22
-MAX_IRRIG_EVT  = 25.0    # mm cap per irrigation event (avoids leaching)
+TAW_MAIZE      = 150.0
+P_DEPLETION    = 0.50
+MAX_IRRIG_EVT  = 25.0
 
 
 def kc_maize(days_after_planting):
@@ -39,20 +37,19 @@ def kc_maize(days_after_planting):
     if dap < 20:
         return 0.30
     elif dap < 50:
-        return 0.30 + (1.20 - 0.30) * (dap - 20) / 30      # development
+        return 0.30 + (1.20 - 0.30) * (dap - 20) / 30
     elif dap < 100:
-        return 1.20                                         # mid-season
+        return 1.20
     elif dap < 140:
-        return 1.20 - (1.20 - 0.60) * (dap - 100) / 40     # late-season
+        return 1.20 - (1.20 - 0.60) * (dap - 100) / 40
     else:
-        return 0.60                                         # maturity
+        return 0.60
 
 
 # ============================================================
 # Observation helpers — wrapper prefixes crop vars with "crop_"
 # ============================================================
 def get_crop(obs, key, default=0.0):
-    """Read a DSSAT crop variable from a wrapper observation."""
     if obs is None:
         return float(default)
     val = obs.get(f'crop_{key}', default)
@@ -67,30 +64,56 @@ def get_crop(obs, key, default=0.0):
 def fresh_results():
     """Empty result template for one episode."""
     return {
-        'R_yield':      0.0,
-        'R_wue':        0.0,
-        'R_energy':     0.0,
-        'R_resilience': 0.0,
-        'yield':    0.0,
-        'water':    0.0,
-        'nitrogen': 0.0,
-        'final_energy':   0.0,
-        'sensors_alive':  0.0,
-        'comm_quality':   0.0,
+        # Cumulative scalar reward
+        'cum_reward':    0.0,
+        # Accumulated daily sub-rewards
+        'R_water_sum':   0.0,
+        'R_fert_sum':    0.0,
+        'R_resource_sum': 0.0,
+        'R_losses_sum':  0.0,
+        # Terminal seasonal components (populated at episode end)
+        'R_seasonal':    0.0,
+        'R_yield':       0.0,
+        'R_hiad':        0.0,
+        'R_ane':         0.0,
+        'R_penalty':     0.0,
+        # Physical metrics
+        'yield_kg_ha':   0.0,
+        'total_N_kg_ha': 0.0,
+        'total_W_mm':    0.0,
+        'total_rain_mm': 0.0,
+        'final_energy':  0.0,
+        'comm_quality':  0.0,
     }
 
 
-def finalize_episode(record, last_obs, info):
-    """Pull final yield + SoS state out of the last step's info."""
+def _accumulate_step(rec, scalar_r, info):
+    """Add one step's scalar reward and daily sub-reward components."""
+    rec['cum_reward'] += float(scalar_r)
+    c = info.get('reward_components', {})
+    rec['R_water_sum']    += float(c.get('R_water',    0.0))
+    rec['R_fert_sum']     += float(c.get('R_fert',     0.0))
+    rec['R_resource_sum'] += float(c.get('R_resource', 0.0))
+    rec['R_losses_sum']   += float(c.get('R_losses',   0.0))
+
+
+def finalize_episode(rec, info):
+    """Pull seasonal components and physical outcomes from the terminal step."""
+    c   = info.get('reward_components', {})
     sos = info.get('sos_state', {})
-    # Prefer info['sos_state']['grnwt'] — it's populated from the wrapper's
-    # cached last-good crop_obs and survives gym-DSSAT's terminal None.
-    record['yield']         = float(sos.get('grnwt', 0.0))
-    record['water']         = float(sos.get('total_water', 0.0))
-    record['nitrogen']      = float(sos.get('total_nitrogen', 0.0))
-    record['final_energy']  = float(sos.get('energy_budget', 0.0))
-    record['sensors_alive'] = float(np.sum(sos.get('sensor_health', [0])))
-    record['comm_quality']  = float(sos.get('comm_quality', 0.0))
+
+    rec['R_seasonal'] = float(c.get('R_seasonal', 0.0))
+    rec['R_yield']    = float(c.get('R_yield',    0.0))
+    rec['R_hiad']     = float(c.get('R_hiad',     0.0))
+    rec['R_ane']      = float(c.get('R_ane',      0.0))
+    rec['R_penalty']  = float(c.get('R_penalty',  0.0))
+
+    rec['yield_kg_ha']   = float(sos.get('grnwt',          0.0))
+    rec['total_N_kg_ha'] = float(sos.get('total_nitrogen',  0.0))
+    rec['total_W_mm']    = float(sos.get('total_water',     0.0))
+    rec['total_rain_mm'] = float(sos.get('total_rain',      0.0))
+    rec['final_energy']  = float(sos.get('energy_budget',   0.0))
+    rec['comm_quality']  = float(sos.get('comm_quality',    0.0))
 
 
 # ============================================================
@@ -101,9 +124,9 @@ def random_agent(env, n_episodes=50, seed=0):
     rng = np.random.default_rng(seed)
     all_results = []
     for ep in range(n_episodes):
-        obs = env.reset()
+        obs  = env.reset()
         done = False
-        rec = fresh_results()
+        rec  = fresh_results()
         info = {}
         while not done:
             action = {
@@ -111,15 +134,14 @@ def random_agent(env, n_episodes=50, seed=0):
                 'amir':  float(rng.uniform(0, 10)),
             }
             obs, R, done, info = env.step(action)
-            rec['R_yield']      += float(R[0])
-            rec['R_wue']        += float(R[1])
-            rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
-        finalize_episode(rec, obs, info)
+            _accumulate_step(rec, R, info)
+        finalize_episode(rec, info)
         all_results.append(rec)
         if (ep + 1) % 10 == 0:
-            print(f"  ep {ep+1:>3}: yield={rec['yield']:5.0f} kg/ha, "
-                  f"water={rec['water']:5.0f} mm, N={rec['nitrogen']:4.0f} kg/ha")
+            print(f"  ep {ep+1:>3}: yield={rec['yield_kg_ha']:5.0f} kg/ha  "
+                  f"N={rec['total_N_kg_ha']:4.0f} kg/ha  "
+                  f"W={rec['total_W_mm']:5.0f} mm  "
+                  f"cum_R={rec['cum_reward']:+7.3f}")
     return all_results
 
 
@@ -130,25 +152,24 @@ def fixed_schedule_agent(env, n_episodes=50):
     """3-split N (40 kg on days 30/60/90) + periodic irrigation (8 mm every 5 days)."""
     all_results = []
     for ep in range(n_episodes):
-        obs = env.reset()
+        obs  = env.reset()
         done = False
-        rec = fresh_results()
+        rec  = fresh_results()
         info = {}
-        day = 0
+        day  = 0
         while not done:
-            day += 1
+            day  += 1
             anfer = 40.0 if day in (30, 60, 90) else 0.0
-            amir  = 8.0 if (day % 5 == 0) else 0.0
+            amir  = 8.0  if (day % 5 == 0)      else 0.0
             obs, R, done, info = env.step({'anfer': anfer, 'amir': amir})
-            rec['R_yield']      += float(R[0])
-            rec['R_wue']        += float(R[1])
-            rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
-        finalize_episode(rec, obs, info)
+            _accumulate_step(rec, R, info)
+        finalize_episode(rec, info)
         all_results.append(rec)
         if (ep + 1) % 10 == 0:
-            print(f"  ep {ep+1:>3}: yield={rec['yield']:5.0f} kg/ha, "
-                  f"water={rec['water']:5.0f} mm, N={rec['nitrogen']:4.0f} kg/ha")
+            print(f"  ep {ep+1:>3}: yield={rec['yield_kg_ha']:5.0f} kg/ha  "
+                  f"N={rec['total_N_kg_ha']:4.0f} kg/ha  "
+                  f"W={rec['total_W_mm']:5.0f} mm  "
+                  f"cum_R={rec['cum_reward']:+7.3f}")
     return all_results
 
 
@@ -158,31 +179,19 @@ def fixed_schedule_agent(env, n_episodes=50):
 def stage_based_agent(env, n_episodes=50):
     """
     Apply nitrogen at canonical maize V-stage triggers (V3, V6, V10), and
-    irrigate during the peak-demand window (V6 through silking ≈ V14).
-
-    This is the textbook 3-split N application timed to plant development
-    rather than calendar days, plus a developmentally-gated irrigation
-    schedule. It uses gym-DSSAT's `vstage` and `dap` observation variables.
-
-    NOTE: this baseline replaces an earlier stress-threshold agent that
-    relied on `nstres` and `swfac`. In the default gym-DSSAT scenario both
-    of those variables saturate at zero throughout most of the season, so
-    they cannot be used to differentiate "stressed" from "not stressed."
-    The stage-based logic is agronomically defensible and avoids that
-    saturation.
+    irrigate every 3 days from emergence onward.
     """
     all_results = []
     for ep in range(n_episodes):
-        obs = env.reset()
-        done = False
-        rec = fresh_results()
-        info = {}
+        obs         = env.reset()
+        done        = False
+        rec         = fresh_results()
+        info        = {}
         last_vstage = -1.0
         while not done:
             vstage = get_crop(obs, 'vstage', 0.0)
             dap    = get_crop(obs, 'dap',    0.0)
 
-            # Fertilize once per stage transition (V3, V6, V10)
             anfer = 0.0
             for trigger in (3.0, 6.0, 10.0):
                 if last_vstage < trigger <= vstage:
@@ -190,26 +199,17 @@ def stage_based_agent(env, n_episodes=50):
                     break
             last_vstage = vstage
 
-            # Irrigate every 3 days from emergence onward.
-            # Earlier version only irrigated during V6-V14, which left the
-            # crop dependent on rainfall in early and late stages and caused
-            # catastrophic yield collapses (~1500 kg/ha) in dry seasons.
-            # Total irrigation now ~500 mm/season, comparable to FAO-56.
-            if vstage > 1.0 and int(dap) % 3 == 0:
-                amir = 10.0
-            else:
-                amir = 0.0
+            amir = 10.0 if (vstage > 1.0 and int(dap) % 3 == 0) else 0.0
 
             obs, R, done, info = env.step({'anfer': anfer, 'amir': float(amir)})
-            rec['R_yield']      += float(R[0])
-            rec['R_wue']        += float(R[1])
-            rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
-        finalize_episode(rec, obs, info)
+            _accumulate_step(rec, R, info)
+        finalize_episode(rec, info)
         all_results.append(rec)
         if (ep + 1) % 10 == 0:
-            print(f"  ep {ep+1:>3}: yield={rec['yield']:5.0f} kg/ha, "
-                  f"water={rec['water']:5.0f} mm, N={rec['nitrogen']:4.0f} kg/ha")
+            print(f"  ep {ep+1:>3}: yield={rec['yield_kg_ha']:5.0f} kg/ha  "
+                  f"N={rec['total_N_kg_ha']:4.0f} kg/ha  "
+                  f"W={rec['total_W_mm']:5.0f} mm  "
+                  f"cum_R={rec['cum_reward']:+7.3f}")
     return all_results
 
 
@@ -221,33 +221,26 @@ def fao56_agent(env, n_episodes=50,
                 fert_doses=(40, 40, 40),
                 fert_days=(35, 65, 95)):
     """
-    FAO-56 soil-water-balance irrigation:
-      D_r(t) = D_r(t-1) + ETc(t) - rain(t) - irrig(t-1)
-      ETc = Kc(t) * ET0(t)
-      Trigger: irrigate when D_r > p * TAW
-      Refill capped at MAX_IRRIG_EVT mm/day to avoid leaching.
+    FAO-56 soil-water-balance irrigation + 3-split N at (35, 65, 95) DAP.
 
-    Fertilization sub-rule: 3-split N at days (35, 65, 95) DAP — shifted
-    forward from the textbook (30, 60, 90) after diagnostic ablations
-    showed +680 kg/ha yield improvement under this gym-DSSAT scenario.
-    The shifted timing better matches the simulator's modelled N demand
-    curve for the default Gainesville maize calibration.
+    D_r(t) = D_r(t-1) + ETc(t) - rain(t) - irrig(t-1)
+    ETc = Kc(t) * ET0(t)
+    Irrigate when D_r > p * TAW; refill capped at MAX_IRRIG_EVT mm/event.
     """
     raw = taw * p_depletion
     all_results = []
 
     for ep in range(n_episodes):
-        obs = env.reset()
-        done = False
-        rec = fresh_results()
-        info = {}
-        depletion = 0.0
-        n_irrig_events = 0
-        day = 0
+        obs        = env.reset()
+        done       = False
+        rec        = fresh_results()
+        info       = {}
+        depletion  = 0.0
+        n_irrig_ev = 0
+        day        = 0
 
         while not done:
             day += 1
-
             et0  = get_crop(obs, 'eo',   4.0)
             rain = get_crop(obs, 'rain', 0.0)
             kc   = kc_maize(day)
@@ -257,7 +250,7 @@ def fao56_agent(env, n_episodes=50,
             if depletion > raw:
                 amir = min(depletion, MAX_IRRIG_EVT)
                 depletion -= amir
-                n_irrig_events += 1
+                n_irrig_ev += 1
             else:
                 amir = 0.0
 
@@ -268,18 +261,16 @@ def fao56_agent(env, n_episodes=50,
                     break
 
             obs, R, done, info = env.step({'anfer': anfer, 'amir': float(amir)})
-            rec['R_yield']      += float(R[0])
-            rec['R_wue']        += float(R[1])
-            rec['R_energy']     += float(R[2])
-            rec['R_resilience'] += float(R[3])
+            _accumulate_step(rec, R, info)
 
-        finalize_episode(rec, obs, info)
-        rec['irrig_events'] = n_irrig_events
+        finalize_episode(rec, info)
+        rec['irrig_events'] = n_irrig_ev
         all_results.append(rec)
         if (ep + 1) % 10 == 0:
-            print(f"  ep {ep+1:>3}: yield={rec['yield']:5.0f} kg/ha, "
-                  f"water={rec['water']:5.0f} mm ({rec['irrig_events']:2d} ev), "
-                  f"N={rec['nitrogen']:4.0f} kg/ha")
+            print(f"  ep {ep+1:>3}: yield={rec['yield_kg_ha']:5.0f} kg/ha  "
+                  f"N={rec['total_N_kg_ha']:4.0f} kg/ha  "
+                  f"W={rec['total_W_mm']:5.0f} mm ({n_irrig_ev:2d} ev)  "
+                  f"cum_R={rec['cum_reward']:+7.3f}")
     return all_results
 
 
@@ -287,24 +278,27 @@ def fao56_agent(env, n_episodes=50,
 # Reporting
 # ============================================================
 def summarize(name, results):
-    """Print mean ± std of all reward components and physical metrics."""
-    keys_reward = ['R_yield', 'R_wue', 'R_energy', 'R_resilience']
-    keys_phys   = ['yield', 'water', 'nitrogen']
-    means_r = {k: np.mean([r[k] for r in results]) for k in keys_reward}
-    stds_r  = {k: np.std ([r[k] for r in results]) for k in keys_reward}
-    means_p = {k: np.mean([r[k] for r in results]) for k in keys_phys}
-    stds_p  = {k: np.std ([r[k] for r in results]) for k in keys_phys}
+    """Print mean ± std of cumulative reward, sub-rewards, and physical metrics."""
+    def ms(key):
+        vals = [r[key] for r in results]
+        return np.mean(vals), np.std(vals)
+
+    cr_m,  cr_s  = ms('cum_reward')
+    ry_m,  ry_s  = ms('R_yield')
+    rh_m,  rh_s  = ms('R_hiad')
+    ra_m,  ra_s  = ms('R_ane')
+    rs_m,  rs_s  = ms('R_seasonal')
+    y_m,   y_s   = ms('yield_kg_ha')
+    n_m,   n_s   = ms('total_N_kg_ha')
+    w_m,   w_s   = ms('total_W_mm')
 
     print(f"\n  {name}")
-    print(f"    rewards (cumulative): "
-          f"yield={means_r['R_yield']:+6.2f}±{stds_r['R_yield']:5.2f}  "
-          f"wue={means_r['R_wue']:+6.2f}±{stds_r['R_wue']:5.2f}  "
-          f"energy={means_r['R_energy']:+6.2f}±{stds_r['R_energy']:5.2f}  "
-          f"resil={means_r['R_resilience']:+6.2f}±{stds_r['R_resilience']:5.2f}")
-    print(f"    physical:             "
-          f"yield={means_p['yield']:6.0f}±{stds_p['yield']:5.0f} kg/ha  "
-          f"water={means_p['water']:5.0f}±{stds_p['water']:4.0f} mm  "
-          f"N={means_p['nitrogen']:5.0f}±{stds_p['nitrogen']:4.0f} kg/ha")
+    print(f"    cum_reward = {cr_m:+7.3f} ± {cr_s:5.3f}")
+    print(f"    R_seasonal = {rs_m:+7.3f} ± {rs_s:5.3f}  "
+          f"(R_yield={ry_m:+.3f}  R_hiad={rh_m:+.3f}  R_ane={ra_m:+.3f})")
+    print(f"    yield      = {y_m:6.0f} ± {y_s:5.0f} kg/ha  "
+          f"N = {n_m:5.0f} ± {n_s:4.0f} kg/ha  "
+          f"W = {w_m:5.0f} ± {w_s:4.0f} mm")
 
 
 # ============================================================
@@ -314,38 +308,33 @@ if __name__ == '__main__':
     n_episodes = 50
 
     print("=" * 80)
-    print("RULE-BASED BASELINES — running through SmartFarmSoSEnv (mode='all')")
-    print("4-objective reward: [R_yield, R_wue, R_energy, R_resilience]")
+    print("RULE-BASED BASELINES — SmartFarmSoSEnv  (mode='all')")
+    print("Hierarchical scalar reward: daily shaping + seasonal terminal")
     print("=" * 80)
 
     print("\n[1/4] Random agent")
-    env = SmartFarmSoSEnv(mode='all', seed=123, enable_faults=False)
+    env = SmartFarmSoSEnv(mode='all', seed=123,
+                          run_dssat_location='run_dssat', enable_faults=False)
     random_results = random_agent(env, n_episodes)
     env.close()
 
     print("\n[2/4] Fixed-schedule agent")
-    env = SmartFarmSoSEnv(mode='all', seed=123, enable_faults=False)
+    env = SmartFarmSoSEnv(mode='all', seed=123,
+                          run_dssat_location='run_dssat', enable_faults=False)
     fixed_results = fixed_schedule_agent(env, n_episodes)
     env.close()
 
     print("\n[3/4] Stage-based agent")
-    env = SmartFarmSoSEnv(mode='all', seed=123, enable_faults=False)
+    env = SmartFarmSoSEnv(mode='all', seed=123,
+                          run_dssat_location='run_dssat', enable_faults=False)
     stage_results = stage_based_agent(env, n_episodes)
     env.close()
 
     print("\n[4/4] FAO-56 agent")
-    env = SmartFarmSoSEnv(mode='all', seed=123, enable_faults=False)
+    env = SmartFarmSoSEnv(mode='all', seed=123,
+                          run_dssat_location='run_dssat', enable_faults=False)
     fao_results = fao56_agent(env, n_episodes)
     env.close()
-
-    # ------------------------------------------------------------------
-    # Diagnostic note: earlier ablations (FAO-56 with irrigation OFF and
-    # FAO-56 with shifted N timing) revealed that timing of fertilization
-    # rather than irrigation amount was the limiting factor. The default
-    # fert_days has been adjusted from (30, 60, 90) to (35, 65, 95) DAP
-    # based on those tests (+680 kg/ha yield). The diagnostic runs are
-    # not included in production summaries.
-    # ------------------------------------------------------------------
 
     print("\n" + "=" * 80)
     print(f"SUMMARY  (mean ± std over {n_episodes} episodes)")
@@ -356,8 +345,6 @@ if __name__ == '__main__':
     summarize("FAO-56",           fao_results)
 
     print("\n" + "=" * 80)
-    print("These reward vectors are now directly comparable to MORL agents'")
-    print("Pareto fronts. The strongest baseline in this scenario is Stage-based")
-    print("(7.6 t/ha, 398 mm water, 150 kg N) — that is the bar to beat on the")
-    print("yield/(water+energy) trade-off plane.")
+    print("Use these cum_reward values as the scalar-reward bar for PPO agents.")
+    print("Use R_yield / N / W ratios as the multi-objective bar for PC-PPO.")
     print("=" * 80)

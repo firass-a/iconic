@@ -1,0 +1,47 @@
+==============================================================================
+BASELINE EVALUATION — 20 episodes per policy
+==============================================================================
+
+  [Random]  20 episodes …
+    ep   5: yield= 11859 kg/ha  N= 3323  W=  794 mm
+    ep  10: yield= 11573 kg/ha  N= 3168  W=  795 mm
+    ep  15: yield= 11131 kg/ha  N= 3187  W=  802 mm
+    ep  20: yield= 10999 kg/ha  N= 3177  W=  802 mm
+
+  [Fixed-schedule]  20 episodes …
+    ep   5: yield=  5920 kg/ha  N=  120  W=  254 mm
+    ep  10: yield=  5774 kg/ha  N=  120  W=  253 mm
+    ep  15: yield=  5496 kg/ha  N=  120  W=  253 mm
+    ep  20: yield=  5787 kg/ha  N=  120  W=  253 mm
+
+  [Stage-based]  20 episodes …
+    ep   5: yield=  7761 kg/ha  N=  150  W=  398 mm
+    ep  10: yield=  7864 kg/ha  N=  150  W=  397 mm
+    ep  15: yield=  7365 kg/ha  N=  150  W=  397 mm
+    ep  20: yield=  7217 kg/ha  N=  150  W=  398 mm
+
+  [FAO-56]  20 episodes …
+    ep   5: yield=  6880 kg/ha  N=  120  W=  145 mm
+    ep  10: yield=  6836 kg/ha  N=  120  W=  185 mm
+    ep  15: yield=  6275 kg/ha  N=  120  W=  188 mm
+    ep  20: yield=  6469 kg/ha  N=  120  W=  180 mm
+
+✓ Baseline episodes saved → /workspace/baselines_results.csv
+
+==============================================================================
+COMPARISON — Rule-based Baselines  vs  PPO (1M steps)
+==============================================================================
+
+  Metric                    Random  Fixed-schedule     Stage-based          FAO-56        PPO (1M)
+  ----------------  --------------  --------------  --------------  --------------  --------------
+  Yield  (kg/ha)             10999            5787            7217            6469           11092
+  N      (kg/ha)              3177             120             150             120             184
+  Water    (mm)                802             253             398             180             384
+  R_yield                  +0.8279         -0.4670         -0.1058         -0.2829         +0.8793
+  R_hiad                   +0.0790         -0.2445         -0.1366         -0.0951         +0.2700
+  R_ane                    -0.9131         +0.2056         +0.2028         +0.3477         +0.5091
+  R_seasonal               -0.1349         -0.2602         -0.1497         -0.1144         +0.3626
+  cum_reward               +0.2733         +0.1609         +0.2204         +0.2694         +0.9307
+==============================================================================
+
+✓ Comparison table saved → /workspace/comparison.csv

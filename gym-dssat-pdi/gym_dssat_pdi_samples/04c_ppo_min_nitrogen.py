@@ -1,16 +1,13 @@
 """
-Simple PPO training on SmartFarmSoSEnv with full CSV logging and plots.
+PPO — NITROGEN MINIMISATION objective.
 
-Produces in /workspace/:
-  episode_log.csv      — one row per training episode
-  training_metrics.csv — one row per PPO rollout/update
-  eval_results.csv     — one row per evaluation episode + summary row
-  plot_training.png    — 6-panel training curves (reward, yield, N, W, R_seasonal, R_ane)
-  plot_ppo_losses.png  — 3-panel PPO loss curves (policy, value, entropy)
+Reward tuned to reduce total N application while accepting slight yield loss.
+  N_EXCESS 200→100 kg/ha, penalty split 30% water / 70% N,
+  W_RESOURCE 0.15→0.30, W_FERT 0.30→0.20, W_ANE 0.30→0.35
 
 Run inside Docker:
     cd /workspace/gym-dssat-pdi/gym_dssat_pdi_samples
-    /opt/gym_dssat_pdi/bin/python3 -u 04_pc_ppo_quick_train.py
+    /opt/gym_dssat_pdi/bin/python3 -u 04c_ppo_min_nitrogen.py
 """
 import csv
 import os
@@ -29,7 +26,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.callbacks import BaseCallback
 from importlib import import_module
-PCSmartFarmEnv = import_module('pc_env').PCSmartFarmEnv
+PCSmartFarmEnv = import_module('pc_env_nitrogen').PCSmartFarmEnv
 
 
 # ================================================================== #
@@ -46,13 +43,13 @@ CLIP_RANGE      = 0.2
 ENT_COEF        = 0.01
 MAX_GRAD_NORM   = 0.5
 
-MODEL_PATH      = '/tmp/ppo_rw_1M'
-VECNORM_PATH    = '/tmp/ppo_rw_1M_vecnorm.pkl'
-EPISODE_LOG     = '/workspace/episode_log_rw.csv'
-METRICS_LOG     = '/workspace/training_metrics_rw.csv'
-EVAL_LOG        = '/workspace/eval_results_rw.csv'
-PLOT_TRAINING   = '/workspace/plot_training_rw.png'
-PLOT_LOSSES     = '/workspace/plot_ppo_losses_rw.png'
+MODEL_PATH      = '/tmp/ppo_min_nitrogen_v3_1M'
+VECNORM_PATH    = '/tmp/ppo_min_nitrogen_v3_1M_vecnorm.pkl'
+EPISODE_LOG     = '/workspace/episode_log_nitrogen_v3.csv'
+METRICS_LOG     = '/workspace/training_metrics_nitrogen_v3.csv'
+EVAL_LOG        = '/workspace/eval_results_nitrogen_v3.csv'
+PLOT_TRAINING   = '/workspace/plot_training_nitrogen_v3.png'
+PLOT_LOSSES     = '/workspace/plot_ppo_losses_nitrogen_v3.png'
 
 EVAL_EPISODES   = 5
 DSSAT_SEED      = 123

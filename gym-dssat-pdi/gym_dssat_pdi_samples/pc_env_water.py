@@ -55,7 +55,7 @@ import gymnasium as gym
 from gymnasium import spaces
 
 from importlib import import_module
-SmartFarmSoSEnv = import_module('02_smart_farm_env').SmartFarmSoSEnv
+SmartFarmSoSEnv = import_module('02_smart_farm_env_water').SmartFarmSoSEnv
 
 
 # ================================================================== #

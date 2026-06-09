@@ -1,0 +1,115 @@
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:124: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  actor.load_state_dict(torch.load(path, map_location=DEVICE))
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:358: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "orientation" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:358: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "dpi" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:358: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "facecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:358: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "edgecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:358: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "bbox_inches_restore" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:416: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "orientation" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:416: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "dpi" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:416: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "facecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:416: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "edgecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/10_resilience_eval.py:416: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "bbox_inches_restore" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=150, bbox_inches='tight')
+======================================================================
+10_resilience_eval.py — CAPQL v2 Resilience Stress Test
+======================================================================
+  Model   : /tmp/capql_v2
+  Corners : ['yield', 'n_eff', 'water', 'balanced']
+  Episodes: 3 per (corner × fault level)
+  Faults  : sensor_rate / obs_noise / blackout_day
+======================================================================
+✓  Actor loaded from /tmp/capql_v2/actor.pt
+
+  Total episodes to run: 216
+  scenario          level              corner        R_yld    R_ane    R_wef    yield
+  ------------------------------------------------------------------------------------
+  sensor_rate       0 %                Yield         +0.700  -0.413  +0.331   10286   ETA 6.6m
+  sensor_rate       0 %                N-Efficiency  -0.136  +0.509  +0.352    7103   ETA 6.1m
+  sensor_rate       0 %                Water         +0.558  -0.097  +0.585    9872   ETA 5.8m
+  sensor_rate       0 %                Balanced      +0.753  +0.052  +0.487   10765   ETA 5.7m
+  sensor_rate       2 %                Yield         +0.580  -0.713  +0.379    9839   ETA 5.6m
+  sensor_rate       2 %                N-Efficiency  -0.159  -0.164  +0.667    6988   ETA 5.5m
+  sensor_rate       2 %                Water         +0.250  -0.236  +0.668    8572   ETA 5.4m
+  sensor_rate       2 %                Balanced      +0.584  -0.416  +0.555    9929   ETA 5.4m
+  sensor_rate       5 %                Yield         +0.455  -0.735  +0.410    9399   ETA 5.3m
+  sensor_rate       5 %                N-Efficiency  +0.412  +0.148  +0.625    9226   ETA 5.2m
+  sensor_rate       5 %                Water         +0.459  -0.480  +0.668    9404   ETA 5.1m
+  sensor_rate       5 %                Balanced      +0.572  -0.495  +0.595    9858   ETA 5.0m
+  sensor_rate       10 %               Yield         +0.568  -0.567  +0.444    9786   ETA 4.9m
+  sensor_rate       10 %               N-Efficiency  +0.355  -0.091  +0.667    8974   ETA 4.8m
+  sensor_rate       10 %               Water         +0.502  -0.519  +0.657    9560   ETA 4.8m
+  sensor_rate       10 %               Balanced      +0.569  -0.509  +0.580    9846   ETA 4.7m
+  sensor_rate       20 %               Yield         +0.494  -0.735  +0.401    9505   ETA 4.6m
+  sensor_rate       20 %               N-Efficiency  +0.421  -0.088  +0.644    9223   ETA 4.6m
+  sensor_rate       20 %               Water         +0.482  -0.474  +0.659    9475   ETA 4.5m
+  sensor_rate       20 %               Balanced      +0.525  -0.520  +0.594    9685   ETA 4.4m
+  sensor_rate       50 %               Yield         +0.492  -0.766  +0.405    9493   ETA 4.3m
+  sensor_rate       50 %               N-Efficiency  +0.445  -0.095  +0.648    9316   ETA 4.3m
+  sensor_rate       50 %               Water         +0.186  -0.432  +0.710    8330   ETA 4.2m
+  sensor_rate       50 %               Balanced      +0.581  -0.543  +0.589    9875   ETA 4.1m
+  obs_noise         0                  Yield         +0.602  -0.458  +0.350   10231   ETA 4.0m
+  obs_noise         0                  N-Efficiency  -0.103  +0.527  +0.285    7227   ETA 3.9m
+  obs_noise         0                  Water         +0.573  -0.003  +0.591    9929   ETA 3.8m
+  obs_noise         0                  Balanced      +0.725  +0.040  +0.499   10658   ETA 3.8m
+  obs_noise         0.05               Yield         +0.778  -0.527  -0.297   10714   ETA 3.7m
+  obs_noise         0.05               N-Efficiency  -0.187  -0.533  -0.007    7059   ETA 3.6m
+  obs_noise         0.05               Water         +0.519  -0.383  +0.394    9793   ETA 3.5m
+  obs_noise         0.05               Balanced      +0.425  -0.492  +0.334    9252   ETA 3.4m
+  obs_noise         0.10               Yield         +0.615  -0.383  -0.677    9964   ETA 3.3m
+  obs_noise         0.10               N-Efficiency  -0.049  -0.112  -0.600    7435   ETA 3.3m
+  obs_noise         0.10               Water         -0.088  -0.744  +0.444    7285   ETA 3.2m
+  obs_noise         0.10               Balanced      +0.377  -0.245  -0.561    9057   ETA 3.1m
+  obs_noise         0.20               Yield         +0.791  -0.771  -0.880   10888   ETA 3.0m
+  obs_noise         0.20               N-Efficiency  -0.163  -0.502  -0.439    6999   ETA 2.9m
+  obs_noise         0.20               Water         +0.412  -0.432  -0.459    9189   ETA 2.8m
+  obs_noise         0.20               Balanced      +0.836  -0.741  -0.737   11121   ETA 2.7m
+  obs_noise         0.30               Yield         +0.791  -0.807  -0.883   10948   ETA 2.7m
+  obs_noise         0.30               N-Efficiency  -0.265  -0.330  -0.470    6610   ETA 2.6m
+  obs_noise         0.30               Water         +0.712  -0.516  -0.949   10520   ETA 2.5m
+  obs_noise         0.30               Balanced      +0.633  -0.710  -0.506   10347   ETA 2.4m
+  obs_noise         0.50               Yield         -0.249  -0.958  +0.195    6673   ETA 2.3m
+  obs_noise         0.50               N-Efficiency  +0.516  -0.884  -1.000    9585   ETA 2.2m
+  obs_noise         0.50               Water         +0.385  -0.857  -0.905    9086   ETA 2.1m
+  obs_noise         0.50               Balanced      +0.316  -0.889  -0.481    8822   ETA 2.0m
+  blackout_day      No fault           Yield         +0.548  -0.678  +0.405    9895   ETA 2.0m
+  blackout_day      No fault           N-Efficiency  +0.074  +0.123  +0.625    7900   ETA 1.9m
+  blackout_day      No fault           Water         +0.490  -0.326  +0.634    9487   ETA 1.8m
+  blackout_day      No fault           Balanced      +0.681  -0.230  +0.549   10376   ETA 1.7m
+  blackout_day      Day 120            Yield         +0.636  -0.669  +0.359   10324   ETA 1.6m
+  blackout_day      Day 120            N-Efficiency  +0.487  -0.052  +0.611    9476   ETA 1.5m
+  blackout_day      Day 120            Water         +0.263  -0.370  +0.689    8621   ETA 1.4m
+  blackout_day      Day 120            Balanced      +0.590  -0.645  +0.529   10098   ETA 1.3m
+  blackout_day      Day 90             Yield         -0.508  -0.984  +0.406    5686   ETA 1.3m
+  blackout_day      Day 90             N-Efficiency  -0.830  -0.775  +0.815    3432   ETA 1.2m
+  blackout_day      Day 90             Water         -0.788  -0.975  +0.894    3634   ETA 1.1m
+  blackout_day      Day 90             Balanced      -0.742  -0.818  +0.724    4540   ETA 1.0m
+  blackout_day      Day 60             Yield         -0.518  -0.992  +0.535    5645   ETA 0.9m
+  blackout_day      Day 60             N-Efficiency  -0.876  -0.620  +1.000    3084   ETA 0.8m
+  blackout_day      Day 60             Water         -0.799  -0.993  +0.973    3451   ETA 0.8m
+  blackout_day      Day 60             Balanced      -0.727  -0.957  +0.810    4469   ETA 0.7m
+  blackout_day      Day 30             Yield         -0.513  -0.994  +0.454    5665   ETA 0.6m
+  blackout_day      Day 30             N-Efficiency  -1.000  -1.000  +1.000    2249   ETA 0.5m
+  blackout_day      Day 30             Water         -0.799  -0.994  +0.965    3444   ETA 0.4m
+  blackout_day      Day 30             Balanced      -0.730  -0.994  +0.753    4455   ETA 0.3m
+  blackout_day      Day 10             Yield         -0.528  -0.995  +0.401    5609   ETA 0.3m
+  blackout_day      Day 10             N-Efficiency  -1.000  -1.000  +1.000    2300   ETA 0.2m
+  blackout_day      Day 10             Water         -0.798  -0.990  +0.959    3456   ETA 0.1m
+  blackout_day      Day 10             Balanced      -0.729  -0.994  +0.714    4457   ETA 0.0m
+
+✓  Log → /workspace/resilience_log.csv
+✓  /workspace/resilience_curves.png
+✓  /workspace/resilience_heatmap.png
+
+✓  Total time: 6.1 min
+✓  Outputs in /workspace/
+======================================================================

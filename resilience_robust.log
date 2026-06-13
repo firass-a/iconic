@@ -1,0 +1,220 @@
+======================================================================
+13_resilience_eval_robust.py  —  CAPQL-Robust Resilience Test
+======================================================================
+  Model  : /workspace/capql_robust
+  Obs dim: 19  (crop + mask + w, return_mask=True)
+  Episodes: 468  (7 scenarios × 4 corners × 3 seeds)
+======================================================================
+
+  ✓  Actor loaded from /workspace/capql_robust/actor.pt
+  scenario               level            corner           R_yld   R_ane   R_wef   yield
+  ──────────────────────────────────────────────────────────────────────────────
+  dropout_soil           0%               yield           +0.309  -0.496  +0.105    8799   ETA 16.9m
+  dropout_soil           0%               n_eff           +0.839  +0.030  +0.455   10967   ETA 15.9m
+  dropout_soil           0%               water           +0.785  -0.142  +0.546   10778   ETA 15.2m
+  dropout_soil           0%               balanced        +0.661  -0.130  +0.418   10264   ETA 14.5m
+  dropout_soil           5%               yield           +0.958  -0.568  -0.082   11575   ETA 14.2m
+  dropout_soil           5%               n_eff           -0.661  -0.772  +0.880    4642   ETA 13.9m
+  dropout_soil           5%               water           -0.519  -0.878  +0.850    5477   ETA 13.6m
+  dropout_soil           5%               balanced        -0.548  -0.786  +0.715    4969   ETA 13.4m
+  dropout_soil           10%              yield           +0.958  -0.665  +0.033   11575   ETA 13.3m
+  dropout_soil           10%              n_eff           -0.680  -0.819  +0.903    4456   ETA 13.1m
+  dropout_soil           10%              water           -0.515  -0.878  +0.852    5493   ETA 13.0m
+  dropout_soil           10%              balanced        -0.598  -0.889  +0.798    4785   ETA 12.8m
+  dropout_soil           20%              yield           +0.958  -0.662  +0.023   11576   ETA 12.7m
+  dropout_soil           20%              n_eff           -0.680  -0.815  +0.871    4550   ETA 12.7m
+  dropout_soil           20%              water           -0.505  -0.901  +0.869    5544   ETA 12.6m
+  dropout_soil           20%              balanced        -0.594  -0.896  +0.865    4799   ETA 12.5m
+  dropout_soil           50%              yield           +0.958  -0.672  +0.070   11575   ETA 12.4m
+  dropout_soil           50%              n_eff           -0.683  -0.818  +0.917    4443   ETA 12.3m
+  dropout_soil           50%              water           -0.506  -0.900  +0.869    5535   ETA 12.2m
+  dropout_soil           50%              balanced        -0.595  -0.897  +0.797    4813   ETA 12.2m
+  dropout_all            0%               yield           +0.309  -0.496  +0.105    8799   ETA 12.1m
+  dropout_all            0%               n_eff           +0.839  +0.030  +0.455   10967   ETA 12.1m
+  dropout_all            0%               water           +0.785  -0.142  +0.546   10778   ETA 11.9m
+  dropout_all            0%               balanced        +0.661  -0.130  +0.418   10264   ETA 11.8m
+  dropout_all            5%               yield           +0.958  -0.710  +0.036   11577   ETA 11.7m
+  dropout_all            5%               n_eff           -0.660  -0.779  +0.886    4673   ETA 11.6m
+  dropout_all            5%               water           -0.544  -0.860  +0.781    5394   ETA 11.5m
+  dropout_all            5%               balanced        -0.738  -0.807  +0.653    4415   ETA 11.4m
+  dropout_all            10%              yield           +0.958  -0.691  +0.064   11576   ETA 11.3m
+  dropout_all            10%              n_eff           -0.678  -0.813  +0.928    4524   ETA 11.2m
+  dropout_all            10%              water           -0.542  -0.860  +0.741    5400   ETA 11.1m
+  dropout_all            10%              balanced        -0.598  -0.892  +0.789    4795   ETA 11.0m
+  dropout_all            20%              yield           +0.958  -0.674  +0.082   11575   ETA 10.9m
+  dropout_all            20%              n_eff           -0.673  -0.807  +0.888    4491   ETA 10.8m
+  dropout_all            20%              water           -0.506  -0.894  +0.863    5537   ETA 10.7m
+  dropout_all            20%              balanced        -0.592  -0.900  +0.839    4823   ETA 10.6m
+  dropout_all            50%              yield           +0.958  -0.672  +0.070   11576   ETA 10.5m
+  dropout_all            50%              n_eff           -0.678  -0.814  +0.897    4465   ETA 10.4m
+  dropout_all            50%              water           -0.507  -0.889  +0.870    5531   ETA 10.3m
+  dropout_all            50%              balanced        -0.591  -0.901  +0.860    4813   ETA 10.2m
+  packet_loss            0%               yield           +0.309  -0.496  +0.105    8799   ETA 10.1m
+  packet_loss            0%               n_eff           +0.839  +0.030  +0.455   10967   ETA 10.0m
+  packet_loss            0%               water           +0.785  -0.142  +0.546   10778   ETA 9.9m
+  packet_loss            0%               balanced        +0.661  -0.130  +0.418   10264   ETA 9.8m
+  packet_loss            5%               yield           +0.614  -0.471  +0.173    9959   ETA 9.7m
+  packet_loss            5%               n_eff           +0.743  +0.002  +0.458   10506   ETA 9.6m
+  packet_loss            5%               water           +0.736  -0.259  +0.535   10424   ETA 9.5m
+  packet_loss            5%               balanced        +0.716  -0.200  +0.408   10475   ETA 9.4m
+  packet_loss            10%              yield           +0.791  -0.347  +0.184   10866   ETA 9.3m
+  packet_loss            10%              n_eff           +0.692  +0.035  +0.477   10257   ETA 9.2m
+  packet_loss            10%              water           +0.540  -0.383  +0.539    9677   ETA 9.1m
+  packet_loss            10%              balanced        +0.825  -0.240  +0.354   11009   ETA 9.0m
+  packet_loss            20%              yield           +0.916  -0.399  +0.162   11111   ETA 8.9m
+  packet_loss            20%              n_eff           +0.426  +0.043  +0.429    9245   ETA 8.8m
+  packet_loss            20%              water           +0.694  -0.433  +0.504   10263   ETA 8.7m
+  packet_loss            20%              balanced        +0.734  -0.367  +0.344   10674   ETA 8.6m
+  packet_loss            50%              yield           +0.865  -0.689  +0.198   11175   ETA 8.6m
+  packet_loss            50%              n_eff           -0.183  +0.004  +0.517    6922   ETA 8.5m
+  packet_loss            50%              water           +0.009  -0.785  +0.630    7653   ETA 8.4m
+  packet_loss            50%              balanced        +0.263  -0.734  +0.359    8622   ETA 8.3m
+  stuck_soil             No fault         yield           +0.309  -0.496  +0.105    8799   ETA 8.2m
+  stuck_soil             No fault         n_eff           +0.839  +0.030  +0.455   10967   ETA 8.1m
+  stuck_soil             No fault         water           +0.785  -0.142  +0.546   10778   ETA 8.0m
+  stuck_soil             No fault         balanced        +0.661  -0.130  +0.418   10264   ETA 7.9m
+  stuck_soil             Day 120          yield           +0.303  -0.487  +0.173    8774   ETA 7.8m
+  stuck_soil             Day 120          n_eff           +0.709  -0.021  +0.525   10320   ETA 7.7m
+  stuck_soil             Day 120          water           +0.666  -0.190  +0.605   10156   ETA 7.7m
+  stuck_soil             Day 120          balanced        +0.606  -0.151  +0.494    9930   ETA 7.6m
+  stuck_soil             Day 90           yield           +0.286  -0.502  +0.069    8711   ETA 7.5m
+  stuck_soil             Day 90           n_eff           +0.670  -0.056  +0.439   10174   ETA 7.4m
+  stuck_soil             Day 90           water           +0.055  -0.377  +0.606    7831   ETA 7.3m
+  stuck_soil             Day 90           balanced        +0.435  -0.219  +0.456    9277   ETA 7.2m
+  stuck_soil             Day 60           yield           +0.291  -0.521  +0.073    8730   ETA 7.1m
+  stuck_soil             Day 60           n_eff           -0.566  -0.777  +0.737    5279   ETA 7.0m
+  stuck_soil             Day 60           water           -0.534  -0.692  +0.794    5314   ETA 7.0m
+  stuck_soil             Day 60           balanced        +0.264  -0.274  +0.632    8625   ETA 6.9m
+  stuck_soil             Day 30           yield           +0.212  -0.541  -0.028    8428   ETA 6.8m
+  stuck_soil             Day 30           n_eff           -0.402  -0.723  +0.663    6087   ETA 6.7m
+  stuck_soil             Day 30           water           -0.510  -0.665  +0.759    5496   ETA 6.6m
+  stuck_soil             Day 30           balanced        -0.003  -0.382  +0.517    7609   ETA 6.5m
+  stuck_soil             Day 10           yield           +0.240  -0.591  -0.008    8536   ETA 6.4m
+  stuck_soil             Day 10           n_eff           -0.338  -0.579  +0.679    6333   ETA 6.4m
+  stuck_soil             Day 10           water           -0.438  -0.667  +0.752    5953   ETA 6.3m
+  stuck_soil             Day 10           balanced        +0.507  -0.191  +0.582    9550   ETA 6.2m
+  bias_soil              0                yield           +0.309  -0.496  +0.105    8799   ETA 6.1m
+  bias_soil              0                n_eff           +0.839  +0.030  +0.455   10967   ETA 6.0m
+  bias_soil              0                water           +0.785  -0.142  +0.546   10778   ETA 5.9m
+  bias_soil              0                balanced        +0.661  -0.130  +0.418   10264   ETA 5.9m
+  bias_soil              -0.20            yield           -0.914  -1.000  -0.983    3757   ETA 5.8m
+  bias_soil              -0.20            n_eff           +0.528  -0.188  -0.176    9630   ETA 5.7m
+  bias_soil              -0.20            water           +0.958  -0.833  +0.192   11556   ETA 5.6m
+  bias_soil              -0.20            balanced        -0.878  -0.922  -0.747    3866   ETA 5.5m
+  bias_soil              -0.10            yield           -0.847  -1.000  -0.740    4014   ETA 5.4m
+  bias_soil              -0.10            n_eff           +0.660  -0.133  -0.173   10134   ETA 5.4m
+  bias_soil              -0.10            water           +0.958  -0.402  +0.152   11538   ETA 5.3m
+  bias_soil              -0.10            balanced        -0.719  -0.947  -0.594    4881   ETA 5.2m
+  bias_soil              +0.10            yield           -0.300  -0.701  +0.840    6476   ETA 5.1m
+  bias_soil              +0.10            n_eff           -0.682  -0.802  +0.983    4425   ETA 5.0m
+  bias_soil              +0.10            water           -0.699  -0.816  +1.000    4375   ETA 5.0m
+  bias_soil              +0.10            balanced        -0.674  -0.826  +1.000    4472   ETA 4.9m
+  bias_soil              +0.20            yield           -0.674  -0.838  +1.000    4475   ETA 4.8m
+  bias_soil              +0.20            n_eff           -0.666  -0.767  +1.000    4536   ETA 4.7m
+  bias_soil              +0.20            water           -0.689  -0.781  +1.000    4438   ETA 4.6m
+  bias_soil              +0.20            balanced        -0.678  -0.776  +1.000    4473   ETA 4.5m
+  bias_soil              +0.30            yield           -0.663  -0.804  +1.000    4516   ETA 4.5m
+  bias_soil              +0.30            n_eff           -0.660  -0.733  +1.000    4637   ETA 4.4m
+  bias_soil              +0.30            water           -0.706  -0.763  +1.000    4376   ETA 4.3m
+  bias_soil              +0.30            balanced        -0.697  -0.766  +1.000    4420   ETA 4.2m
+  actuator_N             100%             yield           +0.309  -0.496  +0.105    8799   ETA 4.1m
+  actuator_N             100%             n_eff           +0.839  +0.030  +0.455   10967   ETA 4.1m
+  actuator_N             100%             water           +0.785  -0.142  +0.546   10778   ETA 4.0m
+  actuator_N             100%             balanced        +0.661  -0.130  +0.418   10264   ETA 3.9m
+  actuator_N             80%              yield           +0.344  -0.485  +0.111    8930   ETA 3.8m
+  actuator_N             80%              n_eff           +0.693  +0.128  +0.483   10261   ETA 3.7m
+  actuator_N             80%              water           +0.777  -0.140  +0.549   10740   ETA 3.6m
+  actuator_N             80%              balanced        +0.664  -0.124  +0.419   10275   ETA 3.6m
+  actuator_N             60%              yield           +0.390  -0.467  +0.115    9106   ETA 3.5m
+  actuator_N             60%              n_eff           +0.309  +0.295  +0.500    8798   ETA 3.4m
+  actuator_N             60%              water           +0.773  -0.137  +0.552   10708   ETA 3.3m
+  actuator_N             60%              balanced        +0.671  -0.114  +0.421   10293   ETA 3.2m
+  actuator_N             40%              yield           +0.501  -0.371  +0.121    9528   ETA 3.1m
+  actuator_N             40%              n_eff           -0.371  -0.013  +0.465    6207   ETA 3.0m
+  actuator_N             40%              water           +0.779  -0.127  +0.557   10733   ETA 3.0m
+  actuator_N             40%              balanced        +0.693  -0.091  +0.424   10402   ETA 2.9m
+  actuator_N             20%              yield           +0.889  -0.134  +0.232   11234   ETA 2.8m
+  actuator_N             20%              n_eff           -0.983  -1.000  +0.151    3306   ETA 2.7m
+  actuator_N             20%              water           +0.776  -0.114  +0.575   10667   ETA 2.6m
+  actuator_N             20%              balanced        +0.830  -0.013  +0.432   11003   ETA 2.5m
+  actuator_N             0%               yield           -1.000  -1.000  -1.000     811   ETA 2.4m
+  actuator_N             0%               n_eff           -1.000  -1.000  -0.811    1018   ETA 2.3m
+  actuator_N             0%               water           -1.000  -1.000  +0.133    1628   ETA 2.2m
+  actuator_N             0%               balanced        -1.000  -1.000  -1.000     819   ETA 2.1m
+  actuator_W             100%             yield           +0.309  -0.496  +0.105    8799   ETA 2.1m
+  actuator_W             100%             n_eff           +0.839  +0.030  +0.455   10967   ETA 2.0m
+  actuator_W             100%             water           +0.785  -0.142  +0.546   10778   ETA 1.9m
+  actuator_W             100%             balanced        +0.661  -0.130  +0.418   10264   ETA 1.8m
+  actuator_W             80%              yield           +0.378  -0.471  +0.162    9060   ETA 1.7m
+  actuator_W             80%              n_eff           +0.849  +0.035  +0.485   11013   ETA 1.6m
+  actuator_W             80%              water           +0.644  -0.210  +0.584   10074   ETA 1.5m
+  actuator_W             80%              balanced        +0.679  -0.122  +0.434   10357   ETA 1.4m
+  actuator_W             60%              yield           +0.442  -0.450  +0.227    9337   ETA 1.3m
+  actuator_W             60%              n_eff           +0.847  +0.036  +0.519   11018   ETA 1.2m
+  actuator_W             60%              water           +0.513  -0.273  +0.642    9576   ETA 1.2m
+  actuator_W             60%              balanced        +0.728  -0.102  +0.459   10609   ETA 1.1m
+  actuator_W             40%              yield           +0.486  -0.430  +0.312    9667   ETA 1.0m
+  actuator_W             40%              n_eff           +0.859  +0.030  +0.581   10975   ETA 0.9m
+  actuator_W             40%              water           +0.056  -0.475  +0.736    7834   ETA 0.8m
+  actuator_W             40%              balanced        +0.837  -0.069  +0.521   11061   ETA 0.7m
+  actuator_W             20%              yield           +0.641  -0.424  +0.452   10327   ETA 0.6m
+  actuator_W             20%              n_eff           +0.443  -0.150  +0.710    9309   ETA 0.5m
+  actuator_W             20%              water           -0.493  -0.778  +0.855    5742   ETA 0.4m
+  actuator_W             20%              balanced        +0.667  -0.182  +0.641   10161   ETA 0.4m
+  actuator_W             0%               yield           -0.686  -0.973  +1.000    4391   ETA 0.3m
+  actuator_W             0%               n_eff           -0.685  -0.807  +1.000    4411   ETA 0.2m
+  actuator_W             0%               water           -0.706  -0.921  +1.000    4334   ETA 0.1m
+  actuator_W             0%               balanced        -0.686  -0.963  +1.000    4411   ETA 0.0m
+
+  ✓  Total time: 13.8 min
+  ✓  Log → /workspace/resilience_robust_log.csv
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:371: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "orientation" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:371: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "dpi" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:371: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "facecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:371: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "edgecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:371: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "bbox_inches_restore" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+  ✓  /workspace/resilience_robust_curves.png
+
+======================================================================
+  Resilience summary — mean R_yield degradation (clean → worst fault level)
+  Scenario                  v2 clean    v2 worst    rb clean    rb worst   Δ improvement
+  ────────────────────────────────────────────────────────────────────
+  dropout_soil                  +nan        +nan      +0.648      -0.209            +nan
+  dropout_all                   +nan        +nan      +0.648      -0.246            +nan
+  packet_loss                   +nan        +nan      +0.648      +0.238            +nan
+  stuck_soil                    +nan        +nan      +0.648      -0.176            +nan
+  bias_soil                     +nan        +nan      +0.648      -0.682            +nan
+  actuator_N                    +nan        +nan      +0.648      -1.000            +nan
+  actuator_W                    +nan        +nan      +0.648      -0.691            +nan
+======================================================================
+
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:466: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "orientation" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:466: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "dpi" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:466: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "facecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:466: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "edgecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:466: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "bbox_inches_restore" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+  ✓  /workspace/resilience_comparison.png
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:539: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "orientation" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:539: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "dpi" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:539: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "facecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:539: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "edgecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/13_resilience_eval_robust.py:539: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "bbox_inches_restore" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(out_path, dpi=130, bbox_inches='tight')
+  ✓  /workspace/resilience_comparison_full.png
+
+  ✓  Done.  Results in /workspace/
+======================================================================

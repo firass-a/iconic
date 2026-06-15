@@ -1,0 +1,175 @@
+Device: cpu
+Total steps: 3,000,000
+K_HISTORY: 10  BATCH: 128  UPDATE_INTERVAL: 20  N_UPDATES: 2
+Expected gradient steps: ~299,500
+CORNER_PROB: 0.15  LSTM_IN: 19
+
+[    3,183] ep=   20  phase=0  fault=clean         Ry=+1.000  Ra=-0.983  Rw=-1.000  noise=0.300  c_loss=0.0000  t=0.3min
+[    6,422] ep=   40  phase=0  fault=clean         Ry=+1.000  Ra=-0.954  Rw=-0.710  noise=0.299  c_loss=0.0195  t=0.9min
+[    9,622] ep=   60  phase=0  fault=clean         Ry=+0.226  Ra=-0.214  Rw=-1.000  noise=0.299  c_loss=0.0068  t=1.9min
+[   12,836] ep=   80  phase=0  fault=clean         Ry=+0.823  Ra=-0.950  Rw=-1.000  noise=0.298  c_loss=0.0050  t=3.0min
+[   16,050] ep=  100  phase=0  fault=clean         Ry=+0.900  Ra=-0.945  Rw=-0.722  noise=0.298  c_loss=0.0048  t=4.0min
+[   19,269] ep=  120  phase=0  fault=clean         Ry=+0.757  Ra=-0.945  Rw=-0.274  noise=0.297  c_loss=0.0060  t=5.1min
+[   22,448] ep=  140  phase=0  fault=clean         Ry=+0.876  Ra=-0.947  Rw=-1.000  noise=0.297  c_loss=0.0024  t=6.2min
+[   25,630] ep=  160  phase=0  fault=clean         Ry=-0.283  Ra=-0.152  Rw=-1.000  noise=0.296  c_loss=0.0046  t=7.3min
+[   28,786] ep=  180  phase=0  fault=clean         Ry=-0.231  Ra=-0.231  Rw=-1.000  noise=0.296  c_loss=0.0025  t=8.3min
+[   31,997] ep=  200  phase=0  fault=clean         Ry=+1.000  Ra=-0.944  Rw=-1.000  noise=0.295  c_loss=0.0039  t=9.4min
+[   35,187] ep=  220  phase=0  fault=clean         Ry=+0.956  Ra=-0.945  Rw=+0.245  noise=0.295  c_loss=0.0020  t=10.5min
+[   38,378] ep=  240  phase=0  fault=clean         Ry=+1.000  Ra=-0.932  Rw=-1.000  noise=0.294  c_loss=0.0019  t=11.6min
+[   41,570] ep=  260  phase=0  fault=clean         Ry=+1.000  Ra=-0.938  Rw=-1.000  noise=0.294  c_loss=0.0020  t=12.7min
+[   44,787] ep=  280  phase=0  fault=clean         Ry=-0.278  Ra=-0.341  Rw=-1.000  noise=0.293  c_loss=0.0005  t=13.8min
+[   47,995] ep=  300  phase=0  fault=clean         Ry=+0.988  Ra=-0.953  Rw=-1.000  noise=0.293  c_loss=0.0010  t=14.9min
+
+--- Eval @ 50,069 steps ---
+  yield       Ry=+0.911  Rw=-1.000  yield=11326kg/ha  W=1254mm
+  n_eff       Ry=+0.292  Rw=-1.000  yield=8734kg/ha  W=1202mm
+  water       Ry=+0.884  Rw=-0.198  yield=11182kg/ha  W=479mm
+  balanced    Ry=+0.800  Rw=-1.000  yield=10748kg/ha  W=1271mm
+
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:551: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "orientation" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_training.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:551: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "dpi" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_training.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:551: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "facecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_training.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:551: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "edgecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_training.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:551: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "bbox_inches_restore" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_training.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:594: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "orientation" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_corners.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:594: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "dpi" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_corners.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:594: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "facecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_corners.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:594: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "edgecolor" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_corners.png'),
+/workspace/gym-dssat-pdi/gym_dssat_pdi_samples/16_capql_lstm_v2.py:594: MatplotlibDeprecationWarning: savefig() got unexpected keyword argument "bbox_inches_restore" which is no longer supported as of 3.3 and will become an error two minor releases later
+  plt.savefig(os.path.join(PLOT_DIR, 'fig_lstm_v2_corners.png'),
+[ckpt] saved → /workspace/capql_lstm_v2/ckpt_50k.pt
+[   51,185] ep=  320  phase=0  fault=clean         Ry=+1.000  Ra=-0.946  Rw=-1.000  noise=0.292  c_loss=0.0006  t=17.1min
+[   54,393] ep=  340  phase=0  fault=clean         Ry=+1.000  Ra=-0.907  Rw=-1.000  noise=0.292  c_loss=0.0009  t=18.2min
+[   57,596] ep=  360  phase=0  fault=clean         Ry=+0.761  Ra=-0.959  Rw=-1.000  noise=0.291  c_loss=0.0004  t=19.3min
+[   60,816] ep=  380  phase=0  fault=clean         Ry=+0.665  Ra=-0.720  Rw=-1.000  noise=0.291  c_loss=0.0011  t=20.4min
+[   64,017] ep=  400  phase=0  fault=clean         Ry=+0.436  Ra=-0.960  Rw=-0.489  noise=0.290  c_loss=0.0010  t=21.5min
+[   67,214] ep=  420  phase=0  fault=clean         Ry=+1.000  Ra=-0.954  Rw=-1.000  noise=0.290  c_loss=0.0006  t=22.6min
+[   70,390] ep=  440  phase=0  fault=clean         Ry=-0.277  Ra=-0.973  Rw=+0.153  noise=0.289  c_loss=0.0016  t=23.6min
+[   73,601] ep=  460  phase=0  fault=clean         Ry=+0.795  Ra=-0.946  Rw=-1.000  noise=0.289  c_loss=0.0005  t=24.7min
+[   76,791] ep=  480  phase=0  fault=clean         Ry=-0.100  Ra=-0.967  Rw=-0.325  noise=0.289  c_loss=0.0011  t=26.0min
+[   80,014] ep=  500  phase=0  fault=clean         Ry=+1.000  Ra=-0.920  Rw=-0.181  noise=0.288  c_loss=0.0008  t=27.2min
+[   83,130] ep=  520  phase=0  fault=clean         Ry=-1.000  Ra=-1.000  Rw=-1.000  noise=0.288  c_loss=0.0005  t=28.4min
+[   86,207] ep=  540  phase=0  fault=clean         Ry=-0.981  Ra=-1.000  Rw=-1.000  noise=0.287  c_loss=0.0009  t=29.5min
+[   89,439] ep=  560  phase=0  fault=clean         Ry=+0.913  Ra=-0.790  Rw=-1.000  noise=0.287  c_loss=0.0007  t=30.7min
+[   92,632] ep=  580  phase=0  fault=clean         Ry=+0.699  Ra=-0.918  Rw=-1.000  noise=0.286  c_loss=0.0005  t=31.7min
+[   95,816] ep=  600  phase=0  fault=clean         Ry=+0.909  Ra=-0.935  Rw=+0.344  noise=0.286  c_loss=0.0009  t=32.7min
+[   99,042] ep=  620  phase=0  fault=clean         Ry=-0.768  Ra=-1.000  Rw=-1.000  noise=0.285  c_loss=0.0004  t=33.7min
+
+--- Eval @ 100,020 steps ---
+  yield       Ry=+0.187  Rw=-1.000  yield=8333kg/ha  W=1154mm
+  n_eff       Ry=+0.461  Rw=-1.000  yield=9378kg/ha  W=1008mm
+  water       Ry=+0.495  Rw=-0.198  yield=9504kg/ha  W=479mm
+  balanced    Ry=+0.455  Rw=-1.000  yield=9354kg/ha  W=1074mm
+
+[ckpt] saved → /workspace/capql_lstm_v2/ckpt_100k.pt
+[  102,268] ep=  640  phase=0  fault=clean         Ry=+0.847  Ra=-0.879  Rw=-1.000  noise=0.285  c_loss=0.0008  t=35.7min
+[  105,464] ep=  660  phase=0  fault=clean         Ry=+0.155  Ra=-0.947  Rw=+0.277  noise=0.284  c_loss=0.0005  t=36.7min
+[  108,679] ep=  680  phase=0  fault=clean         Ry=-0.401  Ra=-0.955  Rw=+0.278  noise=0.284  c_loss=0.0006  t=37.8min
+[  111,850] ep=  700  phase=0  fault=clean         Ry=+0.750  Ra=-0.933  Rw=-1.000  noise=0.283  c_loss=0.0013  t=38.8min
+[  115,046] ep=  720  phase=0  fault=clean         Ry=+0.336  Ra=-0.940  Rw=+0.170  noise=0.283  c_loss=0.0012  t=39.8min
+[  118,229] ep=  740  phase=0  fault=clean         Ry=+0.846  Ra=-0.794  Rw=-1.000  noise=0.282  c_loss=0.0010  t=40.9min
+[  121,442] ep=  760  phase=0  fault=clean         Ry=+0.844  Ra=-0.815  Rw=-1.000  noise=0.282  c_loss=0.0003  t=42.0min
+[  124,641] ep=  780  phase=0  fault=clean         Ry=+0.882  Ra=-0.903  Rw=-1.000  noise=0.281  c_loss=0.0009  t=43.2min
+[  127,818] ep=  800  phase=0  fault=clean         Ry=+0.545  Ra=-0.921  Rw=-0.088  noise=0.281  c_loss=0.0003  t=44.2min
+[  131,039] ep=  820  phase=0  fault=clean         Ry=-0.231  Ra=-0.964  Rw=+0.086  noise=0.280  c_loss=0.0004  t=45.3min
+[  134,228] ep=  840  phase=0  fault=clean         Ry=+0.859  Ra=-0.928  Rw=-1.000  noise=0.280  c_loss=0.0005  t=46.3min
+[  137,429] ep=  860  phase=0  fault=clean         Ry=+0.656  Ra=-0.937  Rw=-1.000  noise=0.279  c_loss=0.0006  t=47.3min
+[  140,632] ep=  880  phase=0  fault=clean         Ry=+0.099  Ra=-0.948  Rw=+0.232  noise=0.279  c_loss=0.0003  t=48.4min
+[  143,823] ep=  900  phase=0  fault=clean         Ry=+1.000  Ra=-0.916  Rw=-1.000  noise=0.278  c_loss=0.0003  t=49.6min
+[  147,021] ep=  920  phase=0  fault=clean         Ry=+0.687  Ra=-0.934  Rw=-0.458  noise=0.278  c_loss=0.0006  t=50.8min
+
+--- Eval @ 150,063 steps ---
+  yield       Ry=+0.344  Rw=-1.000  yield=8930kg/ha  W=915mm
+  n_eff       Ry=+0.418  Rw=-0.678  yield=9212kg/ha  W=671mm
+  water       Ry=+0.667  Rw=-0.165  yield=10312kg/ha  W=466mm
+  balanced    Ry=+0.795  Rw=-0.824  yield=10649kg/ha  W=730mm
+
+[ckpt] saved → /workspace/capql_lstm_v2/ckpt_150k.pt
+[  150,219] ep=  940  phase=0  fault=clean         Ry=+0.839  Ra=-0.917  Rw=-1.000  noise=0.277  c_loss=0.0005  t=53.0min
+[  153,407] ep=  960  phase=0  fault=clean         Ry=+1.000  Ra=-0.909  Rw=-1.000  noise=0.277  c_loss=0.0002  t=54.2min
+[  156,587] ep=  980  phase=0  fault=clean         Ry=+0.633  Ra=-0.924  Rw=-1.000  noise=0.277  c_loss=0.0002  t=55.3min
+[  159,775] ep= 1000  phase=0  fault=clean         Ry=+0.559  Ra=-0.939  Rw=+0.358  noise=0.276  c_loss=0.0009  t=56.5min
+[  162,969] ep= 1020  phase=0  fault=clean         Ry=+0.654  Ra=-0.895  Rw=-1.000  noise=0.276  c_loss=0.0002  t=57.7min
+[  166,138] ep= 1040  phase=0  fault=clean         Ry=+0.721  Ra=-0.921  Rw=-1.000  noise=0.275  c_loss=0.0010  t=58.7min
+[  169,236] ep= 1060  phase=0  fault=clean         Ry=+0.666  Ra=-0.933  Rw=-1.000  noise=0.275  c_loss=0.0003  t=59.7min
+[  172,434] ep= 1080  phase=0  fault=clean         Ry=+0.895  Ra=-0.925  Rw=-1.000  noise=0.274  c_loss=0.0002  t=60.7min
+[  175,640] ep= 1100  phase=0  fault=clean         Ry=+1.000  Ra=-0.913  Rw=-1.000  noise=0.274  c_loss=0.0001  t=61.7min
+[  178,837] ep= 1120  phase=0  fault=clean         Ry=+1.000  Ra=-0.915  Rw=-1.000  noise=0.273  c_loss=0.0005  t=62.8min
+[  182,047] ep= 1140  phase=0  fault=clean         Ry=+0.695  Ra=-0.935  Rw=+0.345  noise=0.273  c_loss=0.0004  t=63.8min
+[  185,265] ep= 1160  phase=0  fault=clean         Ry=+1.000  Ra=-0.938  Rw=-0.495  noise=0.272  c_loss=0.0002  t=64.9min
+[  188,464] ep= 1180  phase=0  fault=clean         Ry=+0.840  Ra=-0.937  Rw=-1.000  noise=0.272  c_loss=0.0003  t=66.0min
+[  191,669] ep= 1200  phase=0  fault=clean         Ry=+1.000  Ra=-0.918  Rw=-1.000  noise=0.271  c_loss=0.0003  t=67.1min
+[  194,877] ep= 1220  phase=0  fault=clean         Ry=+0.984  Ra=-0.847  Rw=-1.000  noise=0.271  c_loss=0.0007  t=68.1min
+[  198,062] ep= 1240  phase=0  fault=clean         Ry=+0.927  Ra=-0.905  Rw=-1.000  noise=0.270  c_loss=0.0005  t=69.0min
+
+--- Eval @ 200,142 steps ---
+  yield       Ry=+0.266  Rw=-0.989  yield=8635kg/ha  W=801mm
+  n_eff       Ry=+0.539  Rw=-0.252  yield=9673kg/ha  W=501mm
+  water       Ry=+0.531  Rw=-0.114  yield=9819kg/ha  W=445mm
+  balanced    Ry=+0.769  Rw=-0.638  yield=10550kg/ha  W=655mm
+
+[ckpt] saved → /workspace/capql_lstm_v2/ckpt_200k.pt
+[  201,265] ep= 1260  phase=0  fault=clean         Ry=-0.621  Ra=-0.302  Rw=-1.000  noise=0.270  c_loss=0.0005  t=71.0min
+[  204,449] ep= 1280  phase=0  fault=clean         Ry=+0.827  Ra=-0.844  Rw=-1.000  noise=0.269  c_loss=0.0003  t=72.1min
+[  207,629] ep= 1300  phase=0  fault=clean         Ry=+1.000  Ra=-0.917  Rw=-1.000  noise=0.269  c_loss=0.0004  t=73.1min
+[  210,803] ep= 1320  phase=0  fault=clean         Ry=-0.354  Ra=-0.962  Rw=+0.366  noise=0.268  c_loss=0.0003  t=74.1min
+[  214,036] ep= 1340  phase=0  fault=clean         Ry=+0.490  Ra=-0.884  Rw=-1.000  noise=0.268  c_loss=0.0002  t=75.1min
+[  217,233] ep= 1360  phase=0  fault=clean         Ry=-1.000  Ra=-1.000  Rw=-1.000  noise=0.267  c_loss=0.0002  t=76.1min
+[  220,402] ep= 1380  phase=0  fault=clean         Ry=-0.281  Ra=-0.959  Rw=+0.305  noise=0.267  c_loss=0.0004  t=77.1min
+[  223,581] ep= 1400  phase=0  fault=clean         Ry=+0.805  Ra=-0.921  Rw=-1.000  noise=0.266  c_loss=0.0014  t=78.2min
+[  226,772] ep= 1420  phase=0  fault=clean         Ry=+0.834  Ra=-0.928  Rw=-1.000  noise=0.266  c_loss=0.0002  t=79.2min
+[  229,948] ep= 1440  phase=0  fault=clean         Ry=+0.952  Ra=-0.926  Rw=-1.000  noise=0.266  c_loss=0.0002  t=80.3min
+[  233,162] ep= 1460  phase=0  fault=clean         Ry=+1.000  Ra=-0.896  Rw=-1.000  noise=0.265  c_loss=0.0003  t=81.3min
+[  236,364] ep= 1480  phase=0  fault=clean         Ry=-0.281  Ra=-0.083  Rw=-1.000  noise=0.265  c_loss=0.0001  t=82.3min
+[  239,580] ep= 1500  phase=0  fault=clean         Ry=+1.000  Ra=-0.917  Rw=-1.000  noise=0.264  c_loss=0.0002  t=83.4min
+[  242,770] ep= 1520  phase=0  fault=clean         Ry=+0.938  Ra=-0.918  Rw=-1.000  noise=0.264  c_loss=0.0007  t=84.4min
+[  245,954] ep= 1540  phase=0  fault=clean         Ry=+0.980  Ra=-0.934  Rw=-1.000  noise=0.263  c_loss=0.0002  t=85.4min
+[  249,144] ep= 1560  phase=0  fault=clean         Ry=+1.000  Ra=-0.912  Rw=-1.000  noise=0.263  c_loss=0.0002  t=86.4min
+
+--- Eval @ 250,098 steps ---
+  yield       Ry=+0.418  Rw=-0.972  yield=9214kg/ha  W=792mm
+  n_eff       Ry=+0.324  Rw=-0.244  yield=8940kg/ha  W=421mm
+  water       Ry=+0.503  Rw=-0.090  yield=9718kg/ha  W=436mm
+  balanced    Ry=+0.461  Rw=-0.299  yield=9376kg/ha  W=520mm
+
+[ckpt] saved → /workspace/capql_lstm_v2/ckpt_250k.pt
+[  252,345] ep= 1580  phase=0  fault=clean         Ry=+0.773  Ra=-0.931  Rw=-1.000  noise=0.262  c_loss=0.0008  t=88.4min
+[  255,538] ep= 1600  phase=0  fault=clean         Ry=+0.975  Ra=-0.899  Rw=-1.000  noise=0.262  c_loss=0.0002  t=89.3min
+[  258,712] ep= 1620  phase=0  fault=clean         Ry=+0.429  Ra=-0.883  Rw=-1.000  noise=0.261  c_loss=0.0003  t=90.3min
+[  261,924] ep= 1640  phase=0  fault=clean         Ry=+0.260  Ra=-0.934  Rw=+0.212  noise=0.261  c_loss=0.0001  t=91.3min
+[  265,135] ep= 1660  phase=0  fault=clean         Ry=+0.950  Ra=-0.872  Rw=-1.000  noise=0.260  c_loss=0.0002  t=92.4min
+[  268,331] ep= 1680  phase=0  fault=clean         Ry=+1.000  Ra=-0.910  Rw=-0.433  noise=0.260  c_loss=0.0001  t=93.4min
+[  271,548] ep= 1700  phase=0  fault=clean         Ry=+0.713  Ra=-0.925  Rw=-1.000  noise=0.259  c_loss=0.0001  t=94.5min
+[  274,740] ep= 1720  phase=0  fault=clean         Ry=+0.525  Ra=-0.810  Rw=-1.000  noise=0.259  c_loss=0.0002  t=95.5min
+[  277,961] ep= 1740  phase=0  fault=clean         Ry=+0.644  Ra=-0.920  Rw=-1.000  noise=0.258  c_loss=0.0002  t=96.5min
+[  281,144] ep= 1760  phase=0  fault=clean         Ry=+0.775  Ra=-0.925  Rw=-1.000  noise=0.258  c_loss=0.0001  t=97.5min
+[  284,322] ep= 1780  phase=0  fault=clean         Ry=+0.960  Ra=-0.914  Rw=-1.000  noise=0.257  c_loss=0.0002  t=98.6min
+[  287,527] ep= 1800  phase=0  fault=clean         Ry=+1.000  Ra=-0.920  Rw=-1.000  noise=0.257  c_loss=0.0001  t=99.6min
+[  290,749] ep= 1820  phase=0  fault=clean         Ry=+0.981  Ra=-0.923  Rw=-1.000  noise=0.256  c_loss=0.0003  t=100.6min
+[  293,969] ep= 1840  phase=0  fault=clean         Ry=+0.387  Ra=-0.937  Rw=+0.392  noise=0.256  c_loss=0.0006  t=101.6min
+[  297,176] ep= 1860  phase=0  fault=clean         Ry=-0.081  Ra=-0.952  Rw=+0.402  noise=0.255  c_loss=0.0002  t=102.6min
+
+--- Eval @ 300,079 steps ---
+  yield       Ry=+0.595  Rw=-1.000  yield=9889kg/ha  W=2215mm
+  n_eff       Ry=-0.454  Rw=-0.265  yield=5889kg/ha  W=315mm
+  water       Ry=+0.144  Rw=+0.076  yield=8168kg/ha  W=369mm
+  balanced    Ry=+0.140  Rw=-0.288  yield=8155kg/ha  W=445mm
+
+[ckpt] saved → /workspace/capql_lstm_v2/ckpt_300k.pt
+[  300,399] ep= 1880  phase=0  fault=clean         Ry=+0.948  Ra=-0.897  Rw=-1.000  noise=0.255  c_loss=0.0003  t=104.6min
+[  303,590] ep= 1900  phase=0  fault=clean         Ry=+0.629  Ra=-0.927  Rw=-1.000  noise=0.254  c_loss=0.0004  t=105.5min
+[  306,785] ep= 1920  phase=0  fault=clean         Ry=+0.583  Ra=-0.940  Rw=-1.000  noise=0.254  c_loss=0.0003  t=106.5min
+[  309,997] ep= 1940  phase=0  fault=clean         Ry=-0.311  Ra=-0.957  Rw=+0.412  noise=0.254  c_loss=0.0002  t=107.5min
+[  313,181] ep= 1960  phase=0  fault=clean         Ry=+1.000  Ra=-0.893  Rw=-0.936  noise=0.253  c_loss=0.0002  t=108.5min
+[  316,373] ep= 1980  phase=0  fault=clean         Ry=+0.899  Ra=-0.854  Rw=-1.000  noise=0.253  c_loss=0.0001  t=109.5min
+[  319,593] ep= 2000  phase=0  fault=clean         Ry=+0.570  Ra=-0.936  Rw=-0.961  noise=0.252  c_loss=0.0004  t=110.5min
+[  322,770] ep= 2020  phase=0  fault=clean         Ry=+1.000  Ra=-0.902  Rw=-1.000  noise=0.252  c_loss=0.0006  t=111.4min

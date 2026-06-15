@@ -210,11 +210,16 @@ class SmartFarmSoSEnv:
         else:
             R_ane = -1.0
 
-        # R_water_eff ∈ [-1, +1]: reward for using LESS total irrigation
-        R_water_eff = float(np.clip(
-            (self.WATER_TARGET - self.total_water) / self.WATER_TARGET,
-            -1.0, 1.0
-        ))
+        # R_water_eff ∈ [-1, +1]: water efficiency WITH yield floor
+        # Crop failure (no irrigation → crop dies) is penalised, not rewarded.
+        # Mirrors the yield-floor logic already used in R_ane.
+        if grnwt < self.MIN_VIABLE_YIELD:
+            R_water_eff = -1.0
+        else:
+            R_water_eff = float(np.clip(
+                (self.WATER_TARGET - self.total_water) / self.WATER_TARGET,
+                -1.0, 1.0
+            ))
 
         return np.array([R_yield, R_ane, R_water_eff], dtype=np.float32)
 

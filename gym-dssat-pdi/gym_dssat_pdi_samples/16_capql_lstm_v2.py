@@ -66,14 +66,14 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 # Hyperparameters
 # ══════════════════════════════════════════════════════════════════════
 TOTAL_STEPS     = 3_000_000
-K_HISTORY       = 20          # truncated BPTT window
-BATCH_SIZE      = 256
+K_HISTORY       = 10          # truncated BPTT window (10 steps, enough for noise/stuck)
+BATCH_SIZE      = 128
 BUFFER_SIZE     = 200_000
-UPDATE_INTERVAL = 4            # env steps between updates
-N_UPDATES       = 4            # gradient steps per update call
+UPDATE_INTERVAL = 20           # env steps between updates
+N_UPDATES       = 2            # gradient steps per update call
 WARMUP_STEPS    = 5_000
 
-CORNER_PROB     = 0.50         # fraction of episodes using fixed corners
+CORNER_PROB     = 0.15         # fraction of episodes using fixed corners
 
 LR_ACTOR        = 3e-4
 LR_CRITIC       = 3e-4
@@ -94,7 +94,7 @@ TP_CLIP = np.array([20.0, 5.0], dtype=np.float32)
 
 OBS16_DIM = 16    # crop(11) + mask(5)
 N_OBJ     = 3
-LSTM_IN   = OBS16_DIM + N_OBJ   # 19  (w concat at every step)
+LSTM_IN   = OBS16_DIM + N_OBJ    # 19  (w at every LSTM step — safe now reward has yield floor)
 HIDDEN    = 256
 ACT_DIM   = 2
 
@@ -103,9 +103,10 @@ ACT_HIGH  = np.array([200.0, 50.0], dtype=np.float32)
 ACT_MID   = (ACT_HIGH + ACT_LOW) / 2.0
 ACT_HALF  = (ACT_HIGH - ACT_LOW) / 2.0
 
-EVAL_INTERVAL = 50_000
-N_EVAL_EPS    = 5
-LOG_INTERVAL  = 20     # episodes between console prints
+EVAL_INTERVAL  = 50_000
+CKPT_INTERVAL  = 50_000   # save checkpoint every 50K steps (was 500K)
+N_EVAL_EPS     = 5
+LOG_INTERVAL   = 20     # episodes between console prints
 
 DEVICE = torch.device('cpu')
 
@@ -119,8 +120,8 @@ EVAL_CORNERS = {
 _CORNERS_LIST = [
     np.array([1.0, 0.0, 0.0], dtype=np.float32),  # yield
     np.array([0.0, 1.0, 0.0], dtype=np.float32),  # n_eff
-    np.array([0.0, 0.0, 1.0], dtype=np.float32),  # water
     np.array([1/3, 1/3, 1/3], dtype=np.float32),  # balanced
+    np.array([0.0, 0.0, 1.0], dtype=np.float32),  # water — safe with yield floor fix
 ]
 
 
@@ -135,7 +136,12 @@ class TwoFaultEnv(CAPQLRobustEnvV2):
     """
 
     def reset(self, *, seed=None, options=None):
-        phase = 1 if self.total_steps < 1_000_000 else 2
+        if self.total_steps < 500_000:
+            phase = 0   # clean only — learn basic crop management
+        elif self.total_steps < 1_000_000:
+            phase = 1   # mild faults introduced
+        else:
+            phase = 2   # full severity
 
         # Preference weight: 50% fixed corner, 50% random Dirichlet
         if np.random.random() < CORNER_PROB:
@@ -144,11 +150,12 @@ class TwoFaultEnv(CAPQLRobustEnvV2):
             self.current_w = np.random.dirichlet(
                 np.ones(N_OBJ)).astype(np.float32)
 
-        # Per-episode action caps (inherited from parent)
+        # N fertilizer cap scales with n_eff preference (less N → higher ANE)
+        # Irrigation cap removed — yield floor + R_water_eff reward handles this;
+        # the hard cap was forcing water corner to exactly 3mm/day × 160d = 479mm
         w_neff  = float(self.current_w[1])
-        w_water = float(self.current_w[2])
-        self._max_anfer = float(np.clip(200.0 * (1.0 - w_neff)**2,  2.0, 200.0))
-        self._max_amir  = float(np.clip( 50.0 * (1.0 - w_water)**2, 3.0,  50.0))
+        self._max_anfer = float(np.clip(200.0 * (1.0 - w_neff)**2, 2.0, 200.0))
+        self._max_amir  = 50.0
 
         fault_type, fault_kwargs = self._sample_two_faults(phase)
         self._fault_state     = _FaultStateV3(fault_kwargs)
@@ -166,7 +173,15 @@ class TwoFaultEnv(CAPQLRobustEnvV2):
         }
 
     def _sample_two_faults(self, phase):
-        """Return (fault_type, kwargs) from {clean, noise, stuck}."""
+        """Return (fault_type, kwargs) from {clean, noise, stuck}.
+
+        Phase 0 (0-500K)  : 100% clean — learn basic crop management first
+        Phase 1 (500K-1M) : 85% clean, 15% mild faults
+        Phase 2 (1M-3M)   : 70% clean, 30% full severity faults
+        """
+        if phase == 0:
+            return 'clean', {}
+
         sev        = 0.4 if phase == 1 else 1.0
         clean_prob = 0.85 if phase == 1 else 0.70
 
@@ -174,12 +189,10 @@ class TwoFaultEnv(CAPQLRobustEnvV2):
             return 'clean', {}
 
         if np.random.random() < 0.5:
-            # sensor_noise: Gaussian σ on all crop sensors
             std = float(np.random.uniform(0.02, 0.12 * sev))
             return 'noise', {'noise_std': std}
         else:
-            # sensor_stuck: one sensor freezes after stuck_day
-            s   = int(np.random.choice([0, 1, 2]))  # soil/canopy/grain
+            s   = int(np.random.choice([0, 1, 2]))
             day = int(np.random.uniform(10, max(11, int(120 * sev))))
             return 'stuck', {'stuck_sensors': [s], 'stuck_day': day}
 
@@ -234,8 +247,9 @@ class TransitionBuffer:
         r_daily  = np.array([b['r_daily']  for b in batch], dtype=np.float32)
         dones    = np.array([b['done']     for b in batch], dtype=np.float32)
 
-        # Hindsight preference relabeling: resample w per transition
-        w = np.random.dirichlet(np.ones(N_OBJ), size=B).astype(np.float32)
+        # Hindsight preference relabeling: Dirichlet(2,2,2) — same mean as
+        # Dirichlet(1,1,1) but lower variance, avoids extreme water-only samples
+        w = np.random.dirichlet(2*np.ones(N_OBJ), size=B).astype(np.float32)
 
         # Augmented reward: step reward + terminal scalarized bonus
         r_aug = r_daily.copy()
@@ -298,6 +312,8 @@ class LSTMActor(nn.Module):
         obs_seq : (B, K, 16)
         w       : (B, 3)
         Returns : actions (B, 2), h_last (B, HIDDEN)
+        w injected at every LSTM step — LSTM learns preference-conditioned
+        fault patterns. Safe because reward yield floor removes trivial optimum.
         """
         B, K, _ = obs_seq.shape
         w_exp    = w.unsqueeze(1).expand(-1, K, -1)           # (B, K, 3)
@@ -314,8 +330,7 @@ class LSTMActor(nn.Module):
         wt  = torch.FloatTensor(w_np).view(1, 1, N_OBJ).to(DEVICE)
         inp = torch.cat([x, wt], dim=-1)
         h_out, (hn, cn) = self.lstm(inp, (h, c))
-        raw    = self.head(torch.cat([h_out.squeeze(1),
-                                       wt.squeeze(1)], dim=-1))
+        raw    = self.head(torch.cat([h_out.squeeze(1), wt.squeeze(1)], dim=-1))
         action = (raw * self.act_half + self.act_mid).cpu().numpy().flatten()
         return action.astype(np.float32), hn, cn
 
@@ -346,10 +361,10 @@ class LSTMTwinCritic(nn.Module):
     def _hidden(self, obs_seq, w):
         B, K, _ = obs_seq.shape
         w_exp   = w.unsqueeze(1).expand(-1, K, -1)
-        inp     = torch.cat([obs_seq, w_exp], dim=-1)
+        inp     = torch.cat([obs_seq, w_exp], dim=-1)   # (B, K, 19)
         h1, _   = self.lstm1(inp)
         h2, _   = self.lstm2(inp)
-        return h1[:, -1, :], h2[:, -1, :]   # (B, HIDDEN) each
+        return h1[:, -1, :], h2[:, -1, :]
 
     def forward(self, obs_seq, w, actions):
         h1, h2 = self._hidden(obs_seq, w)
@@ -519,9 +534,13 @@ def plot_training(ep_rows):
         ax.plot(steps, smooth(ra), label='R_ane',     color='#e67e22', lw=1.5)
         ax.plot(steps, smooth(rw), label='R_water',   color='#2980b9', lw=1.5)
         ax.axhline(0, color='#aaa', lw=0.7, ls='--')
-        ax.axvline(1_000_000, color='#c0392b', lw=1, ls=':', alpha=0.7)
-        ax.text(1_000_000, ax.get_ylim()[0], 'P1→P2',
-                fontsize=7, color='#c0392b', va='bottom', ha='right')
+        for xv, lbl, col in [
+            (500_000,   'P0→P1', '#27ae60'),
+            (1_000_000, 'P1→P2', '#c0392b'),
+        ]:
+            ax.axvline(xv, color=col, lw=1, ls=':', alpha=0.7)
+            ax.text(xv, ax.get_ylim()[0], lbl,
+                    fontsize=7, color=col, va='bottom', ha='right')
         ax.set_xlabel('Total steps')
         ax.set_ylabel('Reward component (smoothed)')
         ax.set_title(title)
@@ -838,7 +857,7 @@ def main():
             plot_corners(eval_rows)
 
         # ── Checkpoint ────────────────────────────────────────────
-        if total_steps % 500_000 < ep_len:
+        if total_steps % CKPT_INTERVAL < ep_len:
             ckpt = os.path.join(MODEL_DIR,
                                 f'ckpt_{total_steps // 1000}k.pt')
             torch.save({

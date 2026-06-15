@@ -289,6 +289,17 @@ setting:
       - ep
       - wtdep
       - rtdep
+      # Agronomic N fate variables (added for thesis reporting; not exposed to the agent).
+      # wtnup  = cumulative plant N uptake (the real agronomic number, kg/ha)
+      # cleach = cumulative NO3 leached     (groundwater pollution, kg/ha)
+      # cnox   = cumulative denitrified N   (atmospheric N2O loss, kg/ha)
+      # trnu   = daily N uptake             (for daily diagnostics)
+      # tleachd = daily NO3 leaching        (for daily diagnostics)
+      - wtnup
+      - cleach
+      - cnox
+      - trnu
+      - tleachd
     context:
       - sat
       - dul

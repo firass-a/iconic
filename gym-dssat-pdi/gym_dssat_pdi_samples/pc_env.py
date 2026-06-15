@@ -50,7 +50,7 @@ class PCSmartFarmEnv(gym.Env):
     metadata = {'render_modes': []}
 
     def __init__(self, mode='all', dssat_seed=123, run_dssat_location='run_dssat',
-                 random_weather=False, enable_faults=False, fault_rate=0.02,
+                 random_weather=True, enable_faults=False, fault_rate=0.02,
                  preference=None, rng_seed=None):
         super().__init__()
 

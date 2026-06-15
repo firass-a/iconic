@@ -4,6 +4,7 @@
 #   .\run_custom_ppo.ps1 -Quick           # smoke test   ~2k steps,   ~1 min
 #   .\run_custom_ppo.ps1                    # STRONG       500k steps,  ~60 min
 #   .\run_custom_ppo.ps1 -Thesis            # THESIS       1M steps,    ~2 hours
+#   .\run_eval.ps1                         # strong eval after training
 #   .\run_custom_ppo.ps1 -Timesteps 200000  # custom
 #
 #   .\watch_training.ps1                  # 2nd terminal — live log tail
@@ -29,6 +30,13 @@ $Samples = $PSScriptRoot
 $Models  = Join-Path $Samples "models"
 $Logs    = Join-Path $Samples "logs"
 New-Item -ItemType Directory -Force -Path $Models, $Logs | Out-Null
+
+# v5: mount patched env_config.yml so DSSAT exposes wtnup/cleach/cnox/trnu/tleachd
+# in env._state. The reward function needs these to activate the uptake bonus
+# and leaching/denit penalties. Without this mount, the v4 reward terms involving
+# trnu / tleachd / cnox silently default to 0.0 during training.
+$PatchedConfig = Join-Path (Split-Path $Samples -Parent) "gym_dssat_pdi\envs\configs\maize\env_config.yml"
+$ContainerConfig = "/opt/gym_dssat_pdi/lib/python3.11/site-packages/gym_dssat_pdi/envs/configs/maize/env_config.yml"
 
 # Training presets
 if ($Quick) {
@@ -96,12 +104,13 @@ Write-Host ""
 Write-Host "Press Ctrl+C to stop training, then run: .\stop_training.ps1"
 Write-Host ""
 
-$innerCmd = "export PYTHONUNBUFFERED=1; echo '[setup] installing torch + gymnasium...' | tee -a '$LogDocker'; pip install -q --no-warn-script-location torch gymnasium; echo '[setup] starting 05_pc_ppo_custom_train.py' | tee -a '$LogDocker'; python3 -u 05_pc_ppo_custom_train.py"
+$innerCmd = "sed -i 's/\r$//' /work/docker_entry_train.sh && bash /work/docker_entry_train.sh"
 
 docker run --rm `
   -v "${Samples}:/work" `
   -v "${Models}:/models" `
   -v "${Logs}:/logs" `
+  -v "${PatchedConfig}:${ContainerConfig}:ro" `
   -w /work `
   -e PYTHONUNBUFFERED=1 `
   -e TOTAL_TIMESTEPS=$Timesteps `
@@ -112,7 +121,7 @@ docker run --rm `
   -e LOG_EVERY=$LogEvery `
   -e CHECKPOINT_EVERY=$CkptEvery `
   --entrypoint bash `
-  gym-dssat:bookworm `
+  $(if (docker image inspect gym-dssat:torch 2>$null) { "gym-dssat:torch" } else { "gym-dssat:bookworm" }) `
   -lc $innerCmd
 
 $exitCode = $LASTEXITCODE
@@ -128,6 +137,9 @@ Log saved: $LogHost
 Write-Host ""
 if ($exitCode -eq 0) {
     Write-Host "Done. Full log: $LogHost"
+    Write-Host ""
+    Write-Host "Next: strong eval (preference grid + baselines + CSV)"
+    Write-Host "  .\run_eval.ps1"
 } else {
     Write-Host "Training stopped or failed (exit $exitCode). Log: $LogHost"
 }

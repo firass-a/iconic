@@ -1,0 +1,8 @@
+FROM gym-dssat:bookworm
+
+RUN pip install --no-cache-dir --default-timeout=600 --no-warn-script-location \
+      --index-url https://download.pytorch.org/whl/cpu torch \
+ && pip install --no-cache-dir --default-timeout=600 --no-warn-script-location \
+      gymnasium
+
+RUN python3 -c "import torch, gymnasium; print('torch', torch.__version__, 'gymnasium', gymnasium.__version__)"

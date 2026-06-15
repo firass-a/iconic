@@ -1,0 +1,482 @@
+% =============================================================================
+% Chapter 1 — Background and Context
+% Include from main.tex via:  \input{chap1}
+% Do NOT compile this file alone. Set main.tex as the Overleaf main document.
+% Required packages in main.tex: booktabs, graphicx, array
+% Required in preamble: \graphicspath{{firas/}{figures/}}
+% =============================================================================
+
+\chapter{Background and Context}
+\label{ch:background}
+
+On many farms today, automation still works in simple chains. A sensor reads
+soil moisture, a controller checks a threshold, and a pump switches on. Each
+step makes sense on its own, but the loop rarely looks beyond the immediate
+reading. It does not account for tomorrow's weather, the crop's growth stage, or
+the longer-term trade-off between saving water and protecting yield.
+
+That limitation becomes more visible as farms adopt more technologies. A single
+field may now depend on soil sensors, weather data, communication networks,
+simulation tools, and automated irrigation hardware, often supplied by different
+vendors and updated on different schedules. The challenge is no longer to operate
+one device well, but to make many independent parts work toward the same goal:
+producing food efficiently while using water and nutrients responsibly. This is
+where the \emph{System-of-Systems} (SoS) perspective becomes useful.
+
+Figure~\ref{fig:traditional_vs_sos} illustrates the difference. The upper part
+of the figure shows the traditional pattern: one input, one decision, one action.
+The lower part shows a smart-farming SoS, in which weather data, field
+observations, and crop-growth prediction feed a shared decision layer that
+commands actuators and then receives updated feedback from the field. The rest
+of this chapter builds the background needed for that view: SoS theory, smart
+farming as an acknowledged SoS, crop simulation with DSSAT, and the reason
+DSSAT is central to the work presented in this thesis.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.92\textwidth]{firas/traditional_vs_sos_farming.png}
+  \caption{Comparison between traditional reactive farm automation (linear
+    sensing--control--actuation chain) and a System-of-Systems smart farm, where
+    weather, sensors, and crop simulation feed a shared decision layer that
+    commands actuators in a closed loop.}
+  \label{fig:traditional_vs_sos}
+\end{figure}
+
+
+\section{System of Systems}
+\label{sec:sos}
+
+A System of Systems (SoS) is not simply a large system. It is a set of
+independent systems that keep their own purpose and operation, yet work together
+to achieve something broader~\cite{maier1998architecting, jamshidi2008systems}.
+A weather service, a sensor network, and a crop model can each function without
+the others, but when they are combined under a common management goal, they can
+support decisions that none of them could support alone~\cite{madni2014integration}.
+
+Agriculture offers a clear example. A farmer may use soil probes from one
+company, weather data from a public API, a crop model developed by a research
+community, and irrigation equipment installed by a local provider. These tools
+were not designed as one package, yet the farmer still needs them to fit
+together. If they do not, management becomes fragmented: irrigation reacts to
+moisture, fertilisation follows a calendar, and yield expectations ignore the
+season's actual weather~\cite{nielsen2015sos, krisnawijaya2024architecture}.
+
+
+\subsection{SoS Characteristics}
+
+Maier~\cite{maier1998architecting} proposed five characteristics that help
+distinguish an SoS from an ordinary integrated system. Table~\ref{tab:sos_characteristics}
+lists them and translates each one into an agricultural setting.
+
+\begin{table}[ht]
+  \centering
+  \caption{System-of-Systems characteristics and their meaning in smart farming.}
+  \label{tab:sos_characteristics}
+  \begin{tabular}{p{3.2cm} p{4.3cm} p{6.3cm}}
+    \toprule
+    \textbf{Characteristic} & \textbf{General meaning} & \textbf{Example in agriculture} \\
+    \midrule
+    Operational independence &
+    Each system can function on its own &
+    A weather API remains available even if irrigation valves are offline \\[4pt]
+
+    Managerial independence &
+    Different authorities own and manage subsystems &
+    Sensors, DSSAT, and actuators are developed and maintained by different organisations \\[4pt]
+
+    Geographic distribution &
+    Systems are spread across locations &
+    Field sensors, cloud services, and farmer terminals are spatially separated \\[4pt]
+
+    Evolutionary development &
+    Subsystems can be added, removed, or upgraded independently &
+    A drone module or new crop model can be integrated without rebuilding the entire platform \\[4pt]
+
+    Emergent behavior &
+    Global behaviour exceeds local subsystem design &
+    Yield and resource efficiency emerge from the interaction of weather, soil, crop, and management decisions \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Operational independence.}
+Each part of an SoS should remain useful on its own. A weather station keeps
+recording even when irrigation is switched off. A crop model can still project
+yield from historical weather even if live sensors fail. That independence matters
+in agriculture because farms rarely replace all of their equipment at once.
+
+\paragraph{Managerial independence.}
+In practice, no single organisation controls every layer of a smart farm. Sensor
+manufacturers, weather providers, software platforms, and public crop models
+such as DSSAT follow their own development paths. Integration therefore depends
+on interfaces and standards, not on one central redesign of the whole
+stack~\cite{madni2014integration}.
+
+\paragraph{Geographic distribution.}
+Field sensors sit in the soil, gateways may be located at the farm edge, cloud
+services run elsewhere, and the farmer may check results on a phone. Coordination
+has to happen across distance and networks, not inside one local
+machine~\cite{nielsen2015sos}.
+
+\paragraph{Evolutionary development.}
+Farm technologies do not age at the same speed. A farmer may upgrade soil probes
+one year, adopt a new forecast service the next, and keep the same irrigation
+hardware for a decade. An SoS architecture needs to absorb those changes without
+forcing a complete restart~\cite{nielsen2015sos, madni2014integration}.
+
+\paragraph{Emergent behavior.}
+Yield, water productivity, and nitrogen efficiency are not produced by any single
+device. They emerge from the interaction between weather, soil conditions, crop
+development, and management over time~\cite{jamshidi2008systems, boote2019cropmodelling}.
+That is also why agricultural decision-making is difficult: the outcome farmers
+care about appears at the system level, not inside one subsystem.
+
+
+\subsection{Classification of SoS}
+\label{subsec:sos_classification}
+
+Not all Systems of Systems are organised in the same way. Maier~\cite{maier1998architecting}
+classified them according to how much central authority exists over the
+constituent systems. He originally identified three types---directed,
+collaborative, and virtual---and a fourth type, \emph{acknowledged}, was added
+later by Dahmann and Baldwin and incorporated into ISO~21839~\cite{nielsen2015sos}.
+Table~\ref{tab:sos_taxonomy} gives a short overview.
+
+\begin{table}[ht]
+  \centering
+  \caption{Classification of Systems of Systems (Maier; extended by Dahmann and Baldwin).}
+  \label{tab:sos_taxonomy}
+  \begin{tabular}{p{2.5cm} p{4.5cm} p{6.5cm}}
+    \toprule
+    \textbf{Type} & \textbf{Management structure} & \textbf{Typical agricultural interpretation} \\
+    \midrule
+    Directed &
+    A central authority creates and manages the SoS &
+    A fully integrated farm platform owned and operated by one company \\[4pt]
+
+    Acknowledged &
+    A recognised SoS manager coordinates independently owned systems &
+    A farm-management platform integrates vendor sensors, weather data, DSSAT, and actuators through agreed interfaces \\[4pt]
+
+    Collaborative &
+    No central manager; systems cooperate voluntarily &
+    A farmer manually combines advisory tools, weather services, and field monitoring applications \\[4pt]
+
+    Virtual &
+    No manager and no shared purpose &
+    Independent technologies used side by side without real integration \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+In a directed SoS, the central authority defines the mission and the subsystems
+are built to serve it. In an acknowledged SoS, a coordinating layer exists, but
+the subsystems still belong to different owners and evolve on their own;
+integration happens through agreement rather than command. Collaborative SoS
+depend on voluntary cooperation, while virtual SoS show emergent behaviour even
+when the parts were never intended to form a unified
+system~\cite{maier1998architecting, nielsen2015sos}.
+
+For modern smart-farming platforms, the acknowledged type is especially
+convincing. A farm dashboard, digital twin, or decision-support service can
+coordinate tools it does not own. That description fits agriculture well: the
+farmer or platform operator manages the overall mission, but the sensors,
+models, and actuators remain separate products developed by separate actors.
+
+
+\section{Smart Farming as an Acknowledged SoS}
+\label{sec:smart_farming_sos}
+
+Precision agriculture began with a simple idea: fields are not uniform, so
+management should not be uniform either~\cite{aarzoo2025precision, kushwaha2024precision}.
+Instead of applying the same irrigation or fertiliser rate everywhere, farmers
+can adjust treatment to local soil conditions, moisture levels, crop status, and
+weather~\cite{kushwaha2024precision}. Over time, that idea grew into smart
+farming: a setting in which sensing, connectivity, data analysis, simulation,
+and automated actuation are woven into one management
+environment~\cite{hayat2025iot, jadhav2023smartfarming}.
+
+GPS, GIS, remote sensing, and IoT platforms now make it possible to observe
+field variability with much greater detail than before~\cite{sharma2020ml,
+adewuyi2024datascience}. The result is no longer a single machine or a single
+software package, but a network of tools that must cooperate. That is why smart
+farming is better described as an SoS than as a standalone automation
+system. Table~\ref{tab:traditional_vs_sos} contrasts the older reactive pattern
+with this integrated view.
+
+\begin{table}[ht]
+  \centering
+  \caption{Comparison between traditional farm automation and System-of-Systems smart farming.}
+  \label{tab:traditional_vs_sos}
+  \begin{tabular}{p{3.5cm} p{5.3cm} p{5.3cm}}
+    \toprule
+    \textbf{Dimension} & \textbf{Traditional approach} & \textbf{SoS smart farming} \\
+    \midrule
+    Architecture &
+    Isolated chain: sensor $\rightarrow$ controller $\rightarrow$ actuator &
+    Multiple independent subsystems connected through a shared decision layer \\[4pt]
+
+    Decision logic &
+    Reactive rule-based control &
+    Predictive and integrative decision-making \\[4pt]
+
+    Information flow &
+    One input, one action &
+    Weather, field observations, and crop-model outputs are fused \\[4pt]
+
+    Time horizon &
+    Immediate response &
+    Short-term control combined with seasonal crop response \\[4pt]
+
+    Subsystem autonomy &
+    Low; components designed as one package &
+    High; each subsystem can exist independently \\[4pt]
+
+    Scalability &
+    Limited to one loop or one field function &
+    New sensors, models, or actuators can be added incrementally \\[4pt]
+
+    Closed loop &
+    Local physical feedback only &
+    Physical feedback plus model-based anticipation \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+\subsection{Constituent Systems in Smart Farming}
+
+Even when they are not sold as separate products, the main parts of a smart farm
+play distinct roles. Table~\ref{tab:smart_farm_subsystems} summarises the
+subsystems that appear repeatedly in the literature and in practical deployments.
+
+\begin{table}[ht]
+  \centering
+  \caption{Main constituent systems in a smart farming System-of-Systems.}
+  \label{tab:smart_farm_subsystems}
+  \begin{tabular}{p{2.8cm} p{3.5cm} p{3.5cm} p{3.8cm}}
+    \toprule
+    \textbf{Subsystem} & \textbf{Main role} & \textbf{Typical inputs} & \textbf{Typical outputs} \\
+    \midrule
+    Weather system &
+    Climate forcing and forecasting &
+    Historical weather, numerical forecasts &
+    Temperature, rainfall, solar radiation \\[4pt]
+
+    Sensor network &
+    Field observation &
+    Soil moisture, temperature, nutrient status &
+    Ground-truth state measurements \\[4pt]
+
+    Crop simulation model &
+    Growth and stress prediction &
+    Weather, soil, cultivar, management actions &
+    Crop condition, stress indicators, yield projections \\[4pt]
+
+    Decision layer &
+    Policy optimisation &
+    Observations, model outputs, objectives &
+    Irrigation and fertilisation decisions \\[4pt]
+
+    Actuators &
+    Execution of management actions &
+    Control commands &
+    Applied water and nutrients \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Weather system.}
+Weather remains the main external driver of crop growth. Local stations can
+supply temperature, rainfall, and radiation, while services such as the NASA
+POWER API can fill gaps with historical or near-real-time
+data~\cite{hayat2025iot, codeluppi2020lorafarm}. Without reliable weather input,
+both irrigation planning and crop modelling become unreliable.
+
+\paragraph{Sensor network.}
+Soil sensors based on capacitance or time-domain reflectometry (TDR) can track
+moisture, temperature, and nitrogen status at different
+depths~\cite{hayat2025iot, jadhav2023smartfarming}. They provide the field-level
+observations that make site-specific management possible.
+
+\paragraph{Communication infrastructure.}
+Distributed farms need a way to move data from the field to the decision layer.
+LPWAN technologies, especially LoRaWAN, are often used because they cover long
+distances with low energy use~\cite{codeluppi2020lorafarm, jadhav2023smartfarming}.
+In an SoS view, this communication layer is what turns separate devices into a
+connected system.
+
+\paragraph{Crop simulation model.}
+Sensors show what is happening now; crop models help estimate what management
+will mean later in the season. They connect weather, soil, and farmer actions to
+likely crop development, stress, and harvest
+outcomes~\cite{boote2019cropmodelling, hoogenboom2019dssat}. They extend the
+decision horizon beyond the latest sensor reading.
+
+\paragraph{Decision layer.}
+At some point, the farm must choose an action: irrigate or wait, fertilise or
+hold. That choice may come from a rule engine, an optimisation tool, a human
+adviser, or---as in this thesis---a learning-based controller. Whatever form it
+takes, the decision layer is where the SoS becomes operational.
+
+\paragraph{Actuators.}
+Irrigation valves and variable-rate fertiliser applicators turn decisions into
+physical changes in the field~\cite{hayat2025iot}. Once water or nitrogen is
+applied, the crop and soil state changes, and the loop starts again.
+
+
+\subsection{Why Smart Farming Fits the Acknowledged SoS Model}
+
+Smart farming resembles an acknowledged SoS for a simple reason: coordination
+exists, but ownership stays divided. A platform or farm manager integrates
+weather, sensors, models, and actuators, yet those components usually come from
+different suppliers and remain replaceable. A farmer can change sensor brand or
+forecast provider without rebuilding the entire system.
+
+That does not mean every farm already works this way. Many operations still look
+more like the traditional chain in Figure~\ref{fig:traditional_vs_sos}. The
+acknowledged SoS model is therefore best seen as the direction in which mature
+smart-farming platforms are heading: separate tools, shared
+mission~\cite{krisnawijaya2024architecture, nielsen2015sos}.
+
+There is another practical complication. The data arriving from these subsystems
+do not share the same form. Sensor streams are time series, drone imagery is
+visual and high-dimensional, and crop-model outputs may appear as state
+variables or structured reports~\cite{krisnawijaya2024architecture,
+adewuyi2024datascience}. A workable SoS therefore needs both communication
+infrastructure and a decision layer able to bring those different sources
+together.
+
+
+\section{Crop Simulation and DSSAT}
+\label{sec:dssat}
+
+Sensors alone cannot answer every management question. A moisture reading may
+show that the soil is dry today, but it does not by itself predict final yield,
+nitrogen losses, or crop stress two weeks later. Crop simulation models fill
+that gap by representing how plants, soil water, and nutrients respond over
+time~\cite{boote2019cropmodelling}.
+
+Among the available platforms, the Decision Support System for Agrotechnology
+Transfer (DSSAT) is one of the most established. It has been used for decades to
+combine variety, environment, and management information in dynamic crop
+simulations~\cite{hoogenboom2019dssat, sachin2019dssat}. Its main value is not
+a single yield number at harvest, but the ability to follow how daily weather
+and management actions shape crop response over the season.
+
+
+\subsection{The G$\times$E$\times$M Framework}
+
+DSSAT is built around the Genotype--Environment--Management (G$\times$E$\times$M)
+framework. Crop performance depends on all three. A high-yielding cultivar still
+needs suitable weather and reasonable management; good irrigation cannot fully
+compensate for a poor variety or badly timed
+operations~\cite{boote2019cropmodelling}. Table~\ref{tab:gxem} breaks down the
+three components.
+
+\begin{table}[ht]
+  \centering
+  \caption{The Genotype--Environment--Management (G$\times$E$\times$M) framework in DSSAT.}
+  \label{tab:gxem}
+  \begin{tabular}{p{2.5cm} p{4.3cm} p{6.5cm}}
+    \toprule
+    \textbf{Factor} & \textbf{Meaning} & \textbf{Examples in DSSAT} \\
+    \midrule
+    Genotype (G) &
+    Crop genetic potential and development pattern &
+    Cultivar parameters, phenology, grain-fill capacity \\[4pt]
+
+    Environment (E) &
+    Climatic and edaphic conditions &
+    Daily weather, soil layers, initial water and nitrogen status \\[4pt]
+
+    Management (M) &
+    Farmer interventions during the season &
+    Planting date, irrigation depth, nitrogen applications \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+This matters for decision support because management actions do not influence
+yield directly. Irrigation changes soil moisture; fertilisation changes nutrient
+availability; those changes then affect how the crop grows, whether it becomes
+stressed, and what is harvested at the end of the season. DSSAT makes that chain
+explicit.
+
+
+\subsection{The DSSAT Cropping System Model}
+
+At the heart of DSSAT is the Cropping System Model, usually referred to as CSM.
+Instead of jumping straight to a harvest number, CSM moves through the season one
+day at a time. On each day, it reads the weather, updates soil moisture and
+nutrient conditions, applies any field operations such as irrigation or
+fertiliser, and then updates the state of the
+crop~\cite{hoogenboom2019dssat}.
+
+For the maize experiments in this thesis, the relevant crop model is
+CERES-Maize. In everyday terms, it tracks how the crop develops after planting,
+how well it copes with dry or nutrient-poor conditions, and how much grain is
+likely to be produced by harvest. That makes it useful for the kind of management
+questions studied here, where water and nitrogen decisions need to be judged not
+only for their immediate effect, but also for their impact over the rest of the
+season~\cite{boote2019cropmodelling, sachin2019dssat}.
+
+This is also what distinguishes DSSAT from a simple prediction formula. A basic
+model might estimate yield from a few inputs, but it would miss the interactions
+that make farm management difficult in practice: too little water early in the
+season, too much nitrogen before rain, or the opposite. CSM is built to represent
+those interactions rather than ignore them.
+
+In most published DSSAT studies, the management plan is decided in advance and the
+model is run as a full-season experiment. In this thesis, the same crop-response
+logic is used, but irrigation and nitrogen applications may change over time. The
+software details of that setup are presented in the methodology chapters; here,
+the important point is simply that CSM provides the crop-response core around
+which the rest of the system is built.
+
+
+\section{Why DSSAT for This Work}
+\label{sec:dssat_architecture}
+
+Look again at Figure~\ref{fig:traditional_vs_sos}. Weather tells the system what
+the climate is doing. Sensors describe the current field state. DSSAT connects
+those conditions to likely crop response under different irrigation and
+fertilisation choices. It is the part of the SoS that translates management
+decisions into crop outcomes.
+
+That is the question at the centre of this thesis. The work is not about
+building a complete smart farm with its own communication stack, drone service,
+and farm dashboard. It is about what happens inside the SoS when yield, water
+use, and nitrogen efficiency cannot all be maximised at once: how should
+irrigation and fertilisation be adjusted over the season? DSSAT makes that
+question concrete because it allows those trade-offs to be explored against a
+realistic crop-response model~\cite{hoogenboom2019dssat, sachin2019dssat}.
+
+The next chapter introduces the reinforcement-learning framework used to study
+that problem. The methodology chapters then explain how daily management
+decisions are exchanged with the simulator in practice.
+
+
+\section{Conclusion}
+\label{sec:ch1_conclusion}
+
+Modern farming is moving away from isolated devices that react to a single
+reading and toward environments in which weather services, sensors, crop models,
+and actuators have to work together. This chapter used the System-of-Systems view
+to describe that shift and to explain why coordination alone is not enough:
+some part of the system still has to decide how water, nitrogen, and crop
+outcomes should be balanced over a season.
+
+Smart farming fits the acknowledged SoS model because farms increasingly rely on
+tools they do not fully own, yet still need those tools to serve a common
+management goal. DSSAT enters the picture as the crop-simulation part of that
+picture. It does not replace sensors or actuators, but it helps answer what
+happens to the crop when management changes under real weather and soil
+conditions.
+
+That is why DSSAT matters for this thesis. The work is less about assembling a
+complete commercial smart farm and more about studying a difficult decision
+problem inside that broader setting: how irrigation and fertilisation should
+adapt when yield, water use, and nitrogen efficiency pull in different
+directions. The next chapter takes up that decision problem directly and
+introduces the reinforcement-learning framework used to address it.

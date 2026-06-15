@@ -9,6 +9,7 @@ Implements the thesis reward design:
 Run inside Docker:
     python3 02_smart_farm_env.py
 """
+import os
 import gym
 import numpy as np
 from collections import OrderedDict
@@ -40,7 +41,7 @@ class SmartFarmSoSEnv:
     OBJECTIVE_NAMES = ('yield', 'water', 'fertilizer')
 
     def __init__(self, mode='all', seed=None, run_dssat_location='run_dssat',
-                 random_weather=False, enable_faults=False, fault_rate=0.02,
+                 random_weather=True, enable_faults=False, fault_rate=0.02,
                  n_sensors=5, initial_energy=100.0):
         env_args = {
             'mode': mode,
@@ -50,6 +51,9 @@ class SmartFarmSoSEnv:
         }
         if seed is not None:
             env_args['seed'] = seed
+        cli = os.path.join(os.path.dirname(__file__), 'test_files', 'UFGA.CLI')
+        if random_weather and os.path.isfile(cli):
+            env_args['auxiliary_file_paths'] = [cli]
         self.env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
 
         self.mode = mode
@@ -64,6 +68,7 @@ class SmartFarmSoSEnv:
         self.total_water = 0.0
         self.total_nitrogen = 0.0
         self.prev_cnox = 0.0
+        self.prev_grnwt = 0.0
         self._last_crop_obs = {}
         self._last_context = {}
         self._last_moisture = 0.5
@@ -82,6 +87,7 @@ class SmartFarmSoSEnv:
         self.total_water = 0.0
         self.total_nitrogen = 0.0
         self.prev_cnox = float(obs.get('cnox', 0.0) or 0.0)
+        self.prev_grnwt = float(obs.get('grnwt', 0.0) or 0.0)
         self.done = False
 
         return self._build_observation(obs, self._last_context)
@@ -120,8 +126,10 @@ class SmartFarmSoSEnv:
             totals=totals,
             prev_cnox=self.prev_cnox,
             done=done,
+            prev_grnwt=self.prev_grnwt,
         )
         self.prev_cnox = float(state_for_reward.get('cnox', self.prev_cnox) or self.prev_cnox)
+        self.prev_grnwt = float(state_for_reward.get('grnwt', self.prev_grnwt) or self.prev_grnwt)
         self._last_context = context
         self._last_moisture = moisture
 

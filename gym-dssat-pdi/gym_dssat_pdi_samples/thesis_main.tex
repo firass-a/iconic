@@ -1,0 +1,38 @@
+% ============================================================================
+% Main thesis file — set THIS as the Overleaf "Main document"
+% Build: pdflatex → bibtex → pdflatex → pdflatex
+% ============================================================================
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\graphicspath{{figures/}}
+
+\title{Preference-Conditioned Reinforcement Learning\\for Multi-Objective Crop Management\\in a Smart Farming System of Systems}
+\author{Firas Cherfa}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\listoffigures
+\listoftables
+\clearpage
+
+% Chapter files must NOT contain \documentclass or \begin{document}
+\input{chap1}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

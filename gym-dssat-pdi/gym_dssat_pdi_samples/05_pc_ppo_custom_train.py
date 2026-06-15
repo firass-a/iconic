@@ -110,6 +110,7 @@ def train():
     n_updates = TOTAL_TIMESTEPS // N_STEPS
     t0 = time.time()
     timestep = 0
+    total_seasons = 0
     best_r_mean = -float('inf')
 
     for update in range(1, n_updates + 1):
@@ -122,6 +123,7 @@ def train():
         update_sec = time.time() - t_update
 
         timestep += N_STEPS
+        total_seasons += stats['n_episodes']
         mean_reward = float(buffer.rewards[:buffer.ptr].mean())
         if mean_reward > best_r_mean:
             best_r_mean = mean_reward
@@ -151,7 +153,8 @@ def train():
             )
             log(
                 f'    pref_w  [{stats["mean_pref"][0]:.3f}, {stats["mean_pref"][1]:.3f}, '
-                f'{stats["mean_pref"][2]:.3f}]  episodes={stats["n_episodes"]}'
+                f'{stats["mean_pref"][2]:.3f}]  seasons_rollout={stats["n_episodes"]}  '
+                f'total_seasons={total_seasons}'
             )
             if stats['harvest_yields']:
                 log(f'    harvest yields (last): {[int(y) for y in stats["harvest_yields"]]} kg/ha')
@@ -173,14 +176,16 @@ def train():
     log(f'Model saved     → {MODEL_PATH}')
     log(f'Best model      → {MODEL_PATH.replace(".pt", "_best.pt")}  (r_mean={best_r_mean:+.4f})')
     log(f'Training time   : {(time.time()-t0)/60:.1f} min')
+    log(f'Total seasons  : {total_seasons:,}')
     log(f'Finished        : {datetime.now().isoformat(timespec="seconds")}')
     return agent
 
 
 def eval_preferences(agent):
+    """Quick 3-corner sanity check — use 06_pc_ppo_eval.py for thesis-grade eval."""
     log('')
     log('=' * 90)
-    log('EVAL — preference differentiation (3 episodes per preference)')
+    log('QUICK EVAL — 3 corners x 3 episodes (run .\\run_eval.ps1 for full eval)')
     log('=' * 90)
 
     prefs = [
@@ -194,10 +199,13 @@ def eval_preferences(agent):
         mean_n, mean_w, max_n, max_w = [], [], [], []
 
         for ep in range(3):
+            # Vary dssat_seed per ep so each episode draws a different weather year
+            # (matches the strong eval; replays of seed=123 give std=0).
             env = PCSmartFarmEnv(
-                mode='all', dssat_seed=DSSAT_SEED,
+                mode='all', dssat_seed=DSSAT_SEED + ep,
                 preference=np.array(w, dtype=np.float32),
                 rng_seed=1000 + ep,
+                random_weather=True,
             )
             obs, _ = env.reset(seed=1000 + ep)
             actions = []
@@ -229,6 +237,10 @@ def eval_preferences(agent):
             f'tot_N={np.mean(nitrogens):.0f}  tot_W={np.mean(waters):.0f}  '
             f'cum_R={cum_r.round(2)}'
         )
+
+    log('')
+    log('For full eval (20+ eps, preference grid, baselines, CSV):')
+    log('  .\\run_eval.ps1')
 
 
 if __name__ == '__main__':

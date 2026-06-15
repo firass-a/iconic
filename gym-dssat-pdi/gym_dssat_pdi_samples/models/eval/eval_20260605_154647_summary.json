@@ -1,0 +1,165 @@
+{
+  "model_path": "/models/pc_ppo_custom_best.pt",
+  "episodes_per_pref": 1,
+  "n_random_prefs": 0,
+  "timestamp": "20260605_154647",
+  "summary": {
+    "corner_fert": {
+      "n": 1,
+      "grnwt_mean": 12524.89501953125,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 1225.8500826358795,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 805.1264095306396,
+      "tot_W_std": 0.0
+    },
+    "corner_water": {
+      "n": 1,
+      "grnwt_mean": 11749.561767578125,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 2330.565773963928,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 425.98683059215546,
+      "tot_W_std": 0.0
+    },
+    "corner_yield": {
+      "n": 1,
+      "grnwt_mean": 11976.890869140625,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 1325.0724651813507,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 666.6756052970886,
+      "tot_W_std": 0.0
+    },
+    "edge_water_fert": {
+      "n": 1,
+      "grnwt_mean": 12343.28857421875,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 1863.5747051239014,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 558.4673744440079,
+      "tot_W_std": 0.0
+    },
+    "edge_yield_fert": {
+      "n": 1,
+      "grnwt_mean": 12524.89501953125,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 1967.4822640419006,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 839.1810845136642,
+      "tot_W_std": 0.0
+    },
+    "edge_yield_water": {
+      "n": 1,
+      "grnwt_mean": 12243.1201171875,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 2510.930281639099,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 502.92972815036774,
+      "tot_W_std": 0.0
+    },
+    "uniform": {
+      "n": 1,
+      "grnwt_mean": 12524.89501953125,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 2234.2452516555786,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 670.5304811000824,
+      "tot_W_std": 0.0
+    },
+    "high_input": {
+      "n": 1,
+      "grnwt_mean": 12524.89501953125,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 8050.0,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 4025.0,
+      "tot_W_std": 0.0
+    },
+    "moderate": {
+      "n": 1,
+      "grnwt_mean": 12524.89501953125,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 2415.0,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": 0.0,
+      "tot_W_mean": 1288.0,
+      "tot_W_std": 0.0
+    },
+    "rainfed": {
+      "n": 1,
+      "grnwt_mean": 725.3829956054688,
+      "grnwt_std": 0.0,
+      "tot_N_mean": 0.0,
+      "tot_N_std": 0.0,
+      "tot_N_uptake_mean": 0.0,
+      "tot_N_uptake_std": 0.0,
+      "tot_N_leached_mean": 0.0,
+      "tot_N_denit_mean": 0.0,
+      "NUE_mean": NaN,
+      "tot_W_mean": 0.0,
+      "tot_W_std": 0.0
+    }
+  },
+  "monotonicity_checks": [
+    {
+      "test": "yield-priority highest grnwt among corners",
+      "passed": false,
+      "detail": "yield=11977  water=11750  fert=12525"
+    },
+    {
+      "test": "water-priority lowest tot_W among corners",
+      "passed": true,
+      "detail": "yield_W=667  water_W=426  fert_W=805"
+    },
+    {
+      "test": "fert-priority lowest tot_N among corners",
+      "passed": true,
+      "detail": "yield_N=1325  water_N=2331  fert_N=1226"
+    }
+  ]
+}

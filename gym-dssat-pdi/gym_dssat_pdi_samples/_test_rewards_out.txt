@@ -1,0 +1,30 @@
+===============================================================================================
+REWARD SANITY — what changed
+===============================================================================================
+
+A) Wet soil, no action, grain +50 kg/ha today
+    yield prio                  R=[Y +0.427  W +0.000  F +0.420]   scalar(w=[1. 0. 0.])=+0.427
+    water prio                  R=[Y +0.427  W +0.000  F +0.420]   scalar(w=[0. 1. 0.])=+0.000
+
+B) DRY soil, no action, no grain growth
+    yield prio                  R=[Y +0.177  W +0.000  F +0.420]   scalar(w=[1. 0. 0.])=+0.177
+    water prio                  R=[Y +0.177  W +0.000  F +0.420]   scalar(w=[0. 1. 0.])=+0.000
+
+C) DRY soil, agent applies 10 mm water
+    yield prio                  R=[Y +0.249  W -0.040  F +0.420]   scalar(w=[1. 0. 0.])=+0.249
+    water prio                  R=[Y +0.249  W -0.040  F +0.420]   scalar(w=[0. 1. 0.])=-0.040
+
+D) HARVEST day, grnwt=9000, season totals (800 W, 150 N)
+    yield prio                  R=[Y +10.490  W -2.400  F -0.080]   scalar(w=[1. 0. 0.])=+10.490
+    water prio                  R=[Y +10.490  W -2.400  F -0.080]   scalar(w=[0. 1. 0.])=-2.400
+    fert prio                   R=[Y +10.490  W -2.400  F -0.080]   scalar(w=[0. 0. 1.])=-0.080
+
+E) HARVEST day, 12000 kg/ha yield (baseline-level), heavy inputs
+    yield prio                  R=[Y +12.620  W -3.900  F -13.917]   scalar(w=[1. 0. 0.])=+12.620
+    water prio                  R=[Y +12.620  W -3.900  F -13.917]   scalar(w=[0. 1. 0.])=-3.900
+    fert prio                   R=[Y +12.620  W -3.900  F -13.917]   scalar(w=[0. 0. 1.])=-13.917
+
+Expected:
+  - C should beat B for yield-prio (irrigation rewarded under dryness)
+  - D yield-prio should be much larger than before (~10+ from harvest tiers)
+  - E should have stronger penalties on water/fert prio (more inputs)

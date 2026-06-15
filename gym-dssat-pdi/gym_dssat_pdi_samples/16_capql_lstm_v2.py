@@ -23,8 +23,9 @@ Truncated BPTT K=20
 
 Preference conditioning
 ───────────────────────
-  CORNER_PROB = 0.50 → 50% of episodes use one of 4 fixed corners
+  CORNER_PROB_EARLY = 0.50 (first 500K steps), then CORNER_PROB = 0.15
   4 corners: yield / n_eff / water / balanced
+  Train + eval share _action_caps(w); ACT_MID water = 5 mm/day (not 25)
 
 Run inside Docker:
     cd /workspace/gym-dssat-pdi/gym_dssat_pdi_samples
@@ -73,7 +74,8 @@ UPDATE_INTERVAL = 20           # env steps between updates
 N_UPDATES       = 2            # gradient steps per update call
 WARMUP_STEPS    = 5_000
 
-CORNER_PROB     = 0.15         # fraction of episodes using fixed corners
+CORNER_PROB       = 0.15         # fraction of fixed corners after curriculum phase
+CORNER_PROB_EARLY = 0.50         # first 500K steps — learn corners before faults
 
 LR_ACTOR        = 3e-4
 LR_CRITIC       = 3e-4
@@ -100,8 +102,9 @@ ACT_DIM   = 2
 
 ACT_LOW   = np.array([0.0,    0.0], dtype=np.float32)
 ACT_HIGH  = np.array([200.0, 50.0], dtype=np.float32)
-ACT_MID   = (ACT_HIGH + ACT_LOW) / 2.0
 ACT_HALF  = (ACT_HIGH - ACT_LOW) / 2.0
+# Bias N toward moderate use; keep irrigation low at init (was 25 mm/day → ~4k mm/season)
+ACT_MID   = np.array([100.0,  5.0], dtype=np.float32)
 
 EVAL_INTERVAL  = 50_000
 CKPT_INTERVAL  = 50_000   # save checkpoint every 50K steps (was 500K)
@@ -121,8 +124,35 @@ _CORNERS_LIST = [
     np.array([1.0, 0.0, 0.0], dtype=np.float32),  # yield
     np.array([0.0, 1.0, 0.0], dtype=np.float32),  # n_eff
     np.array([1/3, 1/3, 1/3], dtype=np.float32),  # balanced
-    np.array([0.0, 0.0, 1.0], dtype=np.float32),  # water — safe with yield floor fix
+    np.array([0.0, 0.0, 1.0], dtype=np.float32),  # water
 ]
+
+_DAILY_SCALE = 0.01   # matches SmartFarmSoSEnv.DAILY_SCALE
+
+
+def _action_caps(w):
+    """Per-preference action ceilings — must match between train and eval."""
+    w_neff  = float(w[1])
+    w_water = float(w[2])
+    max_anfer = float(np.clip(200.0 * (1.0 - w_neff) ** 2, 2.0, 200.0))
+    max_amir  = float(np.clip(50.0 * (1.0 - w_water) ** 2, 3.0, 50.0))
+    return max_anfer, max_amir
+
+
+def _preference_daily_reward(daily, w):
+    """Scale daily shaping by episode preference (reduces blind over-irrigation)."""
+    ww = float(w[2])
+    wn = float(w[1])
+    w_wat = 0.40 * (1.0 - 0.75 * ww)          # 0.40 yield corner → 0.10 water corner
+    w_frt = 0.30 * (1.0 - 0.50 * wn)          # less fert shaping when n_eff priority
+    w_res = 0.15 * (1.0 + 2.0 * ww)           # 0.15 yield → 0.45 water corner
+    w_los = 0.15
+    return (
+        w_wat * daily['R_water']
+        + w_frt * daily['R_fert']
+        - w_res * daily['R_resource']
+        - w_los * daily['R_losses']
+    ) * _DAILY_SCALE
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -143,19 +173,15 @@ class TwoFaultEnv(CAPQLRobustEnvV2):
         else:
             phase = 2   # full severity
 
-        # Preference weight: 50% fixed corner, 50% random Dirichlet
-        if np.random.random() < CORNER_PROB:
+        # Preference weight: high corner rate early, then mix with Dirichlet
+        corner_prob = CORNER_PROB_EARLY if self.total_steps < 500_000 else CORNER_PROB
+        if np.random.random() < corner_prob:
             self.current_w = random.choice(_CORNERS_LIST).copy()
         else:
             self.current_w = np.random.dirichlet(
                 np.ones(N_OBJ)).astype(np.float32)
 
-        # N fertilizer cap scales with n_eff preference (less N → higher ANE)
-        # Irrigation cap removed — yield floor + R_water_eff reward handles this;
-        # the hard cap was forcing water corner to exactly 3mm/day × 160d = 479mm
-        w_neff  = float(self.current_w[1])
-        self._max_anfer = float(np.clip(200.0 * (1.0 - w_neff)**2, 2.0, 200.0))
-        self._max_amir  = 50.0
+        self._max_anfer, self._max_amir = _action_caps(self.current_w)
 
         fault_type, fault_kwargs = self._sample_two_faults(phase)
         self._fault_state     = _FaultStateV3(fault_kwargs)
@@ -195,6 +221,14 @@ class TwoFaultEnv(CAPQLRobustEnvV2):
             s   = int(np.random.choice([0, 1, 2]))
             day = int(np.random.uniform(10, max(11, int(120 * sev))))
             return 'stuck', {'stuck_sensors': [s], 'stuck_day': day}
+
+    def step(self, action):
+        obs19, r_daily, done, truncated, info = super().step(action)
+        daily = info.get('daily_components')
+        if daily is not None:
+            r_daily = _preference_daily_reward(daily, self.current_w)
+            info['R_daily'] = float(r_daily)
+        return obs19, float(r_daily), done, truncated, info
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -442,9 +476,8 @@ def update(batch, actor, actor_tgt, critic, critic_tgt,
 # ══════════════════════════════════════════════════════════════════════
 def _run_eval_ep(actor, env, w_corner, fault_kwargs=None):
     """Run one deterministic episode. Returns (rv, sos_info_last)."""
-    env.current_w   = w_corner.copy()
-    env._max_anfer  = float(np.clip(200.0 * (1.0 - w_corner[1])**2, 2.0, 200.0))
-    env._max_amir   = float(np.clip( 50.0 * (1.0 - w_corner[2])**2, 3.0,  50.0))
+    env.current_w = w_corner.copy()
+    env._max_anfer, env._max_amir = _action_caps(w_corner)
 
     if fault_kwargs is not None:
         env._fault_state = _FaultStateV3(fault_kwargs)
@@ -604,9 +637,8 @@ def plot_mechanistic(actor, env):
     This is the 'mechanistic' figure for the thesis.
     """
     w_corner = EVAL_CORNERS['yield']
-    env.current_w   = w_corner.copy()
-    env._max_anfer  = 200.0
-    env._max_amir   = 50.0
+    env.current_w = w_corner.copy()
+    env._max_anfer, env._max_amir = _action_caps(w_corner)
     env._fault_state = _FaultStateV3({'stuck_sensors': [0], 'stuck_day': 40})
 
     sos_obs = env._sos_env.reset()
@@ -696,7 +728,8 @@ def main():
     print(f'K_HISTORY: {K_HISTORY}  BATCH: {BATCH_SIZE}  '
           f'UPDATE_INTERVAL: {UPDATE_INTERVAL}  N_UPDATES: {N_UPDATES}')
     print(f'Expected gradient steps: ~{(TOTAL_STEPS - WARMUP_STEPS) // UPDATE_INTERVAL * N_UPDATES:,}')
-    print(f'CORNER_PROB: {CORNER_PROB}  LSTM_IN: {LSTM_IN}')
+    print(f'CORNER_PROB: {CORNER_PROB_EARLY}→{CORNER_PROB}  '
+          f'ACT_MID: {ACT_MID.tolist()}  LSTM_IN: {LSTM_IN}')
     print()
 
     # ── Networks ──────────────────────────────────────────────────────

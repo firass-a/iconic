@@ -6,12 +6,16 @@ Observation layout matches pc_env.py (farmer-realistic 11-D state + w).
 Existing models/capql_v2/actor.pt is incompatible — retrain after this change.
 20% of episodes use a pure preference corner (yield / N-eff / water).
 
-Outputs (separate from v1 for easy comparison):
-  models/capql_v2/actor.pt          ← persisted on host via /workspace mount
-  /workspace/capql_v2_episode_log.csv
-  /workspace/capql_v2_eval_results.csv
-  /workspace/capql_v2_plot_training.png
-  /workspace/capql_v2_plot_losses.png
+Outputs:
+  models/capql_v2_l7afla/actor.pt   ← new obs layout (does NOT overwrite interface weights)
+  models/capql_v2_l7afla/critic.pt
+  models/capql_v2/                  ← left untouched for interface (old obs layout)
+
+Override save dir: CAPQL_TRAIN_MODEL_DIR=/path/to/dir
+
+Also written to /workspace:
+  capql_v2_episode_log.csv, capql_v2_eval_results.csv
+  capql_v2_plot_training.png, capql_v2_plot_losses.png
 
 Run inside Docker (mount iconic → /workspace):
     cd /workspace/gym-dssat-pdi/gym_dssat_pdi_samples
@@ -76,11 +80,13 @@ ACT_RANGE = ACT_HIGH - ACT_LOW
 
 
 def _default_model_dir() -> str:
-    """Save weights on the mounted workspace (survives container stop)."""
+    """Save new weights beside (not over) models/capql_v2 used by the interface."""
+    if os.environ.get('CAPQL_TRAIN_MODEL_DIR'):
+        return os.environ['CAPQL_TRAIN_MODEL_DIR']
     if os.path.isdir('/workspace'):
-        return '/workspace/models/capql_v2'
+        return '/workspace/models/capql_v2_l7afla'
     here = os.path.dirname(os.path.abspath(__file__))
-    return os.path.normpath(os.path.join(here, '..', '..', 'models', 'capql_v2'))
+    return os.path.normpath(os.path.join(here, '..', '..', 'models', 'capql_v2_l7afla'))
 
 
 MODEL_DIR    = _default_model_dir()
@@ -301,9 +307,12 @@ class CAPQLAgent:
 
     def save(self, directory):
         os.makedirs(directory, exist_ok=True)
-        torch.save(self.actor.state_dict(),  os.path.join(directory, 'actor.pt'))
-        torch.save(self.critic.state_dict(), os.path.join(directory, 'critic.pt'))
-        print(f"✓ Model saved → {directory}")
+        actor_path  = os.path.join(directory, 'actor.pt')
+        critic_path = os.path.join(directory, 'critic.pt')
+        torch.save(self.actor.state_dict(),  actor_path)
+        torch.save(self.critic.state_dict(), critic_path)
+        print(f"✓ Actor  saved → {actor_path}")
+        print(f"✓ Critic saved → {critic_path}")
 
     def load(self, directory):
         self.actor.load_state_dict(

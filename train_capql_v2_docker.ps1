@@ -5,11 +5,11 @@
 #
 # Prerequisites:
 #   1. Docker Desktop running
-#   2. Image built:  .\build_docker.ps1  (from interface folder)
+#   2. Image: gym-dssat:torch (preferred) or gym-dssat:debian-bookworm + pydeps/
 #
 # Usage:
 #   .\train_capql_v2_docker.ps1
-#   .\train_capql_v2_docker.ps1 -Image "gym-dssat:debian-bookworm"
+#   .\train_capql_v2_docker.ps1 -Image "gym-dssat:torch"
 #   .\train_capql_v2_docker.ps1 -ModelDir "models\capql_v2_custom"
 param(
     [string]$Image = $env:GYM_DSSAT_IMAGE,
@@ -17,7 +17,11 @@ param(
 )
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-if (-not $Image) { $Image = "gym-dssat:debian-bookworm" }
+if (-not $Image) {
+    docker image inspect gym-dssat:torch 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) { $Image = "gym-dssat:torch" }
+    else { $Image = "gym-dssat:debian-bookworm" }
+}
 
 $outDir = Join-Path $root $ModelDir
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
@@ -34,11 +38,13 @@ try {
 
 docker image inspect $Image 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Image '$Image' not found. Run:  interface\build_docker.ps1" -ForegroundColor Red
+    Write-Host "ERROR: Image '$Image' not found." -ForegroundColor Red
     exit 1
 }
 
 Write-Host "=== CAPQL v2 training (new obs layout) ===" -ForegroundColor Cyan
+Write-Host "Image:       $Image"
+Write-Host "Python:      /opt/gym_dssat_pdi/bin/python3"
 Write-Host "Mount:       $root -> /workspace"
 Write-Host "Save dir:    $outDir"
 Write-Host "  actor.pt   (new weights, farmer-realistic obs)"
@@ -49,21 +55,14 @@ Write-Host "Steps:       1,000,000  (~several hours)"
 Write-Host ""
 
 $volume = "${root}:/workspace"
-$bashCmd = @"
-export PATH="/opt/gym_dssat_pdi/bin:/opt/dssat_pdi:`$PATH"
-export CAPQL_TRAIN_MODEL_DIR="/workspace/$modelDirUnix"
-cd /workspace/gym-dssat-pdi/gym_dssat_pdi_samples
-mkdir -p "/workspace/$modelDirUnix"
-python3 -u 07_capql_train_v2.py 2>&1 | tee /workspace/train_capql_v2.log
-"@ -replace "`r`n", "`n"
+$modelDirEnv = "/workspace/$modelDirUnix"
 
 docker run --rm -it `
     -v "$volume" `
-    -w /workspace/gym-dssat-pdi/gym_dssat_pdi_samples `
-    -e "CAPQL_TRAIN_MODEL_DIR=/workspace/$modelDirUnix" `
+    -e "CAPQL_TRAIN_MODEL_DIR=$modelDirEnv" `
     --entrypoint /bin/bash `
     $Image `
-    -lc $bashCmd
+    -lc "sed -i 's/\r$//' /workspace/train_capql_v2_docker.sh && bash /workspace/train_capql_v2_docker.sh"
 
 Write-Host ""
 $actor = Join-Path $outDir "actor.pt"

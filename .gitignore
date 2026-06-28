@@ -25,3 +25,6 @@ massif.out.*
 **/coverage/
 **.coverage*
 run_env_dev.py
+
+# pip --target installs for Docker (torch/triton; too large for GitHub)
+pydeps/

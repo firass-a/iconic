@@ -1,15 +1,30 @@
 """
 PC-PPO adapter for SmartFarmSoSEnv (3-objective MORL).
 
+Used by 05_pc_ppo_custom_train.py, 06_pc_ppo_eval.py, harvest_index_corners.py.
+
 Objectives (preference-conditioned):
     w[0] — yield
     w[1] — water efficiency / minimal irrigation
     w[2] — fertilizer efficiency / minimal N use
 
-Scalar reward: r = w · R⃗   (linear scalarization)
+Scalar reward: r = w · R⃗   (linear scalarization over smart_farm_rewards vector)
 
-Observation (14-dim):
-    11 state features + 3 preference weights
+Observation (14-dim) — state [0:11] + preference [11:14]:
+     0  dap / 200
+     1  vstage / 18
+     2  xlai / 7
+     3  swfac / 1          plant water stress (1 = no stress)
+     4  nstres / 1         N stress (1 = no stress)
+     5  moisture_ratio     soil water as fraction of field capacity
+     6  grnwt / 12000
+     7  topwt / 20000
+     8  cumsumfert / 300
+     9  totir / 1000
+    10  rain / 50          mm today
+    11  w_yield
+    12  w_water
+    13  w_fert
 
 Run smoke test in Docker:
     python3 pc_env.py

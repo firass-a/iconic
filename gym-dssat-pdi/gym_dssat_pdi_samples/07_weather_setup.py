@@ -284,4 +284,4 @@ if __name__ == '__main__':
     monthly_avgs, wgen_params = compute_wgen(records)
     write_cli(monthly_avgs, wgen_params, tav, amp)
 
-    print("\nNext step: run 04_pc_ppo_quick_train.py — it will pick up UFGA.CLI automatically.")
+    print("\nNext step: run 05_pc_ppo_custom_train.py or 07_capql_train_v2.py")

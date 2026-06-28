@@ -22,6 +22,8 @@ Run inside Docker (mount iconic → /workspace):
     /opt/gym_dssat_pdi/bin/python3 -u 07_capql_train_v2.py 2>&1 | tee /workspace/train_capql_v2.log
 
 Or from Windows:  .\\train_capql_v2_docker.ps1
+
+Note: use /opt/gym_dssat_pdi/bin/python3 — system python3 has no torch.
 """
 import csv
 import os

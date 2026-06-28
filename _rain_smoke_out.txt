@@ -1,0 +1,7 @@
+﻿docker : /bin/bash: line 1: export: `/workspace/gym-dssat-pdi/gym_dssat_pdi_samples': not a valid identifier
+At C:\Users\cherfa firas\AppData\Local\Temp\ps-script-128c3120-3472-44c0-baf9-c34b0ab7ba97.ps1:85 char:1
++ docker run --rm --entrypoint /bin/bash -v "c:/Users/cherfa firas/Desk ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (/bin/bash: line...alid identifier:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

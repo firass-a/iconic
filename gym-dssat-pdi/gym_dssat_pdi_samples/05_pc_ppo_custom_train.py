@@ -1,9 +1,15 @@
 """
-Custom PC-PPO training — verbose logging every update.
+Canonical PC-PPO training (v5 stack).
+
+  pc_env.py              → 14-D obs (swfac, nstres, moisture_ratio, rain) + preference
+  02_smart_farm_env.py   → smart_farm_rewards [yield, water, fertilizer]
+
+Do not use removed legacy scripts (05_pcppo_train, 04_pc_ppo_quick_train, pc_env_pcppo).
 
 Env overrides:
     TOTAL_TIMESTEPS, N_STEPS, MODEL_PATH, ENT_COEF, LOG_EVERY, CHECKPOINT_EVERY, LOG_FILE
 """
+import csv
 import os
 import sys
 import time
@@ -36,8 +42,16 @@ ENT_COEF = float(os.environ.get('ENT_COEF', '0.02'))
 LOG_EVERY = int(os.environ.get('LOG_EVERY', '5'))
 CHECKPOINT_EVERY = int(os.environ.get('CHECKPOINT_EVERY', '50'))
 DSSAT_SEED = int(os.environ.get('DSSAT_SEED', '123'))
-MODEL_PATH = os.environ.get('MODEL_PATH', '/tmp/pc_ppo_custom.pt')
+MODEL_PATH = os.environ.get('MODEL_PATH', '/models/pc_ppo_custom.pt')
+EPISODE_LOG = os.environ.get('EPISODE_LOG', '/work/pc_ppo_episode_log.csv')
 LOG_FILE = os.environ.get('LOG_FILE', '')
+
+EPISODE_FIELDS = [
+    'episode', 'timestep', 'ep_length', 'cum_reward',
+    'w_yield', 'w_water', 'w_fert',
+    'R_yield', 'R_water', 'R_fert',
+    'yield_kg_ha', 'total_N_kg_ha', 'total_W_mm',
+]
 _log_handle = None
 
 
@@ -79,12 +93,20 @@ def train():
     log(f'  n_steps     : {N_STEPS}  batch={BATCH_SIZE}  epochs={N_EPOCHS}  ent_coef={ENT_COEF}')
     log(f'  timesteps   : {TOTAL_TIMESTEPS:,}  updates={TOTAL_TIMESTEPS // N_STEPS}')
     log(f'  model_path  : {MODEL_PATH}')
+    log(f'  episode_log : {EPISODE_LOG}')
     if LOG_FILE:
         log(f'  log_file    : {LOG_FILE}')
     log('=' * 90)
 
     os.makedirs(os.path.dirname(MODEL_PATH) or '.', exist_ok=True)
+    os.makedirs(os.path.dirname(EPISODE_LOG) or '.', exist_ok=True)
     _log_sink()
+
+    ep_file = open(EPISODE_LOG, 'w', newline='', buffering=1)
+    ep_writer = csv.DictWriter(ep_file, fieldnames=EPISODE_FIELDS)
+    ep_writer.writeheader()
+    ep_file.flush()
+    episode_log = {'writer': ep_writer, 'file': ep_file, 'count': 0, 'timestep': 0}
 
     env = PCSmartFarmEnv(mode='all', dssat_seed=DSSAT_SEED, rng_seed=0)
 
@@ -115,7 +137,10 @@ def train():
 
     for update in range(1, n_updates + 1):
         t_rollout = time.time()
-        buffer, stats = agent.collect_rollout(env, n_pref_dims=N_PREFERENCE_DIMS)
+        episode_log['timestep'] = timestep + N_STEPS
+        buffer, stats = agent.collect_rollout(
+            env, n_pref_dims=N_PREFERENCE_DIMS, episode_log=episode_log,
+        )
         rollout_sec = time.time() - t_rollout
 
         t_update = time.time()
@@ -172,7 +197,9 @@ def train():
 
     agent.save(MODEL_PATH)
     env.close()
+    ep_file.close()
     log('')
+    log(f'Episode log     → {EPISODE_LOG}  ({episode_log["count"]} seasons)')
     log(f'Model saved     → {MODEL_PATH}')
     log(f'Best model      → {MODEL_PATH.replace(".pt", "_best.pt")}  (r_mean={best_r_mean:+.4f})')
     log(f'Training time   : {(time.time()-t0)/60:.1f} min')

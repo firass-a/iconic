@@ -15,6 +15,7 @@ import numpy as np
 from collections import OrderedDict
 
 from smart_farm_rewards import compute_reward_vector, moisture_ratio
+from weather_config import resolve_ufga_cli
 
 # Farmer-realistic observation keys (no hidden biochemical state)
 FARMER_OBS_KEYS = (
@@ -51,8 +52,8 @@ class SmartFarmSoSEnv:
         }
         if seed is not None:
             env_args['seed'] = seed
-        cli = os.path.join(os.path.dirname(__file__), 'test_files', 'UFGA.CLI')
-        if random_weather and os.path.isfile(cli):
+        cli = resolve_ufga_cli()
+        if random_weather and cli:
             env_args['auxiliary_file_paths'] = [cli]
         self.env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
 
@@ -212,4 +213,4 @@ if __name__ == '__main__':
 
     env.close()
     print(f'\nCumulative R⃗ (partial season): {cum.round(3)}')
-    print('Next: python3 pc_env.py  →  then 03_sb3_sanity_check.py  →  04_pc_ppo_quick_train.py')
+    print('Next: python3 05_pc_ppo_custom_train.py  (PC-PPO)  or  07_capql_train_v2.py  (CAPQL)')

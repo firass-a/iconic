@@ -287,7 +287,17 @@ class DssatPdi(gym.Env):
         self._zmq_context = zmq.Context()
         self._server = self._zmq_context.socket(zmq.PAIR)
         # self._server.setsockopt(zmq.LINGER, 0)
+        rcv_ms = int(os.environ.get('DSSAT_ZMQ_TIMEOUT_MS', '120000'))
+        self._server.setsockopt(zmq.RCVTIMEO, rcv_ms)
         self._port = self._server.bind_to_random_port('tcp://*', max_tries=10000)  # min_port=1024, max_port=65535)
+
+    def _recv_json(self):
+        try:
+            raw = self._server.recv().decode('utf-8')
+        except zmq.Again as exc:
+            self._cleanup_process()
+            raise TimeoutError('DSSAT weather engine did not respond in time') from exc
+        return json.loads(raw, object_hook=utils.NumpyDecoder)
 
     def _write_pdi_yaml(self):
         value_dic = {'port': self._port,
@@ -301,9 +311,8 @@ class DssatPdi(gym.Env):
         if not self._last_is_send:
             self.close()
             raise ValueError("you cannot call env._get_state() two times in a row!")
-        message = self._server.recv().decode('utf-8')
+        message = self._recv_json()
         self._last_is_send = False
-        message = json.loads(message, object_hook=utils.NumpyDecoder)
         done = message['done']
         _state = message['state']
         if _state:
@@ -377,7 +386,8 @@ class DssatPdi(gym.Env):
     def _early_stopping(self):
         if self.done:
             self._server.send(f'{self._rseed1}'.encode('utf-8'))
-            self._server.recv()
+            self._last_is_send = True
+            self._recv_json()
             self._last_is_send = False
         self._is_early_stopping = True
         message = {'early_stopping': True,
@@ -444,6 +454,9 @@ class DssatPdi(gym.Env):
                 return observation, reward, done, context
             else:
                 return None, None, self.done, None
+        except TimeoutError:
+            self._cleanup_process()
+            raise
         except Exception as e:
             logging.exception(e)
 

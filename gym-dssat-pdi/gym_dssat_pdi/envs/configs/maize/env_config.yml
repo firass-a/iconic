@@ -290,6 +290,7 @@ setting:
       - wtdep
       - rtdep
       - trnu
+      - wtnup
       - runoff
       - rain
       - tleachd

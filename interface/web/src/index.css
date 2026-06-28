@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+  --color-surface: #ffffff;
+  --color-muted: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-canvas: #f4f6f5;
+}
+
+body {
+  @apply bg-canvas text-slate-800 font-sans antialiased;
+}
+
+.page-title {
+  @apply text-xl font-bold tracking-tight text-slate-900;
+}
+
+.page-subtitle {
+  @apply text-sm text-slate-500;
+}
+
+.text-muted {
+  @apply text-slate-500;
+}
+
+.text-label {
+  @apply text-[11px] font-semibold uppercase tracking-wider text-slate-400;
+}
+
+.panel {
+  @apply rounded-2xl border border-slate-200/70 bg-white shadow-sm;
+}
+
+.dash-card {
+  @apply rounded-2xl border border-slate-200/60 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)];
+}
+
+.nav-section {
+  @apply px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400;
+}
+
+.nav-link {
+  @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors;
+}
+
+.nav-link-active {
+  @apply bg-emerald-50 text-emerald-700;
+}
+
+.nav-link-idle {
+  @apply hover:bg-slate-100 hover:text-slate-900;
+}

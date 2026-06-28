@@ -152,8 +152,12 @@ class PPOAgent:
     # ------------------------------------------------------------------
     # Rollout + update loop
     # ------------------------------------------------------------------
-    def collect_rollout(self, env, n_pref_dims=3):
-        """Fill rollout buffer; return (buffer, rollout_stats)."""
+    def collect_rollout(self, env, n_pref_dims=3, episode_log=None):
+        """Fill rollout buffer; return (buffer, rollout_stats).
+
+        episode_log: optional dict with 'writer' (csv.DictWriter) and 'count' (int)
+        to append one row per finished season (CAPQL-style dense training curves).
+        """
         self.buffer.reset()
         obs, _ = env.reset()
         episode_reward = 0.0
@@ -163,6 +167,7 @@ class PPOAgent:
         r_vec_sum = np.zeros(3, dtype=np.float64)
         pref_sum = np.zeros(n_pref_dims, dtype=np.float64)
         harvest_yields = []
+        last_rv = np.zeros(3, dtype=np.float64)
 
         for _ in range(self.n_steps):
             action, value, log_prob = self.net.act(obs)
@@ -174,7 +179,8 @@ class PPOAgent:
             episode_len += 1
 
             if 'reward_vector' in info:
-                r_vec_sum += np.asarray(info['reward_vector'], dtype=np.float64)
+                last_rv = np.asarray(info['reward_vector'], dtype=np.float64)
+                r_vec_sum += last_rv
             if len(obs) >= n_pref_dims:
                 pref_sum += obs[-n_pref_dims:]
 
@@ -184,11 +190,32 @@ class PPOAgent:
                 n_episodes += 1
                 episode_returns.append(episode_reward)
                 fs = info.get('full_state', {})
+                totals = info.get('totals', {})
                 if fs.get('grnwt'):
                     harvest_yields.append(float(fs['grnwt']))
+                if episode_log is not None and episode_log.get('writer') is not None:
+                    episode_log['count'] = episode_log.get('count', 0) + 1
+                    w = info.get('preference', obs[-n_pref_dims:] if len(obs) >= n_pref_dims else np.ones(3) / 3)
+                    episode_log['writer'].writerow({
+                        'episode': episode_log['count'],
+                        'timestep': episode_log.get('timestep', 0),
+                        'ep_length': episode_len,
+                        'cum_reward': round(episode_reward, 6),
+                        'w_yield': round(float(w[0]), 4),
+                        'w_water': round(float(w[1]), 4),
+                        'w_fert': round(float(w[2]), 4),
+                        'R_yield': round(float(last_rv[0]), 6),
+                        'R_water': round(float(last_rv[1]), 6),
+                        'R_fert': round(float(last_rv[2]), 6),
+                        'yield_kg_ha': round(float(fs.get('grnwt', 0.0) or 0.0), 1),
+                        'total_N_kg_ha': round(float(totals.get('nitrogen', 0.0) or 0.0), 1),
+                        'total_W_mm': round(float(totals.get('water', 0.0) or 0.0), 1),
+                    })
+                    episode_log.get('file') and episode_log['file'].flush()
                 obs, _ = env.reset()
                 episode_reward = 0.0
                 episode_len = 0
+                last_rv = np.zeros(3, dtype=np.float64)
 
         with torch.no_grad():
             obs_t = torch.as_tensor(obs, dtype=torch.float32, device=self.device).unsqueeze(0)

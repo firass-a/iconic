@@ -116,6 +116,7 @@ docker run --rm `
   -e TOTAL_TIMESTEPS=$Timesteps `
   -e N_STEPS=$Steps `
   -e MODEL_PATH=/models/pc_ppo_custom.pt `
+  -e EPISODE_LOG=/work/pc_ppo_episode_log.csv `
   -e LOG_FILE=$LogDocker `
   -e ENT_COEF=$EntCoef `
   -e LOG_EVERY=$LogEvery `

@@ -1,0 +1,1104 @@
+% =============================================================================
+% Chapter 3 — Proposed Solution
+% Include from main.tex via:  \input{chap3}
+% Required: amsmath, booktabs, graphicx, tikz, backgrounds, algorithm, algpseudocode
+%   \usetikzlibrary{positioning, arrows.meta, fit, calc, backgrounds}
+% =============================================================================
+
+%---- Colour palette for the diagrams ----------------------------------------
+\definecolor{sosblue}{RGB}{38,84,124}
+\definecolor{sosgreen}{RGB}{61,133,92}
+\definecolor{sosorange}{RGB}{200,120,40}
+\definecolor{sosgrey}{RGB}{90,90,90}
+\definecolor{soslight}{RGB}{234,240,245}
+\definecolor{soscream}{RGB}{248,244,232}
+
+%---- Reusable TikZ node styles ----------------------------------------------
+\tikzset{
+  sensor/.style   = {rectangle, rounded corners=2pt, draw=sosblue, very thick,
+                     fill=soslight, align=center, minimum width=2.5cm,
+                     minimum height=1cm, font=\small},
+  actuator/.style = {rectangle, rounded corners=2pt, draw=sosorange, very thick,
+                     fill=soscream, align=center, minimum width=2.5cm,
+                     minimum height=1cm, font=\small},
+  core/.style     = {rectangle, rounded corners=4pt, draw=sosgreen, line width=1.2pt,
+                     fill=sosgreen!12, align=center, minimum width=3.2cm,
+                     minimum height=1.3cm, font=\small\bfseries},
+  mission/.style  = {ellipse, draw=sosgrey, very thick, fill=white, align=center,
+                     font=\small\itshape, minimum width=3cm},
+  flow/.style     = {-{Stealth[length=2.5mm]}, line width=0.9pt, sosgrey},
+  ctrl/.style     = {-{Stealth[length=2.5mm]}, line width=0.9pt, sosorange, dashed},
+  block/.style    = {rectangle, rounded corners=2pt, draw=sosblue, thick,
+                     fill=soslight, align=center, font=\small,
+                     minimum width=2.6cm, minimum height=0.9cm},
+}
+
+
+\chapter{Proposed Solution}
+\label{chap:proposed}
+
+
+%------------------------------------------------------------------------------
+\section{Introduction}
+\label{sec:ch3_intro}
+%------------------------------------------------------------------------------
+
+Chapter~\ref{ch:background} positioned DSSAT as the crop-simulation subsystem
+inside a smart-farming System-of-Systems. This chapter turns that view into a
+concrete decision framework.
+
+The problem is no longer a single irrigation rule. It is a \emph{multi-objective}
+management task in which yield, water use, and nitrogen efficiency must be
+balanced over a full growing season. The proposed framework combines three
+elements:
+\begin{enumerate}
+  \item a DSSAT-based daily simulation environment (\texttt{gym-DSSAT});
+  \item a hierarchical reward design with preference conditioning for
+        multi-objective learning;
+  \item learning algorithms---scalar PPO baselines, Preference-Conditioned PPO
+        (PC-PPO), and Concave-Augmented Pareto Q-Learning (CAPQL).
+\end{enumerate}
+
+The chapter is organised as follows. Section~\ref{sec:sos} formalises the
+control problem and the smart-farming System-of-Systems architecture.
+Section~\ref{sec:env} describes the simulation platform, observation and action
+spaces, and software stack. Section~\ref{sec:reward} presents the hierarchical
+reward design and scalar reward variants. Section~\ref{sec:algos} defines the
+learning algorithms. Section~\ref{sec:overall} assembles the integrated
+architecture and traceability from requirements to implementation. Experimental
+training protocols and numerical results are reported in the next chapter.
+
+
+%------------------------------------------------------------------------------
+\section{Problem Formulation and System-of-Systems Architecture}
+\label{sec:sos}
+%------------------------------------------------------------------------------
+
+\subsection{Overview and Rationale}
+
+A modern smart farm is not a single monolithic system but a \emph{System of
+Systems}: a collection of heterogeneous, independently operated subsystems---
+weather data, soil and crop observations, irrigation and fertilisation
+controllers, and crop-modelling platforms---integrated to pursue missions such
+as maximising yield, conserving water, and improving nitrogen-use efficiency.
+Following Maier~\cite{maier1998}, a true SoS is distinguished from a merely
+complex monolithic system by five traits: operational independence, managerial
+independence, geographic distribution, emergent behaviour, and evolutionary
+development. The smart farm exhibits all five, which is precisely what makes
+mission-level decision-making difficult: an irrigation pulse today changes soil
+moisture, crop stress, and nitrogen dynamics over the rest of the season.
+Section~\ref{sec:env} formalises this task as a Markov decision process; here
+we focus on the architectural view.
+
+
+\subsection{Components of the Smart-Farming SoS}
+
+The constituent systems are grouped by their role in the closed decision loop:
+observe field conditions, act on the crop, and decide daily management. At the
+centre of this loop sits the \textbf{crop-modelling platform (DSSAT)}, which
+integrates weather, soil, and management inputs and produces crop growth, stress
+indicators, and environmental fluxes. Monitoring systems read from it; control
+systems write into it; the decision layer issues the commands that drive both.
+
+\vspace{0.25cm}
+\noindent\textbf{Monitoring systems.}
+These constituents supply the observation stream the agent uses each day:
+\begin{itemize}
+  \item \textbf{Weather data} --- supplies exogenous drivers (temperature,
+        rainfall, solar radiation) that the agent observes but cannot control.
+  \item \textbf{Soil and crop state} --- reported through DSSAT variables such
+        as soil-water content, water-stress factor, nitrogen-stress factor,
+        leaf area, and grain weight.
+\end{itemize}
+
+\vspace{0.25cm}
+\noindent\textbf{Control systems.}
+These constituents execute management actions issued by the decision layer:
+\begin{itemize}
+  \item \textbf{Irrigation controller} --- the actuator through which the agent
+        applies a daily water amount $a_t^{W}$ (mm/day).
+  \item \textbf{Fertilisation unit} --- the actuator through which the agent
+        applies a daily nitrogen amount $a_t^{N}$ (kg N/ha/day).
+\end{itemize}
+
+\vspace{0.25cm}
+\noindent\textbf{Decision and mission layer.}
+Mission objectives---yield, water efficiency, and nitrogen efficiency---condition
+the agent through the preference vector $\boldsymbol{\omega}$. The decision
+constituent that closes the loop is:
+\begin{itemize}
+  \item \textbf{Mission manager / RL agent} --- reads observations, respects the
+        farmer's preference vector, and issues daily irrigation and fertilisation
+        commands to the control systems.
+\end{itemize}
+
+Figure~\ref{fig:sos} depicts the architecture. Monitoring systems feed
+observations into the mission manager (solid arrows); the mission manager issues
+control commands to the actuators (dashed arrows); DSSAT closes the loop by
+producing the next crop and soil state.
+
+
+%---- FIGURE : SoS architecture ------------------------------------------------
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{sos_architecture.png}
+\caption{Architecture of the proposed smart-farming System-of-Systems. Icons denote
+constituent roles; solid arrows carry observations and simulated state, dashed
+orange arrows carry management commands. DSSAT integrates inputs and closes the
+daily decision loop.}
+\label{fig:sos}
+\end{figure}
+
+
+\subsection{System-of-Systems Characteristics in Our Setting}
+
+Mapping Maier's five traits~\cite{maier1998} onto our design clarifies why a
+learning-based formulation is appropriate. \emph{Operational independence}
+holds because weather data, DSSAT, and actuators can each be described on
+their own. \emph{Managerial independence} holds because these parts are
+developed and maintained separately yet must cooperate in practice.
+\emph{Geographic distribution} is intrinsic to field deployment.
+\emph{Emergent behaviour}---yield and resource efficiency arising from the
+interaction of weather, soil, crop, and management---is exactly what the agent
+must learn to shape. \emph{Evolutionary development} motivates a framework in
+which the crop model, reward design, or learning algorithm can be upgraded
+without rebuilding the entire platform.
+
+
+\subsection{Mission Objectives and Measures of Effectiveness}
+\label{sec:moe}
+
+Measures of Effectiveness (MoEs) translate mission objectives into quantities
+that can be logged in simulation and encoded in the reward function.
+Table~\ref{tab:moe} links each MoE to its mission objective and to the reward
+term that implements it. \emph{Seasonal} MoEs evaluate end-of-season success;
+\emph{daily} indicators supply the dense feedback used in reward shaping
+(Section~\ref{sec:reward}).
+
+\begin{table}[ht]
+\centering
+\caption{Measures of Effectiveness and their alignment with mission objectives.}
+\label{tab:moe}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.4cm}
+                >{\raggedright\arraybackslash}p{3.2cm}
+                >{\raggedright\arraybackslash}p{4.6cm}}
+\toprule
+\textbf{Measure of Effectiveness} & \textbf{Mission objective} & \textbf{Indicator / reward link} \\
+\midrule
+Final grain yield ($\mathrm{GRNWT}_{\text{final}}$) & Yield optimisation & $w_y\,\mathrm{GRNWT}_{\text{final}}$ \\
+Harvest index ($\mathrm{HIAD}_{\text{final}}$) & Yield quality & $w_h\,\mathrm{HIAD}_{\text{final}}$ \\
+Agronomic N efficiency ($\mathrm{ANE}_{\text{final}}$) & N-use efficiency & $w_a\,\mathrm{ANE}_{\text{final}}$ \\
+Total irrigation ($\mathrm{IRRC}_{\text{season}}$) & Water-use efficiency & $w_w\,\mathrm{IRRC}_{\text{season}}$ \\
+Total nitrogen applied ($\mathrm{FERN}_{\text{season}}$) & N-use efficiency & $w_f\,\mathrm{FERN}_{\text{season}}$ \\
+Soil-moisture balance ($\mathrm{SMR}_t$) & Crop health / water stress & $R_{\text{water},t}$ \\
+Water-stress factor ($\mathrm{SWFAC}_t$) & Crop health & $R_{\text{water},t}$ \\
+Nitrogen-stress factor ($\mathrm{NSTRES}_t$) & Crop health & $R_{\text{fert},t}$ \\
+Cumulative N \& water losses & Environmental impact & $R_{\text{losses},t}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%------------------------------------------------------------------------------
+\section{Simulation Platform and Environment Design}
+\label{sec:env}
+%------------------------------------------------------------------------------
+
+\subsection{The DSSAT Cropping System Model}
+
+The Decision Support System for Agrotechnology Transfer (DSSAT) is a suite of
+mechanistic crop models developed over more than three decades and widely
+validated by the agronomic community~\cite{jones2003dssat,hoogenboom2019}. At
+its heart is the \emph{Cropping System Model} (CSM), which advances the state of
+a land unit on a daily time step. Given weather, soil, genetics, and management
+inputs, the CSM couples soil-water balance, soil--plant--atmosphere exchange,
+and plant growth modules. For maize, this work uses CERES-Maize. Its outputs
+include grain yield, biomass, harvest index, and water and nitrogen fluxes such
+as runoff, leaching, and denitrification. Figure~\ref{fig:dssat} sketches the
+modular structure.
+
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=0.7cm and 1.2cm]
+  \node[core, fill=sosblue!10, draw=sosblue] (w) {Weather};
+  \node[core, fill=sosblue!10, draw=sosblue, below=of w] (s) {Soil profile};
+  \node[core, fill=sosgreen!15, draw=sosgreen, right=2.2cm of w, yshift=-0.4cm] (csm)
+        {DSSAT-CSM\\daily integrator};
+  \node[core, fill=soscream, draw=sosorange, right=2.2cm of csm, yshift=0.9cm] (crop)
+        {CERES-Maize};
+  \node[core, fill=soscream, draw=sosorange, right=2.2cm of csm, yshift=-0.9cm] (mgmt)
+        {Management\\(N + irrigation)};
+  \node[block, below=1.6cm of csm, minimum width=4.2cm] (out)
+        {Outputs: yield, stress, losses, state vector};
+
+  \draw[flow] (w) -- (csm);
+  \draw[flow] (s) -- (csm);
+  \draw[flow] (crop) -- (csm);
+  \draw[flow] (mgmt) -- (csm);
+  \draw[flow] (csm) -- (out);
+\end{tikzpicture}
+\caption{Schematic of the DSSAT Cropping System Model used in this work.}
+\label{fig:dssat}
+\end{figure}
+
+
+\subsection{From DSSAT to an RL Environment: gym-DSSAT}
+
+To use DSSAT for reinforcement learning, the simulator must expose a step-wise
+interface in which an agent observes a state, applies an action, and receives
+the resulting next state and reward. We rely on \texttt{gym-DSSAT}~\cite{gautron2022gymdssat},
+which wraps the Fortran simulator in a Gymnasium-compatible API allowing daily
+interaction throughout the growing season~\cite{gautron2022review}. A
+\texttt{SmartFarmSoSEnv} layer maps DSSAT outputs to the observation vector,
+translates the agent's action into DSSAT management events
+(\texttt{anfer}, \texttt{amir}), and computes the reward defined in
+Section~\ref{sec:reward}.
+
+
+\subsection{Decision-Process Formulation}
+
+Formally, the control task is a Markov Decision Process
+$\langle \mathcal{S}, \mathcal{A}, P, R, \gamma \rangle$. In the
+multi-objective setting, the terminal step also exposes a reward vector
+$\mathbf{R}_T$ that is scalarised through a preference vector
+$\boldsymbol{\omega}$ (Section~\ref{sec:reward}).
+
+\begin{itemize}
+  \item \textbf{State / observation $s_t$:} an 11-dimensional vector of
+        normalised crop and SoS features: biomass, grain weight, days after
+        planting, vegetative stage, leaf area index, cumulative nitrogen and
+        irrigation, mean soil water, energy budget, communication quality, and
+        fraction of healthy virtual sensors. PC-PPO and CAPQL append the
+        3-dimensional preference vector, giving a 14-dimensional observation.
+  \item \textbf{Action $a_t$:} the daily management decision
+        $a_t = (\mathrm{FERN}_t, \mathrm{IRRC}_t) = (a_t^{N}, a_t^{W})$ with
+        $a_t^{N}\in[0,200]$~kg N/ha/day and $a_t^{W}\in[0,50]$~mm/day.
+  \item \textbf{Transition $P(s_{t+1}\mid s_t,a_t)$:} realised by the DSSAT
+        daily integration; stochasticity enters through random weather resampling
+        across episodes.
+  \item \textbf{Horizon:} one growing season (${\approx}161$ days); the episode
+        terminates at harvest, when the seasonal reward is granted.
+\end{itemize}
+
+Irrigation and fertilisation are coupled because both alter the same soil-water
+and nitrogen pools that drive crop stress and final yield. A sequential
+formulation is therefore more faithful than optimising either input in isolation.
+
+
+\subsection{Observation and Action Spaces}
+
+Table~\ref{tab:obs} lists the 11-dimensional observation vector exposed to
+scalar PPO agents through the \texttt{pc\_env.py} adapter. Each component is
+linearly scaled to $[0,1]$ from agronomically meaningful bounds. PC-PPO and
+CAPQL append the three-dimensional preference vector
+$\boldsymbol{\omega}=(\omega_y,\omega_a,\omega_w)$, yielding a
+14-dimensional input.
+
+\begin{table}[ht]
+\centering
+\caption{Observation vector for scalar PPO (\texttt{pc\_env.py}).}
+\label{tab:obs}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{clll}
+\toprule
+\textbf{Idx} & \textbf{DSSAT / SoS variable} & \textbf{Scale} & \textbf{Role} \\
+\midrule
+0  & \texttt{topwt}  & $[0, 20\,000]$ kg ha$^{-1}$ & Above-ground biomass \\
+1  & \texttt{grnwt}  & $[0, 12\,000]$ kg ha$^{-1}$ & Grain weight \\
+2  & \texttt{dap}    & $[0, 200]$ days             & Days after planting \\
+3  & \texttt{vstage} & $[0, 18]$                   & Vegetative stage \\
+4  & \texttt{xlai}   & $[0, 7]$                    & Leaf area index \\
+5  & Cumulative N    & $[0, 300]$ kg ha$^{-1}$     & Seasonal fertiliser \\
+6  & Cumulative W    & $[0, 1000]$ mm              & Seasonal irrigation \\
+7  & Mean soil water & $[0, 1]$                    & Profile moisture \\
+8  & Energy budget   & $[0, 100]$                  & SoS energy state \\
+9  & Comm.\ quality  & $[0, 1]$                    & Link reliability \\
+10 & Sensors alive   & $[0, 1]$                    & Virtual sensor health \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The daily action vector maps to DSSAT management events:
+$a_t=(a_t^{N},a_t^{W})=(\texttt{anfer},\texttt{amir})$ with
+$a_t^{N}\in[0,200]$~kg N ha$^{-1}$ day$^{-1}$ and
+$a_t^{W}\in[0,50]$~mm day$^{-1}$.
+
+
+\subsection{Episode Protocol and Calibration Anchors}
+
+Each episode simulates one maize growing season of approximately 161 days.
+Weather is resampled randomly across episodes (\texttt{random\_weather=True}),
+injecting the main source of transition stochasticity. Yield calibration is
+anchored to the stage-based baseline at ${\approx}7\,620$~kg ha$^{-1}$
+(\texttt{BASELINE\_YIELD}); normalisation upper bounds follow
+\texttt{MAX\_EXPECTED\_YIELD}$=1.5\times$ baseline. Fault injection
+(\texttt{enable\_faults=False} in the main experiments) is disabled so that
+learning focuses on crop-management trade-offs; resilience extensions are left
+for future work.
+
+
+\subsection{Software Architecture and Module Map}
+
+The implementation stacks four layers: the DSSAT core accessed through
+\texttt{gym-DSSAT}; a \texttt{SmartFarmSoSEnv} reward wrapper; a
+Gymnasium-compatible adapter; and the training script. Table~\ref{tab:software}
+maps each module to its role in the proposed solution.
+
+\begin{table}[ht]
+\centering
+\caption{Software modules implementing the proposed solution.}
+\label{tab:software}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.6cm}
+                >{\raggedright\arraybackslash}p{4.2cm}
+                >{\raggedright\arraybackslash}p{5.5cm}}
+\toprule
+\textbf{Layer} & \textbf{Module} & \textbf{Function} \\
+\midrule
+DSSAT core      & \texttt{gym\_dssat\_pdi}           & Daily CSM integration via subprocess API \\
+Scalar reward   & \texttt{02\_smart\_farm\_env.py}   & Hierarchical scalar reward (REQ001--002) \\
+Water-min reward& \texttt{02\_smart\_farm\_env\_water.py} & Reward weights tuned for irrigation saving \\
+N-min reward    & \texttt{02\_smart\_farm\_env\_nitrogen.py} & Reward weights tuned for N saving \\
+MORL reward     & \texttt{02\_smart\_farm\_env\_pcppo.py} & Terminal objective vector $\mathbf{R}_T$ \\
+11-dim adapter  & \texttt{pc\_env.py}                & Box observation for scalar PPO \\
+14-dim adapter  & \texttt{pc\_env\_pcppo.py}         & Appends $\boldsymbol{\omega}$ for PC-PPO \\
+CAPQL adapter   & \texttt{capql\_env.py}             & PyTorch interface for TD3 training \\
+Scalar PPO train& \texttt{04\_pc\_ppo\_quick\_train.py}, \texttt{04b}, \texttt{04c} & Base, Water-min, N-min \\
+PC-PPO train    & \texttt{05\_pcppo\_train.py}       & Preference-conditioned PPO \\
+CAPQL train     & \texttt{06\_capql\_train.py}       & Concave-augmented Pareto Q-learning \\
+Baselines       & \texttt{01\_rule\_based\_baselines.py} & Random, Fixed, Stage, FAO-56 controllers \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%------------------------------------------------------------------------------
+\section{Reward Engineering}
+\label{sec:reward}
+%------------------------------------------------------------------------------
+
+The reward design is the heart of the proposed solution: it is where the mission
+objectives are encoded into learnable feedback. We adopt a \emph{hierarchical}
+structure that combines dense daily rewards with a dominant terminal seasonal
+reward. The design is presented below as a set of traceable requirements
+(REQ000--REQ002), which keeps an explicit link between each reward term and the
+mission objective and MoE it serves.
+
+%=========================================================
+\subsection{REQ000: Optimise Irrigation and Fertilisation Performance}
+%=========================================================
+
+\noindent\textbf{Detailed Requirement.}
+The smart-farming system shall optimise irrigation and nitrogen-fertilisation strategies
+throughout the crop growing season in order to maximise crop productivity while
+minimising water and fertiliser consumption.
+
+\vspace{0.2cm}
+\noindent\textbf{Rationale.}
+Efficient agricultural management requires balancing productivity and sustainability.
+Excessive irrigation wastes water and may increase runoff and drainage losses, while
+excessive fertilisation can increase nutrient leaching and environmental impacts.
+Therefore, the reinforcement-learning agent must learn resource-efficient management
+policies that maintain healthy crop conditions and maximise final crop yield.
+
+\vspace{0.2cm}
+\noindent\textbf{Decomposition into Adaptive Requirements.}
+To operationalise this objective, REQ000 is decomposed into the following adaptive
+requirements:
+\begin{itemize}
+    \item \textbf{REQ001:} Optimise Daily Reward ($R_{\text{daily}}$).
+    \item \textbf{REQ002:} Optimise Seasonal Reward ($R_{\text{season}}$).
+\end{itemize}
+
+\vspace{0.2cm}
+\noindent\textbf{Associated Measure of Effectiveness.}
+\begin{itemize}
+    \item Final grain yield.
+    \item Total irrigation applied.
+    \item Total nitrogen fertiliser applied.
+    \item Agronomic Nitrogen Efficiency (ANE).
+    \item Harvest Index (HIAD).
+\end{itemize}
+
+\vspace{0.2cm}
+\noindent\textbf{Traceability.}
+REQ001 and REQ002 derive directly from REQ000 by providing short-term and long-term
+feedback mechanisms that guide the agent toward sustainable crop management.
+
+%=========================================================
+\subsection{REQ001: Optimise Daily Reward ($R_{\text{daily}}$)}
+%=========================================================
+
+\noindent\textbf{Detailed Requirement.}
+At each simulation day $t$, the system shall compute an intermediate reward that
+encourages healthy crop-growth conditions, efficient resource utilisation, and reduced
+environmental losses.
+
+\vspace{0.2cm}
+\noindent\textbf{Rationale.}
+The final crop yield is only observed at harvest. Relying exclusively on harvest
+feedback creates a sparse-reward problem that slows learning. Therefore, daily rewards
+provide dense feedback that guides the agent toward agronomically desirable decisions
+throughout the season.
+
+\vspace{0.2cm}
+\noindent\textbf{Associated Measure of Effectiveness.}
+\begin{itemize}
+    \item Soil-moisture balance.
+    \item Water-stress reduction.
+    \item Nitrogen-stress reduction.
+    \item Nitrogen-uptake promotion.
+    \item Reduced irrigation and fertiliser usage.
+    \item Reduced runoff, drainage, and nutrient losses.
+\end{itemize}
+
+\vspace{0.2cm}
+\noindent\textbf{Operational Definition and Indicators.}
+\begin{itemize}
+  \item \textbf{Water Management Indicators}
+  \begin{itemize}
+      \item $\mathrm{SWFAC}_t$: Water-stress factor.
+      \item $\mathrm{SMR}_t$: Soil-moisture ratio.
+  \end{itemize}
+  \begin{equation}
+  \mathrm{SMR}_t=\frac{\mathrm{SWTD}_t}{\mathrm{SWXD}_t}
+  \end{equation}
+  where:
+  \begin{itemize}
+      \item $\mathrm{SWTD}_t$: Total soil water.
+      \item $\mathrm{SWXD}_t$: Available water capacity.
+  \end{itemize}
+
+  \item \textbf{Nitrogen Management Indicators}
+  \begin{itemize}
+      \item $\mathrm{NSTRES}_t$: Nitrogen-stress factor.
+      \item $\mathrm{TRNU}_t$: Daily nitrogen uptake.
+  \end{itemize}
+
+  \item \textbf{Resource Consumption Indicators}
+  \begin{itemize}
+      \item $\mathrm{IRRC}_t$: Daily irrigation amount.
+      \item $\mathrm{FERN}_t$: Daily nitrogen-fertiliser amount.
+  \end{itemize}
+
+  \item \textbf{Environmental Loss Indicators}
+  \begin{itemize}
+      \item $\mathrm{ROFC}_t$: Surface runoff.
+      \item $\mathrm{DRNC}_t$: Deep drainage.
+      \item $\mathrm{NLEACH}_t$: Nitrate leaching.
+      \item $\mathrm{DENIT}_t$: Denitrification losses.
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.2cm}
+\noindent\textbf{Method of Measurement.}
+\begin{enumerate}
+  \item \textbf{Water Management Reward ($R_{\text{water}}$)}
+  \begin{equation}
+  R_{\text{water},t}= w_m R_{\text{moisture},t} + w_s\,(1-\mathrm{SWFAC}_t)
+  \end{equation}
+  where
+ \begin{equation}
+R_{\text{moisture},t}=
+\begin{cases}
++c_1,
+& \text{if } \mathrm{SMR}_t \in [\mathrm{SMR}_{\text{low}},\,\mathrm{SMR}_{\text{high}}]
+\\[2mm]
+-c_2(\mathrm{SMR}_{\text{low}}-\mathrm{SMR}_t)^2,
+& \text{if } \mathrm{SMR}_t < \mathrm{SMR}_{\text{low}}
+\\[2mm]
+-c_3(\mathrm{SMR}_t-\mathrm{SMR}_{\text{high}})^2,
+& \text{if } \mathrm{SMR}_t > \mathrm{SMR}_{\text{high}}
+\end{cases}
+\end{equation}
+  This component encourages maintaining soil moisture within an agronomically desirable
+  range while minimising water stress.
+
+  \item \textbf{Fertilisation Reward ($R_{\text{fert}}$)}
+  \begin{equation}
+  R_{\text{fert},t}= w_n\,(1-\mathrm{NSTRES}_t) + w_u\,\mathrm{TRNU}_t
+  \end{equation}
+  This reward promotes adequate nitrogen availability and efficient crop nitrogen
+  uptake.
+
+  \item \textbf{Resource Consumption Penalty ($R_{\text{resource}}$)}
+  \begin{equation}
+  R_{\text{resource},t}= w_{\text{irr}}\,\mathrm{IRRC}_t + w_{\text{fert}}\,\mathrm{FERN}_t
+  \end{equation}
+  This component discourages excessive irrigation and fertilisation while allowing
+  necessary applications.
+
+  \item \textbf{Environmental Loss Penalty ($R_{\text{losses}}$)}
+  \begin{equation}
+  R_{\text{losses},t}= w_r\,\mathrm{ROFC}_t + w_d\,\mathrm{DRNC}_t + w_l\,\mathrm{NLEACH}_t + w_{\text{dn}}\,\mathrm{DENIT}_t
+  \end{equation}
+  This penalty reduces environmentally harmful practices and resource wastage.
+\end{enumerate}
+
+\vspace{0.2cm}
+\noindent\textbf{Daily Reward Computation.}
+\begin{equation}
+R_{\text{daily},t}= R_{\text{water},t} + R_{\text{fert},t} - R_{\text{resource},t} - R_{\text{losses},t}
+\label{eq:daily_reward}
+\end{equation}
+The daily reward evaluates the quality of the management decision taken on day $t$
+rather than final crop productivity. In the implemented \texttt{SmartFarmSoSEnv},
+each sub-term is normalised to $[-1,1]$ or $[0,1]$ before weighting, and the
+combined daily signal is scaled by $\alpha=0.01$ so that seasonal objectives
+dominate at harvest.
+
+%=========================================================
+\subsection{REQ002: Optimise Seasonal Reward ($R_{\text{season}}$)}
+%=========================================================
+
+\noindent\textbf{Detailed Requirement.}
+At harvest, the system shall compute a terminal reward that evaluates the overall
+success of the growing season based on productivity, efficiency, and resource
+utilisation.
+
+\vspace{0.2cm}
+\noindent\textbf{Rationale.}
+The primary mission objective is to maximise crop yield while using water and fertiliser
+efficiently. Therefore, the seasonal reward represents the dominant optimisation
+objective.
+
+\vspace{0.2cm}
+\noindent\textbf{Associated Measure of Effectiveness.}
+\begin{itemize}
+    \item Grain yield.
+    \item Harvest Index.
+    \item Agronomic Nitrogen Efficiency.
+    \item Seasonal water consumption.
+    \item Seasonal fertiliser consumption.
+\end{itemize}
+
+\vspace{0.2cm}
+\noindent\textbf{Operational Definition and Indicators.}
+\begin{itemize}
+  \item $\mathrm{GRNWT}_{\text{final}}$: Final grain yield measured at harvest.
+  \item Harvest Index:
+  \begin{equation}
+  \mathrm{HIAD}_{\text{final}}= \frac{\text{Grain Weight}}{\text{Total Above-Ground Biomass}}
+  \end{equation}
+  \item Agronomic Nitrogen Efficiency:
+  \begin{equation}
+  \mathrm{ANE}_{\text{final}}= \frac{Y_N-Y_0}{N_{\text{applied}}}
+  \end{equation}
+  where:
+  \begin{itemize}
+      \item $Y_N$: Yield with nitrogen application.
+      \item $Y_0$: Yield without nitrogen application.
+      \item $N_{\text{applied}}$: Total nitrogen applied.
+  \end{itemize}
+  \item Seasonal irrigation:
+  \begin{equation}
+  \mathrm{IRRC}_{\text{season}}= \sum_{t=1}^{T} \mathrm{IRRC}_t
+  \end{equation}
+  \item Seasonal fertilisation:
+  \begin{equation}
+  \mathrm{FERN}_{\text{season}}= \sum_{t=1}^{T} \mathrm{FERN}_t
+  \end{equation}
+\end{itemize}
+
+\vspace{0.2cm}
+\noindent\textbf{Method of Measurement.}
+The terminal reward is computed at harvest as:
+\begin{equation}
+R_{\text{season}}= w_y\,\mathrm{GRNWT}_{\text{final}} + w_h\,\mathrm{HIAD}_{\text{final}} + w_a\,\mathrm{ANE}_{\text{final}}
+            - w_w\,\mathrm{IRRC}_{\text{season}} - w_f\,\mathrm{FERN}_{\text{season}}
+\label{eq:season_reward}
+\end{equation}
+where:
+\begin{itemize}
+    \item $w_y$: Yield weight (dominant term).
+    \item $w_h$: Harvest-index weight.
+    \item $w_a$: Agronomic-nitrogen-efficiency weight.
+    \item $w_w$: Water-consumption penalty weight.
+    \item $w_f$: Fertiliser-consumption penalty weight.
+\end{itemize}
+
+\vspace{0.2cm}
+\noindent\textbf{Final Transition Reward.}
+For non-terminal days:
+\begin{equation}
+R_t = R_{\text{daily},t}
+\end{equation}
+For the harvest day:
+\begin{equation}
+R_T = R_{\text{daily},T} + R_{\text{season}}
+\label{eq:transition_scalar}
+\end{equation}
+This hierarchical reward structure combines dense daily feedback with long-term seasonal
+objectives, enabling efficient learning while preserving the primary goal of maximising
+sustainable crop productivity.
+
+%=========================================================
+\subsection{From Scalar Rewards to a Multi-Reward Vector}
+%=========================================================
+The requirements above define the reward \emph{terms}; the multi-reward formulation
+groups them into the objective channels that the MORL agents optimise jointly. In this
+work we consider four objectives and train accordingly:
+\begin{equation}
+\mathbf{R}_t = \big(\, R^{\text{water}}_t,\; R^{\text{yield}}_t,\; R^{\text{nitrogen}}_t,\; R^{\text{balanced}}_t \,\big)^{\!\top}
+\end{equation}
+where $R^{\text{water}}$ aggregates the water-management and irrigation-penalty terms,
+$R^{\text{yield}}$ is dominated by the seasonal productivity term, $R^{\text{nitrogen}}$
+aggregates the fertilisation reward and nitrogen-loss penalties, and
+$R^{\text{balanced}}$ is the scalarised composite that trades the three off against one
+another. A scalarised return under a preference vector
+$\boldsymbol{\omega}\in\Delta$ (the probability simplex) is then
+\begin{equation}
+G_{\boldsymbol{\omega}} = \sum_{t} \gamma^{t}\, \boldsymbol{\omega}^{\top}\mathbf{R}_t ,
+\qquad \boldsymbol{\omega}\succeq 0,\ \ \textstyle\sum_i \omega_i = 1 .
+\label{eq:scalarized}
+\end{equation}
+Single-objective baselines correspond to placing all preference mass on one channel,
+while the MORL agents learn across the whole simplex. In the PC-PPO and CAPQL
+implementations, the three primary corners map to yield priority, nitrogen-efficiency
+priority, and water-efficiency priority; the balanced channel corresponds to uniform
+preference sampling over the simplex.
+
+
+%=========================================================
+\subsection{Scalar Reward Variants for Specialised PPO Baselines}
+%=========================================================
+
+Beyond the balanced Base reward (\texttt{02\_smart\_farm\_env.py}), two scalar
+variants reweight daily and seasonal terms to probe single-resource priorities
+without changing the underlying REQ001--REQ002 structure. These variants train
+separate PPO agents (Chapter~4); Table~\ref{tab:reward_variants} records the
+parameter differences taken from the implementation files.
+
+\begin{table}[ht]
+\centering
+\caption{Scalar reward variant parameters (Base, Water-min, N-min).}
+\label{tab:reward_variants}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Parameter} & \textbf{Base} & \textbf{Water-min} & \textbf{N-min} \\
+\midrule
+\multicolumn{4}{l}{\textit{Daily blend weights}} \\
+\quad $W_{\text{WATER}}$    & 0.40 & 0.20 & 0.35 \\
+\quad $W_{\text{FERT}}$     & 0.30 & 0.30 & 0.20 \\
+\quad $W_{\text{RESOURCE}}$ & 0.15 & 0.35 & 0.30 \\
+\quad $W_{\text{LOSSES}}$   & 0.15 & 0.15 & 0.15 \\
+\midrule
+\multicolumn{4}{l}{\textit{Seasonal blend weights}} \\
+\quad $W_{\text{YIELD}}$    & 0.40 & 0.25 & 0.25 \\
+\quad $W_{\text{HIAD}}$     & 0.10 & 0.10 & 0.10 \\
+\quad $W_{\text{ANE}}$      & 0.30 & 0.30 & 0.40 \\
+\quad $W_{\text{PENALTY}}$  & 0.20 & 0.35 & 0.25 \\
+\midrule
+\multicolumn{4}{l}{\textit{Seasonal penalty thresholds}} \\
+\quad IRRIG\_EXCESS (mm)    & 500  & 150  & 500 \\
+\quad N\_EXCESS (kg N ha$^{-1}$) & 200 & 200 & 100 \\
+\midrule
+\multicolumn{4}{l}{\textit{$R_{\text{penalty}}$ split (water / N)}} \\
+\quad $\lambda_W : \lambda_N$ & 50:50 & 85:15 & 30:70 \\
+\midrule
+N-min yield floor on $R_{\text{ane}}$ & --- & --- & 5000 kg ha$^{-1}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Water-min variant reduces moisture-chasing and irrigation-excess tolerance;
+the N-min variant strengthens N-application penalties and prioritises agronomic
+N efficiency, with a yield floor preventing a zero-fertiliser exploit.
+
+
+%=========================================================
+\subsection{Implementation Constants and Normalisation}
+%=========================================================
+
+All sub-reward terms are clipped to $[-1,+1]$ or $[0,1]$ before weighting.
+The combined daily signal is scaled by $\alpha=\texttt{DAILY\_SCALE}=0.01$.
+Moisture-ratio thresholds are $\mathrm{SMR}_{\text{low}}=0.40$ and
+$\mathrm{SMR}_{\text{high}}=0.80$. Seasonal yield, harvest index, and ANE are
+normalised against \texttt{BASELINE\_YIELD}$=7620$,
+\texttt{BASELINE\_HIAD}$=0.45$, and \texttt{BASELINE\_ANE}$=40$~kg grain per
+kg~N. In the implemented Base seasonal reward, the positive terms use weights
+$W_{\text{YIELD}}=0.40$, $W_{\text{HIAD}}=0.10$, $W_{\text{ANE}}=0.30$ and the
+resource penalty uses $W_{\text{PENALTY}}=0.20$, grouped as
+$R_{\text{season}} = W_{\text{YIELD}} R_{\text{yield}} + W_{\text{HIAD}} R_{\text{hiad}}
++ W_{\text{ANE}} R_{\text{ane}} - W_{\text{PENALTY}} R_{\text{penalty}}$.
+
+
+%------------------------------------------------------------------------------
+\section{Multi-Objective Learning Methodology}
+\label{sec:algos}
+%------------------------------------------------------------------------------
+
+Three learner families implement the proposed solution: scalar PPO baselines
+(fixed reward shaping), Preference-Conditioned PPO (PC-PPO), and
+Concave-Augmented Pareto Q-Learning (CAPQL). Rule-based controllers provide
+non-learning reference policies; their evaluation is deferred to Chapter~4.
+Training hyperparameters (rollout length, learning rate, \texttt{VecNormalize})
+are likewise reported in Chapter~4.
+
+\subsection{Scalar PPO Baselines}
+
+PPO~\cite{schulman2017ppo} maximises the clipped surrogate
+\begin{equation}
+\mathcal{L}^{\text{CLIP}}(\theta) =
+\mathbb{E}_t\!\Big[\, \min\big( \rho_t(\theta)\,\hat{A}_t,\;
+\operatorname{clip}(\rho_t(\theta),\,1-\epsilon,\,1+\epsilon)\,\hat{A}_t \big) \Big],
+\label{eq:ppoclip}
+\end{equation}
+where $\hat{A}_t$ is the generalised advantage estimate~\cite{schulman2016gae}
+and $\rho_t(\theta)=\pi_\theta(a_t\mid s_t)/\pi_{\theta_{\text{old}}}(a_t\mid s_t)$.
+The scalar PPO agent uses the hierarchical reward of
+REQ001--REQ002 (Equations~\eqref{eq:daily_reward}--\eqref{eq:transition_scalar}) with an
+11-dimensional observation. Additional specialised variants reweight daily
+components toward water saving or nitrogen saving (Table~\ref{tab:reward_variants}).
+These agents provide rule-free reference policies against which the
+multi-objective learners are compared in Chapter~4.
+Algorithm~\ref{alg:scalar_ppo} summarises the on-policy training loop.
+
+\begin{algorithm}[ht]
+\caption{Scalar PPO training on \texttt{SmartFarmSoSEnv}}
+\label{alg:scalar_ppo}
+\begin{algorithmic}[1]
+\Require Environment $\mathcal{E}$, total steps $N$, rollout length $L$, clip $\epsilon$, GAE $\lambda$, discount $\gamma$
+\State Initialise policy $\pi_\theta$ and value network $V_\phi$; $\theta_{\text{old}} \leftarrow \theta$
+\While{environment steps $< N$}
+  \State Collect rollout $\mathcal{D}=\{(s_t,a_t,r_t)\}_{t=1}^{L}$ with $a_t \sim \pi_{\theta_{\text{old}}}(\cdot \mid s_t)$
+  \State Compute returns $\hat{R}_t$ and advantages $\hat{A}_t$ using GAE($\gamma,\lambda$)
+  \For{$k = 1$ to \texttt{n\_epochs}}
+    \For{each minibatch $\mathcal{B} \subset \mathcal{D}$}
+      \State $\rho_t(\theta) \leftarrow \pi_\theta(a_t \mid s_t)\,/\,\pi_{\theta_{\text{old}}}(a_t \mid s_t)$
+      \State Update $\theta$ by ascending $\mathcal{L}^{\text{CLIP}}(\theta)$ on $\mathcal{B}$
+      \State Update $\phi$ by minimising the value-function loss on $\mathcal{B}$
+    \EndFor
+  \EndFor
+  \State $\theta_{\text{old}} \leftarrow \theta$
+\EndWhile
+\State \textbf{return} trained policy $\pi_\theta$
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Preference-Conditioned PPO (PC-PPO)}
+\label{subsec:pcppo}
+
+PC-PPO is \emph{Preference-Conditioned}, not a separate constrained-optimisation
+variant: the same PPO clipped objective is used, but the observation includes
+$\boldsymbol{\omega}$ and the multi-reward vector is scalarised through
+$\boldsymbol{\omega}^{\top}\mathbf{R}_t$ as in Equation~\eqref{eq:scalarized}.
+Each episode samples a new preference $\boldsymbol{\omega}\sim\mathrm{Dirichlet}(1,1,1)$,
+so one network learns a family of policies over the simplex. At evaluation,
+the same model is queried at yield-, N-efficiency-, and water-efficiency-focused
+corners $(1,0,0)$, $(0,1,0)$, $(0,0,1)$ and at a balanced profile
+$(\tfrac{1}{3},\tfrac{1}{3},\tfrac{1}{3})$, matching the three-dimensional
+terminal vector $\mathbf{R}_T=[R_{\text{yield}}, R_{\text{ane}}, R_{\text{water\_eff}}]^\top$
+returned by \texttt{02\_smart\_farm\_env\_pcppo.py}.
+
+PC-PPO uses the 14-dimensional observation
+$[s_t;\boldsymbol{\omega}]$ with \texttt{VecNormalize} on observations and rewards.
+Its main strength is stable on-policy learning on the costly DSSAT simulator while
+still covering multiple farmer priorities with a single model.
+Algorithm~\ref{alg:pcppo} details the episode-level preference sampling and
+PPO update procedure.
+
+\begin{algorithm}[ht]
+\caption{Preference-Conditioned PPO (PC-PPO)}
+\label{alg:pcppo}
+\begin{algorithmic}[1]
+\Require Environment $\mathcal{E}$, total steps $N$, rollout length $L$
+\State Initialise $\pi_\theta$, $V_\phi$; $\theta_{\text{old}} \leftarrow \theta$
+\While{environment steps $< N$}
+  \State Sample $\boldsymbol{\omega} \sim \mathrm{Dirichlet}(\mathbf{1})$ for the upcoming episode
+  \State Reset $\mathcal{E}$; $t \leftarrow 0$; \textbf{done} $\leftarrow$ \textbf{false}
+  \State $\mathcal{D} \leftarrow \emptyset$
+  \While{$|\mathcal{D}| < L$ \textbf{and not} \textbf{done}}
+    \State $\tilde{s}_t \leftarrow [s_t;\,\boldsymbol{\omega}]$
+    \State $a_t \sim \pi_{\theta_{\text{old}}}(\cdot \mid \tilde{s}_t)$
+    \State Execute $(s_{t+1}, r_t, \textbf{done}) \leftarrow \mathcal{E}.\textsc{Step}(a_t)$
+    \State Store $(\tilde{s}_t, a_t, r_t)$ in $\mathcal{D}$; $t \leftarrow t + 1$
+  \EndWhile
+  \State Compute GAE advantages $\{\hat{A}_t\}$ and returns $\{\hat{R}_t\}$ on $\mathcal{D}$
+  \For{$k = 1$ to \texttt{n\_epochs}}
+    \For{each minibatch $\mathcal{B} \subset \mathcal{D}$}
+      \State Update $\theta, \phi$ with clipped PPO loss (Equation~\eqref{eq:ppoclip})
+    \EndFor
+  \EndFor
+  \State $\theta_{\text{old}} \leftarrow \theta$
+\EndWhile
+\State \textbf{return} $\pi_\theta$
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Concave-Augmented Pareto Q-Learning (CAPQL)}
+\label{subsec:capql}
+
+CAPQL~\cite{lu2023capql} takes an off-policy route based on TD3. A twin
+preference-conditioned critic learns vector-valued returns, while the actor
+outputs deterministic daily actions. The terminal target uses linear
+scalarisation plus a concave augmentation term:
+\begin{equation}
+  y = R_{\text{daily}} + \mathbb{1}_{t=T}\!\left(
+    \boldsymbol{\omega}^{\top}\mathbf{R}_T
+    + \lambda \cdot \mathrm{mean}_i\big[\log(R_i + 1 + \varepsilon)\big]
+  \right),
+  \label{eq:capql_target}
+\end{equation}
+with $\lambda=0.5$ and $\varepsilon=0.1$ in our implementation. Hindsight
+preference relabeling resamples $\boldsymbol{\omega}$ for minibatch
+transitions, improving coverage of the objective space without rerunning
+DSSAT episodes.
+
+CAPQL is attractive when many preference values must be explored from limited
+simulation budget: one network can be queried at any $\boldsymbol{\omega}$ after
+training.
+Algorithm~\ref{alg:capql} summarises the TD3 interaction loop, replay storage,
+hindsight preference relabeling, and concave-augmented critic--actor updates.
+
+\begin{algorithm}[ht]
+\caption{Concave-Augmented Pareto Q-Learning (CAPQL)}
+\label{alg:capql}
+\begin{algorithmic}[1]
+\Require Environment $\mathcal{E}$, replay buffer $\mathcal{B}$, total steps $N$, batch size $B$, policy delay $d$
+\State Initialise actor $\mu_\theta$, critics $Q_{\phi_1}, Q_{\phi_2}$, and target networks $\mu_{\bar\theta}, Q_{\bar\phi}$
+\For{$n = 1$ to $N$}
+  \If{episode start}
+    \State Sample $\boldsymbol{\omega} \sim \mathrm{Dirichlet}(\mathbf{1})$; reset $\mathcal{E}$
+  \EndIf
+  \State $\tilde{s}_t \leftarrow [s_t;\,\boldsymbol{\omega}]$
+  \State $a_t \leftarrow \mu_\theta(\tilde{s}_t) + \text{exploration noise}$; step $\mathcal{E}$
+  \State Store $(s_t, a_t, R_{\text{daily},t}, \mathbf{R}_T\,\mathbb{1}_{t=T}, s_{t+1}, \textbf{done}, \boldsymbol{\omega})$ in $\mathcal{B}$
+  \If{$|\mathcal{B}| \ge B$ \textbf{and} $n > \texttt{warmup}$}
+    \State Sample minibatch; relabel $\boldsymbol{\omega}' \sim \mathrm{Dirichlet}(\mathbf{1})$ per transition
+    \State $\tilde{s} \leftarrow [s;\boldsymbol{\omega}']$,\; $\tilde{s}' \leftarrow [s';\boldsymbol{\omega}']$
+    \State $r_{\text{aug}} \leftarrow R_{\text{daily}} + \textbf{done}\cdot\big(\boldsymbol{\omega}'^{\top}\mathbf{R}_T + \lambda\,\mathrm{mean}_i\log(R_i{+}1{+}\varepsilon)\big)$
+    \State $a' \leftarrow \mathrm{clip}\big(\mu_{\bar\theta}(\tilde{s}') + \text{smoothing noise}\big)$
+    \State $y \leftarrow r_{\text{aug}} + \gamma(1-\textbf{done})\min_{j \in \{1,2\}} Q_{\bar\phi_j}(\tilde{s}', a')$
+    \State Update $\phi_1, \phi_2$ by minimising $\|Q_{\phi_j}(\tilde{s},a) - y\|^2$
+    \If{$n \bmod d = 0$}
+      \State Update $\theta$ by ascending $\mathbb{E}\big[\min_j Q_{\phi_j}(\tilde{s}, \mu_\theta(\tilde{s}))\big]$
+      \State Soft-update $\bar\theta \leftarrow \tau\theta + (1{-}\tau)\bar\theta$;\;
+            $\bar\phi \leftarrow \tau\phi + (1{-}\tau)\bar\phi$
+    \EndIf
+  \EndIf
+\EndFor
+\State \textbf{return} $\mu_\theta$
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Justification of Algorithmic Choices}
+
+\begin{table}[ht]
+\centering
+\caption{Rationale for the selected learning algorithms.}
+\label{tab:algos}
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.8cm}
+                >{\raggedright\arraybackslash}p{2.6cm}
+                >{\raggedright\arraybackslash}p{6.3cm}}
+\toprule
+\textbf{Method} & \textbf{Family} & \textbf{Why chosen here} \\
+\midrule
+Scalar PPO & On-policy, single-objective &
+Stable baseline on \texttt{gym-DSSAT}; hierarchical reward matches REQ000--REQ002;
+provides fixed-reward reference policies for comparison. \\
+PC-PPO & On-policy, preference-conditioned &
+Same PPO core as the baseline; one model serves all preference corners;
+observation carries $\boldsymbol{\omega}$; strong training stability. \\
+CAPQL & Off-policy, preference-conditioned &
+Sample-efficient exploration of the Pareto set; concave augmentation mitigates
+plain linear scalarisation; TD3 twin critics reduce Q overestimation. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In short, scalar PPO defines what fixed hierarchical rewards can encode
+(Algorithm~\ref{alg:scalar_ppo}); PC-PPO extends the same PPO core to a
+preference-conditioned policy family (Algorithm~\ref{alg:pcppo}); CAPQL
+complements this with an off-policy Pareto-learning formulation
+(Algorithm~\ref{alg:capql}).
+
+
+%------------------------------------------------------------------------------
+\section{Integrated Proposed Architecture}
+\label{sec:overall}
+%------------------------------------------------------------------------------
+
+Figure~\ref{fig:overall} assembles the elements of this chapter into the complete
+closed-loop learning system. The DSSAT core, wrapped by \texttt{gym-DSSAT} and
+\texttt{SmartFarmSoSEnv}, exposes the daily crop state. The reward module
+converts DSSAT outputs into daily and seasonal signals (Section~\ref{sec:reward}).
+The agent---scalar PPO, PC-PPO, or CAPQL---consumes state and reward and emits
+irrigation and nitrogen actions, closing the loop over one maize season.
+
+%---- FIGURE : Overall proposed model ----------------------------------------
+\begin{figure}[ht]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[node distance=1.0cm and 1.8cm]
+
+  \node[core, draw=sosblue, fill=sosblue!10, minimum width=3.4cm, minimum height=1.6cm]
+       (env) {gym-DSSAT\\Environment\\\scriptsize (DSSAT CSM core)};
+
+  \node[core, draw=sosgreen, fill=sosgreen!10, below=2.2cm of env,
+        minimum width=3.4cm, minimum height=1.6cm] (reward)
+        {Reward Module\\\scriptsize $R_{\text{daily}}+R_{\text{season}}$};
+
+  \node[core, draw=sosorange, fill=soscream, right=4.2cm of env,
+        minimum width=3.6cm, minimum height=1.6cm] (agent)
+        {Multi-Objective RL Agent\\\scriptsize PPO $\,\cdot\,$ PC-PPO $\,\cdot\,$ CAPQL};
+
+  \node[block, draw=sosgreen, fill=sosgreen!8, below=2.2cm of agent,
+        minimum width=3.6cm, minimum height=1.5cm, font=\scriptsize, align=center]
+        (vec) {Seasonal vector $\mathbf{R}_T$\\yield $\cdot$ N-efficiency\\water efficiency};
+
+  \draw[flow] (env.east) -- node[above,font=\scriptsize]{state $s_t$} (agent.west);
+  \draw[ctrl] (agent.south) |- node[below right,font=\scriptsize,pos=0.25]
+        {action $a_t=(\mathrm{FERN}_t,\mathrm{IRRC}_t)$} (env.south);
+  \draw[flow] (env.south) -- node[left,font=\scriptsize]{DSSAT outputs} (reward.north);
+  \draw[flow] (reward.east) -- (vec.west);
+  \draw[flow] (vec.north) -- node[right,font=\scriptsize]{$\mathbf{R}_T$} (agent.south);
+
+  \node[block, draw=sosgrey, fill=white, right=1.2cm of agent, font=\scriptsize,
+        align=center, minimum width=2.6cm] (eval)
+        {Evaluation\\\scriptsize vs.\ rule-based\\and scalar PPO baselines};
+  \draw[flow, sosgrey] (agent.east) -- (eval.west);
+
+  \begin{scope}[on background layer]
+    \node[draw=sosgrey, dashed, rounded corners, inner sep=8pt,
+          fit=(env)(reward)(agent)(vec),
+          label={[sosgrey,font=\scriptsize\bfseries]above:Closed RL loop (one growing season)}] {};
+  \end{scope}
+
+\end{tikzpicture}%
+}
+\caption{Overall proposed learning architecture. The DSSAT core supplies daily
+  crop state; the reward module computes hierarchical daily and seasonal
+  signals; the agent issues irrigation and nitrogen actions, closing the loop
+  over one maize season.}
+\label{fig:overall}
+\end{figure}
+
+
+\subsection{Traceability from Requirements to Implementation}
+
+Table~\ref{tab:trace} summarises how REQ000--REQ002 connect mission objectives,
+MoEs, reward terms, and learner families. This traceability matrix is the
+design counterpart to the performance tables reported in Chapter~4.
+
+\begin{table}[ht]
+\centering
+\caption{Traceability: requirements, MoEs, rewards, and learners.}
+\label{tab:trace}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.6cm}
+                >{\raggedright\arraybackslash}p{2.8cm}
+                >{\raggedright\arraybackslash}p{2.6cm}
+                >{\raggedright\arraybackslash}p{2.4cm}
+                >{\raggedright\arraybackslash}p{2.2cm}}
+\toprule
+\textbf{Req.} & \textbf{MoE / objective} & \textbf{Reward term} & \textbf{Module} & \textbf{Learner} \\
+\midrule
+REQ000 & Yield, N, water & $R_{\text{daily}}+R_{\text{season}}$ &
+\texttt{02\_smart\_farm\_env*} & PPO, PC-PPO, CAPQL \\
+REQ001 & SMR, SWFAC, NSTRES & $R_{\text{water}}, R_{\text{fert}}$ &
+\texttt{02\_smart\_farm\_env.py} & All \\
+REQ001 & Resource use, losses & $R_{\text{resource}}, R_{\text{losses}}$ &
+\texttt{02\_smart\_farm\_env.py} & All \\
+REQ002 & GRNWT, HIAD, ANE & $R_{\text{yield}}, R_{\text{hiad}}, R_{\text{ane}}$ &
+\texttt{02\_smart\_farm\_env.py} & PPO \\
+REQ002 & Season totals & $R_{\text{penalty}}$ &
+\texttt{02\_smart\_farm\_env*.py} & PPO variants \\
+MORL   & Preference trade-offs & $\mathbf{R}_T$, $\boldsymbol{\omega}$ &
+\texttt{02\_smart\_farm\_env\_pcppo.py} & PC-PPO, CAPQL \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Comparison Baselines (Design)}
+
+For evaluation (Chapter~4), four rule-based controllers run inside the same
+\texttt{SmartFarmSoSEnv} wrapper: \emph{Random} (unconstrained daily inputs),
+\emph{Fixed} (preset N splits and periodic irrigation), \emph{Stage-based}
+(management keyed to vegetative development), and \emph{FAO-56} (soil-water-balance
+irrigation with a three-split N plan). Using a common environment ensures that
+MoEs and reward components are directly comparable across learned and rule-based
+policies.
+
+
+%------------------------------------------------------------------------------
+\section{Conclusion}
+\label{sec:ch3_conclusion}
+%------------------------------------------------------------------------------
+
+This chapter presented the proposed solution end to end: a smart-farming
+System-of-Systems formalised around the DSSAT Cropping System Model; an MDP
+formulation with explicit observation, action, and software layers;
+Measures of Effectiveness tied to mission objectives (Table~\ref{tab:moe});
+a hierarchical reward design (REQ000--REQ002) with scalar variants
+(Table~\ref{tab:reward_variants}) and a multi-objective extension for
+preference-conditioned learning; and three learner families---scalar PPO,
+PC-PPO, and CAPQL---integrated in the closed-loop architecture of
+Figure~\ref{fig:overall}. The next chapter reports the experimental setup,
+training dynamics, and quantitative comparison of all learned and rule-based
+policies.
+
+
+% =============================================================================
+% If using BibTeX instead, delete this block and add entries to references.bib
+% =============================================================================
+\begin{thebibliography}{99}
+
+\bibitem{maier1998}
+M.~W. Maier,
+``Architecting principles for systems-of-systems,''
+\emph{Systems Engineering}, vol.~1, no.~4, pp.~267--284, 1998.
+
+\bibitem{jones2003dssat}
+J.~W. Jones, G.~Hoogenboom, C.~H. Porter, K.~J. Boote, W.~D. Batchelor, L.~A. Hunt,
+P.~W. Wilkens, U.~Singh, A.~J. Gijsman, and J.~T. Ritchie,
+``The DSSAT cropping system model,''
+\emph{European Journal of Agronomy}, vol.~18, no.~3--4, pp.~235--265, 2003.
+
+\bibitem{hoogenboom2019}
+G.~Hoogenboom, C.~H. Porter, K.~J. Boote, V.~Shelia, P.~W. Wilkens, U.~Singh,
+J.~W. White, S.~Asseng, J.~I. Lizaso, et~al.,
+``The DSSAT crop modeling ecosystem,'' in
+\emph{Advances in Crop Modelling for a Sustainable Agriculture}, Burleigh Dodds Science
+Publishing, pp.~173--216, 2019.
+
+\bibitem{gautron2022gymdssat}
+R.~Gautron, E.~J. Padr\'on, P.~Preux, J.~Bigot, O.-A. Maillard, and D.~Emukpere,
+``gym-DSSAT: a crop model turned into a Reinforcement Learning environment,''
+Inria Research Report RR-9460, 2022.
+
+\bibitem{gautron2022review}
+R.~Gautron, O.-A. Maillard, P.~Preux, M.~Corbeels, and R.~Sabbadin,
+``Reinforcement learning for crop management support: Review, prospects and challenges,''
+\emph{Computers and Electronics in Agriculture}, vol.~200, art.~107182, 2022.
+
+\bibitem{schulman2017ppo}
+J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, and O.~Klimov,
+``Proximal policy optimization algorithms,''
+\texttt{arXiv:1707.06347}, 2017.
+
+\bibitem{schulman2016gae}
+J.~Schulman, P.~Moritz, S.~Levine, M.~Jordan, and P.~Abbeel,
+``High-dimensional continuous control using generalized advantage estimation,'' in
+\emph{Proc.\ ICLR}, 2016.
+
+\bibitem{lu2023capql}
+H.~Lu, D.~Herman, and Y.~Yu,
+``Multi-objective reinforcement learning: Convexity, stationarity and Pareto optimality,''
+in \emph{Proc.\ ICLR}, 2023.
+
+\end{thebibliography}

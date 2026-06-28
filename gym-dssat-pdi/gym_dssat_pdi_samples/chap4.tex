@@ -1,0 +1,131 @@
+% =============================================================================
+% Chapter 4 — include via:  \input{chap4}
+% =============================================================================
+
+\begin{figure}[ht]
+\centering
+% \includegraphics[width=\textwidth]{figures/baseline_performance.png}
+\caption{Rule-Based Baseline Preformance ( mean $\pm$ std over 20 episodes)}
+\label{fig:baseline_performance}
+\end{figure}
+
+
+\subsection{Discussion}
+
+The Random policy reveals a fundamental tension between yield maximization and sustainability. Despite having no agronomic knowledge, the Random baseline achieves the highest average grain yield among all evaluated baselines (10\,999 $\pm$ 980 kg ha$^{-1}$, $R_{\text{yield}} = +0.828$). This outcome is primarily explained by its excessive nitrogen application, averaging 3\,177 $\pm$ 208 kg N ha$^{-1}$, which exceeds the agronomically recommended dose by more than twenty-six times.
+
+Within the DSSAT crop model, nitrogen is a major limiting factor for crop growth. Consequently, excessive nitrogen availability promotes near-maximum biomass accumulation regardless of application timing. However, the resulting nitrogen-use efficiency remains extremely poor, as reflected by the negative efficiency score ($R_{\text{ane}} = -0.913$). Similarly, the Random policy applies an average of 802~mm of irrigation, more than twice the amount used by FAO-56, thereby achieving high productivity at an unsustainable resource cost. This baseline demonstrates that maximizing yield alone does not necessarily lead to economically or environmentally acceptable management decisions.
+
+The Stage-Based policy serves as the agronomic reference point. Using 150 kg N ha$^{-1}$ and 398~mm of irrigation, it achieves an average yield of 7\,217 $\pm$ 1\,719 kg ha$^{-1}$, which is broadly consistent with the DSSAT calibration target of approximately 7,620 kg ha$^{-1}$. The relatively high variability observed across seasons reflects the absence of adaptive feedback mechanisms. Because decisions are scheduled in advance, the controller cannot respond to yearly climatic fluctuations, resulting in over-irrigation during wet seasons and water stress during dry seasons.
+
+The FAO-56 controller achieves the highest resource efficiency among the evaluated baselines. By adapting irrigation decisions to estimated soil water depletion, it reduces average irrigation use to only 180$\pm$82~mm while maintaining a moderate nitrogen application rate of 120~kg N ha$^{-1}$. This behaviour produces the highest nitrogen-efficiency score ($R_{\text{ane}} = +0.348$). Nevertheless, the achieved yield (6\,469$\pm$1\,600 kg ha$^{-1}$, $R_{\text{yield}} = -0.283$) remains below that of the Stage-Based policy, suggesting that aggressive water conservation may induce mild but persistent water stress during critical crop growth stages.
+
+
+\subsection{Implications for Reinforcement Learning}
+
+The three baseline controllers define the performance landscape that reinforcement learning agents must navigate. An effective RL policy should:
+\begin{itemize}
+  \item Surpass the yield achieved by the Stage-Based policy ($> 7\,217$ kg ha$^{-1}$) without requiring the excessive resource consumption observed in the Random policy;
+  \item Approach the water-use efficiency of FAO-56 while maintaining satisfactory crop productivity;
+  \item Reduce inter-seasonal performance variability through observation-driven adaptation and dynamic decision making.
+\end{itemize}
+The fact that none of the rule-based controllers simultaneously achieves high yield, low nitrogen consumption, and low water consumption highlights the inherently multi-objective nature of agricultural management. This observation provides a strong motivation for the preference-conditioned reinforcement learning approaches investigated in the following sections.
+
+
+\section{PPO, PCPPO and CAPQL : Training Configuration and results}
+
+\subsection{PPO : Training and results interpretation}
+
+
+\subsection{Experimental Setup}
+
+Three PPO variants were trained for 1,000,000 environment steps using the Stable-Baselines3 implementation of the Proximal Policy Optimization (PPO) algorithm with the clipped surrogate objective. All agents share the same observation space, consisting of an 11-dimensional crop and System-of-Systems state vector, the same action space, and the same evaluation protocol based on four independent episodes generated using different weather seeds.
+
+The action space is defined as:
+\begin{equation}
+a_{\text{anfer}} \in [0,\,200] \;\text{kg N ha}^{-1}
+\end{equation}
+\begin{equation}
+a_{\text{amir}} \in [0,\,50] \;\text{mm}
+\end{equation}
+The considered PPO variants differ only in their reward-shaping strategy:
+\begin{itemize}
+  \item \textbf{Base PPO:} hierarchical daily rewards combining water management, nitrogen management, resource penalties, and environmental loss penalties, together with a seasonal reward composed of yield (40\%), harvest index (10\%), agronomic nitrogen efficiency (30\%), and resource penalties (20\%).
+  \item \textbf{Water-min PPO:} increased resource penalty weight ($W_{\text{RESOURCE}}$: 0.15 $\to$ 0.30), reduced water reward weight ($W_{\text{WATER}}$: 0.40 $\to$ 0.25), and a stricter irrigation excess threshold (500~mm $\to$ 200~mm).
+  \item \textbf{N-min PPO (v3):} increased nitrogen penalty weight ($W_{\text{RESOURCE}}$: 0.15 $\to$ 0.30), reduced nitrogen excess threshold (200 kg ha$^{-1}$ $\to$ 100 kg ha$^{-1}$), and increased agronomic nitrogen efficiency weight ($W_{\text{ANE}}$: 0.30 $\to$ 0.35).
+\end{itemize}
+The PPO hyperparameters follow standard practice:
+\begin{itemize}
+  \item Learning rate: $3 \times 10^{-4}$
+  \item Discount factor: $\gamma = 0.99$
+  \item GAE parameter: $\lambda = 0.95$
+  \item Clip range: 0.2
+  \item Entropy coefficient: 0.01
+  \item Rollout length: 4096 steps
+  \item Batch size: 64
+  \item Training epochs per update: 10
+\end{itemize}
+Observations and rewards were normalized using VecNormalize, with clipping thresholds of $\pm 5$ for observations and $\pm 10$ for rewards.
+
+
+\subsection{Training Dynamics and Convergence}
+
+Figure ?? illustrates the training progression of the Base PPO agent over 1,000,000 environment steps, corresponding to approximately 6,279 complete growing seasons.
+
+Several convergence characteristics can be observed. First, cumulative episode rewards increase steadily throughout training, progressing from approximately 3--5 during the first 200,000 steps to a stable plateau around 10--12 beyond 700,000 steps. This behaviour indicates progressive policy improvement and stable convergence.
+
+Second, the hierarchical reward structure combining daily shaping rewards with seasonal evaluation facilitates effective credit assignment. The seasonal reward component increases from near-zero values during early training to a stable positive range between +0.30 and +0.45. This demonstrates the agent's ability to optimize long-term agricultural objectives through intermediate feedback signals received throughout the growing season.
+
+Third, crop yield converges toward agronomically meaningful values. As shown in Figure ??, grain yield stabilizes around 11,000 kg ha$^{-1}$ after approximately 500,000 training steps. This represents a substantial improvement compared with both the Stage-based and FAO-56 baselines.
+
+Finally, resource utilization converges toward realistic agricultural management levels. Total nitrogen application stabilizes between 180 and 200 kg N ha$^{-1}$, while irrigation requirements remain within approximately 340 to 400~mm, both of which are consistent with intensive maize production systems.
+
+
+\subsection{Evaluation Performance Versus Baselines}
+
+Table~\ref{tab:ppo_eval} summarizes the performance of the PPO variants and compares them with the rule-based baselines.
+
+\begin{table}[ht]
+\centering
+\caption{Evaluation summary of PPO variants (mean over four episodes)}
+\label{tab:ppo_eval}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Agent} & \textbf{Yield} & \textbf{N} & \textbf{Water} & $R_{\text{yield}}$ & $R_{\text{ane}}$ & $R_{\text{hiad}}$ \\
+ & (kg ha$^{-1}$) & (kg ha$^{-1}$) & (mm) & & & \\
+\midrule
+FAO-56           & 6469  & 120 & 180 & $-$0.283 & $+$0.348 & $-$0.095 \\
+Stage-based      & 7217  & 150 & 398 & $-$0.106 & $+$0.203 & $-$0.137 \\
+Base PPO         & 11092 & 184 & 384 & $+$0.879 & $+$0.509 & $+$0.270 \\
+Water-min PPO    & 11096 & 232 & 308 & $+$0.880 & $+$0.200 & $+$0.211 \\
+N-min PPO (v1)   & 7482  & 91  & 164 & $-$0.036 & $+$0.986 & $+$0.724 \\
+N-min PPO (v3)   & 11105 & 194 & 349 & $+$0.882 & $+$0.438 & $+$0.250 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All PPO variants emphasizing yield or balanced objectives achieve yields exceeding 11,000 kg ha$^{-1}$, corresponding to an improvement of approximately 53\% over the Stage-based controller and 72\% over the FAO-56 baseline. These results demonstrate the effectiveness of observation-driven reinforcement learning for adaptive agricultural management.
+
+
+\subsection{Single-Objective Reward Shaping: Capabilities and Limitations}
+
+The three PPO variants reveal several important characteristics of reward-shaped single-objective learning.
+
+The Water-min PPO successfully reduces irrigation requirements by approximately 20\% compared with the Base PPO. However, this reduction is accompanied by a substantial increase in nitrogen application, illustrating a coupling effect between objectives. The agent compensates for reduced irrigation by increasing fertilizer use, thereby exploiting interactions between nitrogen availability and crop growth within the DSSAT model.
+
+The N-min PPO (v1) achieves exceptional nitrogen-use efficiency by dramatically reducing fertilizer application. Nevertheless, this behaviour results in a substantial reduction in crop productivity, indicating that maximizing efficiency alone may lead to agriculturally undesirable outcomes.
+
+The revised N-min PPO (v3) partially addresses this limitation by recovering yield performance while maintaining moderate resource consumption. However, the resulting policy remains similar to the Base PPO and does not achieve a substantial reduction in nitrogen application.
+
+
+\subsection{Limitations of Single-Objective PPO}
+
+The obtained results highlight three fundamental limitations of single-objective reward shaping for sustainable agricultural management:
+\begin{itemize}
+  \item \textbf{Objective coupling:} optimizing one resource may unintentionally increase the consumption of another resource.
+  \item \textbf{Limited flexibility:} each trained agent represents only a single operating point, requiring retraining whenever a different trade-off is desired.
+  \item \textbf{Reward-engineering dependence:} carefully designed rewards do not necessarily guaranty the intended behavior and may lead to suboptimal or degenerate solutions.
+\end{itemize}
+These limitations motivate the transition toward preference-conditioned multi-objective reinforcement learning approaches, where a single agent can learn a family of policies spanning different trade-offs. In such approaches, the desired operating point is specified at inference time through a preference vector $\boldsymbol{\omega}$ rather than being permanently embedded within the reward function during training.

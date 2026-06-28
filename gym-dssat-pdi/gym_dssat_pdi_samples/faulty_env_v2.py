@@ -7,17 +7,17 @@ features (sensor death had no effect on crop readings).
 ══════════════════════════════════════════════════════════════════════
 Sensor-to-feature mapping  (5 IoT nodes, each owns specific obs dims)
 ══════════════════════════════════════════════════════════════════════
-    sensor_0  →  obs[7]        sw_mean       (soil moisture probe)
-    sensor_1  →  obs[0], [4]   topwt, xlai   (canopy / biomass camera)
-    sensor_2  →  obs[1], [3]   grnwt, vstage (grain / growth sensor)
-    sensor_3  →  obs[5]        cumsumfert    (N-flow meter)
-    sensor_4  →  obs[6]        totir         (irrigation meter)
+    sensor_0  →  obs[5]        moisture_ratio  (soil moisture probe)
+    sensor_1  →  obs[7], [2]   topwt, xlai     (canopy / biomass camera)
+    sensor_2  →  obs[6], [1]   grnwt, vstage   (grain / growth sensor)
+    sensor_3  →  obs[8]        cumsumfert      (N-flow meter)
+    sensor_4  →  obs[9]        totir           (irrigation meter)
 
 Always available — not owned by any sensor node:
-    obs[2]   dap            internal day counter (never corrupted)
-    obs[8]   energy_budget  IoT energy level (internal)
-    obs[9]   comm_quality   radio signal (always readable)
-    obs[10]  sensors_frac   recomputed from mask each step
+    obs[0]   dap            internal day counter (never corrupted)
+    obs[3]   swfac          plant water stress from DSSAT
+    obs[4]   nstres         N stress from DSSAT
+    obs[10]  rain           mm today (weather feed)
     obs[11:] w              preference vector (never corrupted)
 
 ══════════════════════════════════════════════════════════════════════
@@ -68,11 +68,11 @@ N_SENSORS = 5
 
 # Each sensor "owns" the obs indices it reads from DSSAT
 SENSOR_FEATURES = {
-    0: [7],         # soil moisture probe  →  sw_mean
-    1: [0, 4],      # canopy / biomass cam →  topwt, xlai
-    2: [1, 3],      # grain / stage sensor →  grnwt, vstage
-    3: [5],         # N-flow meter         →  cumsumfert
-    4: [6],         # irrigation meter     →  totir
+    0: [5],         # soil moisture probe  →  moisture_ratio
+    1: [7, 2],      # canopy / biomass cam →  topwt, xlai
+    2: [6, 1],      # grain / stage sensor →  grnwt, vstage
+    3: [8],         # N-flow meter         →  cumsumfert
+    4: [9],         # irrigation meter     →  totir
 }
 
 # Sensor fault states
@@ -247,9 +247,6 @@ class FaultyEnvV2:
                         obs[j] + np.random.normal(0.0, self.noise_std),
                         -2.0, 2.0,
                     ))
-
-        # Recompute obs[10] (sensors_frac) to reflect actual sensor health
-        obs[10] = float(np.mean(mask))
 
         if self.return_mask:
             # 19-dim layout: faulted_crop(11) | mask(5) | w(3)

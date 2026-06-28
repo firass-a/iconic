@@ -31,13 +31,16 @@ MASK_DIM     = 5
 OBS_DIM      = CROP_DIM + MASK_DIM + N_OBJECTIVES   # 19
 
 NORM = {
-    'topwt':      20000.0,
-    'grnwt':      12000.0,
     'dap':          200.0,
     'vstage':        18.0,
     'xlai':           7.0,
+    'swfac':          1.0,
+    'nstres':         1.0,
+    'grnwt':       12000.0,
+    'topwt':       20000.0,
     'cumsumfert':   300.0,
     'totir':       1000.0,
+    'rain':          50.0,
 }
 
 ACTION_LOW  = np.array([0.0,   0.0], dtype=np.float32)
@@ -295,26 +298,21 @@ class CAPQLRobustEnvV2(gym.Env):
 
     # ──────────────────────────────────────────────────────────────
     def _encode(self, sos_obs):
-        def _g(k): return float(sos_obs.get(f'crop_{k}', 0.0) or 0.0)
-        sw_layers    = sos_obs.get('crop_sw', None)
-        sw_mean      = float(np.mean(np.asarray(sw_layers, dtype=np.float32))) \
-                       if sw_layers is not None else 0.0
-        sensor_vals  = [float(sos_obs.get(f'sensor_{i}', 1.0) or 0.0)
-                        for i in range(self._sos_env.n_sensors)]
-        sensors_frac = float(np.mean(sensor_vals)) if sensor_vals else 1.0
+        def g(key, default=0.0):
+            return float(sos_obs.get(key, default) or default)
 
         crop = np.array([
-            _g('topwt')      / NORM['topwt'],
-            _g('grnwt')      / NORM['grnwt'],
-            _g('dap')        / NORM['dap'],
-            _g('vstage')     / NORM['vstage'],
-            _g('xlai')       / NORM['xlai'],
-            _g('cumsumfert') / NORM['cumsumfert'],
-            _g('totir')      / NORM['totir'],
-            sw_mean,
-            float(sos_obs.get('energy_budget', 1.0) or 0.0),
-            float(sos_obs.get('comm_quality',  1.0) or 0.0),
-            sensors_frac,
+            g('crop_dap') / NORM['dap'],
+            g('crop_vstage') / NORM['vstage'],
+            g('crop_xlai') / NORM['xlai'],
+            g('crop_swfac') / NORM['swfac'],
+            g('crop_nstres') / NORM['nstres'],
+            g('moisture_ratio'),
+            g('crop_grnwt') / NORM['grnwt'],
+            g('crop_topwt') / NORM['topwt'],
+            g('crop_cumsumfert') / NORM['cumsumfert'],
+            g('crop_totir') / NORM['totir'],
+            g('crop_rain') / NORM['rain'],
         ], dtype=np.float32)
         return np.concatenate([crop, self.current_w])   # 14-dim
 
@@ -431,5 +429,4 @@ class _FaultStateV3:
                 sv = hi if np.random.random() > 0.5 else lo
                 for j in feats: obs[j] = float(np.clip(sv, -2.0, 2.0))
 
-        obs[10] = float(np.mean(mask))
         return np.concatenate([obs[:11], mask, obs[11:14]])   # 19-dim

@@ -23,7 +23,7 @@ from faulty_env_v2 import (
 # Physical out-of-bounds values per sensor (normalised units)
 # Each sensor: (low_oob, high_oob) — values outside the plausible physical range
 _OOB = {
-    0: (-0.25, 1.35),   # sw_mean       physical [0, 1]
+    0: (-0.25, 1.35),   # moisture_ratio  physical [0, 1]
     1: (-0.15, 1.25),   # topwt / xlai  physical [0, ~1]
     2: (-0.15, 1.20),   # grnwt/vstage  physical [0, ~1]
     3: (-0.10, 1.30),   # cumsumfert    physical [0, ~1]
@@ -177,8 +177,6 @@ class FaultyEnvV3(FaultyEnvV2):
                 spike_val = hi if np.random.random() > 0.5 else lo
                 for j in feats:
                     obs[j] = float(np.clip(spike_val, -2.0, 2.0))
-
-        obs[10] = float(np.mean(mask))   # sensors_frac
 
         if self.return_mask:
             return np.concatenate([obs[:11], mask, obs[11:14]])

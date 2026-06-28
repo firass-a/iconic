@@ -1,22 +1,23 @@
 """
-CAPQL v2 — same as 06_capql_train.py with corner injection (Fix B).
+CAPQL v2 — canonical CAPQL training script.
 
-Difference from v1:
-  Uses capql_env_v2.CAPQLEnv where 20% of training episodes use a
-  pure preference corner (6.7% each for yield / n_eff / water).
-  This fixes the corner underrepresentation caused by Dirichlet([1,1,1])
-  having near-zero mass at the vertices, which caused the yield corner
-  to produce lower yield than the balanced/water corners at eval.
+Uses capql_env_v2.CAPQLEnv + 02_smart_farm_env_pcppo rewards.
+Observation layout matches pc_env.py (farmer-realistic 11-D state + w).
+Existing models/capql_v2/actor.pt is incompatible — retrain after this change.
+20% of episodes use a pure preference corner (yield / N-eff / water).
 
 Outputs (separate from v1 for easy comparison):
+  models/capql_v2/actor.pt          ← persisted on host via /workspace mount
   /workspace/capql_v2_episode_log.csv
   /workspace/capql_v2_eval_results.csv
   /workspace/capql_v2_plot_training.png
   /workspace/capql_v2_plot_losses.png
 
-Run inside Docker:
+Run inside Docker (mount iconic → /workspace):
     cd /workspace/gym-dssat-pdi/gym_dssat_pdi_samples
     /opt/gym_dssat_pdi/bin/python3 -u 07_capql_train_v2.py 2>&1 | tee /workspace/train_capql_v2.log
+
+Or from Windows:  .\\train_capql_v2_docker.ps1
 """
 import csv
 import os
@@ -73,7 +74,17 @@ ACT_LOW   = np.array([0.0,   0.0], dtype=np.float32)
 ACT_HIGH  = np.array([200.0, 50.0], dtype=np.float32)
 ACT_RANGE = ACT_HIGH - ACT_LOW
 
-MODEL_DIR    = '/tmp/capql_v2'
+
+def _default_model_dir() -> str:
+    """Save weights on the mounted workspace (survives container stop)."""
+    if os.path.isdir('/workspace'):
+        return '/workspace/models/capql_v2'
+    here = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(here, '..', '..', 'models', 'capql_v2'))
+
+
+MODEL_DIR    = _default_model_dir()
+os.makedirs(MODEL_DIR, exist_ok=True)
 EPISODE_LOG  = '/workspace/capql_v2_episode_log.csv'
 EVAL_LOG     = '/workspace/capql_v2_eval_results.csv'
 PLOT_TRAIN   = '/workspace/capql_v2_plot_training.png'
@@ -620,6 +631,7 @@ def _print_config():
     print(f"  {'policy_freq':<26} {POLICY_FREQ}")
     print(f"  {'hidden_size':<26} {HIDDEN}")
     print(f"  {'device':<26} {DEVICE}")
+    print(f"  {'model_dir':<26} {MODEL_DIR}")
     print("=" * W + "\n")
 
 

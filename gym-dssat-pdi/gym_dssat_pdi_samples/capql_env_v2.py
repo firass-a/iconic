@@ -1,19 +1,18 @@
 """
-CAPQLEnv v2 — same as capql_env.py with one change:
+CAPQLEnv v2 — Gymnasium adapter for CAPQL (Concave-augmented Pareto Q-Learning).
 
-  Corner injection (Fix B):
-    20% of episodes use a pure preference corner:
-      ~6.7%  w = [1, 0, 0]  (yield only)
-      ~6.7%  w = [0, 1, 0]  (N efficiency only)
-      ~6.7%  w = [0, 0, 1]  (water only)
-      80%    w ~ Dirichlet([1, 1, 1])  (random mix)
+Train with: 07_capql_train_v2.py
+Inference:   capql_inference.py
 
-  This ensures the policy is explicitly trained on the exact corners
-  that are used during evaluation, fixing the corner underrepresentation
-  caused by Dirichlet([1,1,1]) having near-zero mass at the vertices.
+Corner injection (20% of episodes use a pure preference corner).
 
-Everything else — action caps, obs encoding, reward passthrough — is
-identical to capql_env.py.
+Observation (14 dims) — aligned with pc_env.py state layout + w[3]:
+     0  dap / 200          1  vstage / 18       2  xlai / 7
+     3  swfac / 1          4  nstres / 1         5  moisture_ratio
+     6  grnwt / 12000      7  topwt / 20000      8  cumsumfert / 300
+     9  totir / 1000      10  rain / 50         11–13  w_yield, w_neff, w_water
+
+Rewards: 02_smart_farm_env_pcppo → [R_yield, R_ane, R_water_eff]
 """
 import sys
 import numpy as np
@@ -28,13 +27,16 @@ CROP_DIM     = 11
 OBS_DIM      = CROP_DIM + N_OBJECTIVES   # 14
 
 NORM = {
-    'topwt':      20000.0,
-    'grnwt':      12000.0,
     'dap':          200.0,
     'vstage':        18.0,
     'xlai':           7.0,
+    'swfac':          1.0,
+    'nstres':         1.0,
+    'grnwt':       12000.0,
+    'topwt':       20000.0,
     'cumsumfert':   300.0,
     'totir':       1000.0,
+    'rain':          50.0,
 }
 
 ACTION_LOW  = np.array([0.0,   0.0], dtype=np.float32)
@@ -63,7 +65,8 @@ class CAPQLEnv(gym.Env):
 
     def __init__(self, mode='all', dssat_seed=123,
                  run_dssat_location='run_dssat',
-                 enable_faults=False, fault_rate=0.02):
+                 enable_faults=False, fault_rate=0.02,
+                 weather_id=None):
         super().__init__()
 
         self.sos_env = SmartFarmSoSEnv(
@@ -72,6 +75,7 @@ class CAPQLEnv(gym.Env):
             run_dssat_location=run_dssat_location,
             enable_faults=enable_faults,
             fault_rate=fault_rate,
+            weather_id=weather_id,
         )
 
         self.action_space = spaces.Box(
@@ -133,28 +137,21 @@ class CAPQLEnv(gym.Env):
 
     # ------------------------------------------------------------------ #
     def _encode(self, sos_obs):
-        def _g(k):
-            return float(sos_obs.get(f'crop_{k}', 0.0) or 0.0)
-
-        sw_layers    = sos_obs.get('crop_sw', None)
-        sw_mean      = float(np.mean(np.asarray(sw_layers, dtype=np.float32))) \
-                       if sw_layers is not None else 0.0
-        sensor_vals  = [float(sos_obs.get(f'sensor_{i}', 1.0) or 0.0)
-                        for i in range(self.sos_env.n_sensors)]
-        sensors_frac = float(np.mean(sensor_vals)) if sensor_vals else 1.0
+        def g(key, default=0.0):
+            return float(sos_obs.get(key, default) or default)
 
         crop_feats = np.array([
-            _g('topwt')      / NORM['topwt'],
-            _g('grnwt')      / NORM['grnwt'],
-            _g('dap')        / NORM['dap'],
-            _g('vstage')     / NORM['vstage'],
-            _g('xlai')       / NORM['xlai'],
-            _g('cumsumfert') / NORM['cumsumfert'],
-            _g('totir')      / NORM['totir'],
-            sw_mean,
-            float(sos_obs.get('energy_budget', 1.0) or 0.0),
-            float(sos_obs.get('comm_quality',  1.0) or 0.0),
-            sensors_frac,
+            g('crop_dap') / NORM['dap'],
+            g('crop_vstage') / NORM['vstage'],
+            g('crop_xlai') / NORM['xlai'],
+            g('crop_swfac') / NORM['swfac'],
+            g('crop_nstres') / NORM['nstres'],
+            g('moisture_ratio'),
+            g('crop_grnwt') / NORM['grnwt'],
+            g('crop_topwt') / NORM['topwt'],
+            g('crop_cumsumfert') / NORM['cumsumfert'],
+            g('crop_totir') / NORM['totir'],
+            g('crop_rain') / NORM['rain'],
         ], dtype=np.float32)
 
         return np.concatenate([crop_feats, self.current_w])

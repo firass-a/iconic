@@ -1,11 +1,10 @@
 """
 SmartFarmSoSEnv_PCPPO — environment for Preference-Conditioned PPO.
 
-Differences from base SmartFarmSoSEnv:
+Differences from base SmartFarmSoSEnv (02_smart_farm_env.py):
   - step() returns ONLY the daily shaping reward as scalar
   - At terminal step, info['reward_vec'] = [R_yield, R_ane, R_water_eff]
-  - The preference-weighted scalarization of seasonal reward happens in
-    the pc_env_pcppo.py adapter, NOT here
+  - Used by capql_env_v2.py (CAPQL). PC-PPO uses pc_env.py + smart_farm_rewards instead.
 
 Reward vector (3 objectives, all ∈ [-1, +1], higher = better):
   R_yield      : grain yield relative to baseline (7620 kg/ha)
@@ -20,6 +19,7 @@ Corner preferences map to:
 import gym
 import numpy as np
 from collections import OrderedDict
+
 
 
 class SmartFarmSoSEnv:
@@ -72,14 +72,24 @@ class SmartFarmSoSEnv:
     def __init__(self, mode='all', seed=None,
                  run_dssat_location='run_dssat',
                  enable_faults=False, fault_rate=0.02,
-                 n_sensors=5, initial_energy=100.0):
+                 n_sensors=5, initial_energy=100.0,
+                 weather_id=None):
+        from weather_config import resolve_weather
+
+        wx = resolve_weather(weather_id, seed=seed)
         env_args = {
             'mode':                mode,
             'run_dssat_location':  run_dssat_location,
-            'random_weather':      True,
+            'random_weather':      wx.random_weather,
         }
         if seed is not None:
             env_args['seed'] = seed
+        if wx.auxiliary_file_paths:
+            env_args['auxiliary_file_paths'] = list(wx.auxiliary_file_paths)
+        self._weather_id = wx.id
+        self._weather_label = wx.label
+        self._weather_mode = wx.mode
+        self._weather_path = wx.path
         self.env = gym.make('gym_dssat_pdi:GymDssatPdi-v0', **env_args)
 
         self.n_sensors      = n_sensors
@@ -117,13 +127,14 @@ class SmartFarmSoSEnv:
         self.total_nitrogen = 0.0
         self.day            = 0
         self.done           = False
+        self._last_moisture = 0.5
         return self._build_observation(obs)
 
     def step(self, action_dict):
         """
         Returns scalar = R_daily only (no seasonal).
         At terminal step, info['reward_vec'] = [R_yield, R_ane, R_water_eff].
-        The adapter pc_env_pcppo.py adds w·reward_vec to get total reward.
+        CAPQL training adds w·reward_vec + concave augmentation in 07_capql_train_v2.py.
         """
         crop_obs, _, done, info = self.env.step(action_dict)
         if info is None:
@@ -173,6 +184,14 @@ class SmartFarmSoSEnv:
 
         merged_obs = self._build_observation(crop_obs)
 
+        moisture_ratio = self._moisture_ratio(crop_obs_for_reward)
+        if moisture_ratio is None:
+            sw_raw = crop_obs_for_reward.get('sw')
+            if sw_raw is None and crop_obs:
+                merged_sw = merged_obs.get('crop_sw')
+                if merged_sw is not None:
+                    moisture_ratio = self._moisture_ratio({'sw': merged_sw})
+
         info['reward_vec']    = reward_vec          # [R_yield, R_ane, R_water_eff]
         info['R_daily']       = float(R_daily)
         info['daily_components'] = daily
@@ -184,6 +203,14 @@ class SmartFarmSoSEnv:
             'total_water':    self.total_water,
             'total_rain':     self.total_rain,
             'grnwt': float(crop_obs_for_reward.get('grnwt', 0.0) or 0.0),
+            'topwt': float(crop_obs_for_reward.get('topwt', 0.0) or 0.0),
+            'moisture_ratio': moisture_ratio,
+            'swfac': float(crop_obs_for_reward.get('swfac', 1.0) or 1.0),
+            'nstres': float(crop_obs_for_reward.get('nstres', 1.0) or 1.0),
+            'totir': float(crop_obs_for_reward.get('totir', 0.0) or 0.0),
+            'trnu': float(crop_obs_for_reward.get('trnu', 0.0) or 0.0),
+            'wtnup': float(crop_obs_for_reward.get('wtnup', 0.0) or 0.0),
+            'dap': int(crop_obs_for_reward.get('dap', 0) or 0),
         }
 
         return merged_obs, R_daily, done, info
@@ -305,6 +332,20 @@ class SmartFarmSoSEnv:
             merged[f'sensor_{i}'] = float(self.sensor_health[i])
         merged['energy_budget'] = self.energy_budget / 100.0
         merged['comm_quality']  = self.comm_quality
+
+        mr = self._moisture_ratio(crop_obs)
+        if mr is None:
+            sw_raw = crop_obs.get('sw')
+            if sw_raw is None:
+                sw_raw = merged.get('crop_sw')
+            if sw_raw is not None:
+                mr = self._moisture_ratio({'sw': sw_raw})
+        if mr is not None:
+            merged['moisture_ratio'] = mr
+            self._last_moisture = mr
+        else:
+            merged['moisture_ratio'] = self._last_moisture
+
         return merged
 
     def close(self):
